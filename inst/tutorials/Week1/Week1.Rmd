@@ -1,0 +1,667 @@
+---
+title: "How to use R"
+output: 
+  learnr::tutorial:
+    progresive: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+library(learnr)
+library(knitr)
+```
+
+# **Week 1:** Introduction to R
+
+#### ANTH 674: Research Design and Analysis in Anthropology
+#### Professor Andrew Du
+
+**NB:** A good portion of this tutorial is drawn from Gene Hunt's (Smithsonian Institution) R tutorials. 
+
+## Introduction
+
+Welcome to your first in-class R tutorial! 
+
+![](https://ccawebfiles.blob.core.windows.net/images/happyCoder02.jpg){width="60%"}
+
+From here on out, the first half of class will be me lecturing about a certain topic, and the second half will be devoted to you operationalizing what you learned using R (after all, the best way to learn statistics is to *do* statistics). 
+In this way, topics are doubly reinforced (and triply so when homework is included), and you will hone your R skills.
+Also, by using R in class, you can ask me whatever questions you'd like whenever you run into issues.
+
+These days, R seems to be in the toolkit of every young researcher, so it is *very* important that you "master" R as much as you can, given a semester's time.
+R is a language: it has a vocabulary and grammatical rules.
+As with any language, the more you practice with R, the better you will be at it (e.g., practicing by going through a tutorial many, many times). 
+And the better you are with R, the better you will be at analyzing and visualizing data. 
+
+I know coding can be intimidating, so we will take it one step at a time. 
+I like to think of coding as mini-puzzles that you solve with logic, using the syntax and rules of R (so it can be quite fun!).
+
+So, let's get started! For your first tutorial, you will learn the basics of R.
+
+
+## Goals for this tutorial
+
+#### 1) Know what R is and what it can be used for.
+#### 2) Get comfortable with R.
+#### 3) Learn R's commands, syntax, and rules.
+
+
+## What is R?
+
+![](https://www.r-project.org/Rlogo.png){width="15%"}
+
+From the [R website](https://www.r-project.org): "R is a free software environment for statistical computing and graphics." 
+
+R is an *extremely* powerful tool for analyzing data and producing publication-ready graphics.
+Here is an example of the latter:
+
+![](https://i.stack.imgur.com/K5Lrv.png)
+
+R's power lies in its flexibility: if you can think up an analysis, you can execute it in R.
+This means you can adapt analyses *to your research question* instead of having to adapt analyses to a statistical program's limited capabilities.
+The trade-off is that you have to code all the steps in your analyses (no black box), but I view this as a positive: you have complete analytical control over what you're doing, and you are "forced" to really learn and understand what you're doing. 
+
+If you become stumped while using  R, which will undoubtedly happen (it happens to me all the time), you can always Google and troubleshoot your issue.
+Google and R make for a very powerful combination.
+Once you figure out the issue, it becomes part of your R knowledge base, and you can then move onto figuring out more complex issues.
+This is how you become a better R coder.
+
+
+## The R console
+
+Though you will be learning R directly through this interactive tutorial and not in R itself, the concepts are exactly the same. 
+You will learn how to interact with R through your homework assignments. 
+
+When you open R, you will encounter a blinking cursor in what is known as the **console**. The space below where you will enter code is equivalent to the R console. 
+
+The console is where you carry out calculations, run tests, manipulate data, etc. 
+Let's try a simple exercise: type `1` into the console and press CTRL and Enter (for Mac users, this will be the Apple key and Enter). 
+In an actual R console, you would just press Enter. 
+From here on, when I say "Enter", I mean CTRL and Enter.
+
+```{r number, exercise = TRUE}
+```
+
+R spits back the number `1`, acknowledging that you've entered it in.
+
+## The R console as a calculator
+
+R also serves as a calculator, and I use it all the time for such purposes. 
+Enter in `2 + 2` (spaces do not matter here and are a matter of personal preference) and press Enter. 
+What do you think you'll get in return?
+
+```{r addition, exercise = TRUE}
+```
+
+R can carry out all your standard arithmetic operators. 
+
+```{r, echo = FALSE}
+arith <- data.frame(symb = c("+", 
+                             "-", 
+                             "*", 
+                             "/", 
+                             "^"), def = c("addition", 
+                                           "subtraction", 
+                                           "multiplication", 
+                                           "division", 
+                                           "exponent"))
+
+kable(arith, col.names = c("R symbol", "Arithmetic operator"))
+```
+
+Note that R follows order of operations (PEMDAS: parentheses, exponents, multiplicaitons and division, addition and subtraction).
+Play around with the different arithmetic operators below.
+For example, what do you think you'll get when you enter in `(2 + 2) ^ 2 / 4`?
+
+```{r pemdas, exercise = TRUE}
+```
+
+When in doubt, always use parentheses (e.g., `((2 + 2) ^ 2) / 4`).
+
+
+## Objects and assignment operators
+
+When you type numbers and do arithmetic in the console, R will return the correct answer, but the answer is not saved (it gets lost to the R "void").
+To save numbers to be analyzed later, we need to use an **assignment operator**: `<-` or `=`.
+For example, if I type in `x <- 8`, that `8` is now saved and can be brought up again later.
+Try typing `x <- 8` below (`x = 8` will also work).
+
+```{r assign, exercise = TRUE}
+```
+
+Note that nothing happened!
+This is because you assigned `8` to `x`, which is called an **R object**, instead of entering `8` into the R "void".
+Now type `x` on the second line (you can press Enter only to get to the second line; also click away the drop-down menu that appears) and press Enter. 
+What do you think will happen?
+You see that R has remembered that you assigned `8` to `x`, which is now remembered by R until you overwrite it with another number.
+
+What do you think will happen when you type `x / 2` on the next line?
+
+Note that names in R are *case-sensitive*. 
+See what happens when you type in upper-case `X`.
+It says "object 'X' not found" because you haven't assigned anything to `X`.
+
+## Different types of variables
+
+In addition to numbers, R recognizes and uses different types of variables.
+These are summarized in the table below.
+
+```{r, echo = FALSE}
+variables <- data.frame(Mode = c("numeric",
+                                 "character",
+                                 "logical",
+                                 "factor"), Example = c("5, 2.3", 
+                                                        "\"tooth\", \"Andrew\"",
+                                                        "TRUE, FALSE",
+                                                        "{explained later}"))
+                                 
+kable(variables)
+```
+
+The significance of these different types of variables might not be apparent now, but they will be later.
+Let's play around with them anyway.
+Enter `y <- "tooth"`, then enter `y` into the console. 
+
+```{r logical, exercise = TRUE}
+```
+
+Now enter `z <- TRUE`, and then enter `z`.
+
+**NB:** Each one of these standalone R consoles in the tutorial exists in its own universe. 
+That is, the object `x` which we defined as `8` earlier, will not be "remembered" in this console.
+Try entering in `x` and see what happens.
+In an actual R console, `x` will be remembered as `8` until you overwrite `x`.
+
+
+## Exercise 1: object assignment
+
+1. Create a variable, `x`, and assign it a value of `10`.
+Create a new variable, `xx`, that is equal to one-half of `x`, raised to the 2nd power. 
+What do you get when you enter `xx` on the next line?
+
+2. Create a variable, `y`, and assign it a value of `TRUE` (make sure `TRUE` is written in all caps!). Then assign `y` a value of `"a"`. 
+What do you get when you enter `y` on the next line?
+
+```{r exer1, exercise = TRUE}
+# You can click the "Solution" button for the answers when you're done.
+```
+
+```{r exer1-solution}
+xx is 25.
+y is "a".
+```
+
+
+## Functions (and R help documentation)
+
+A function takes information (i.e., **arguments**), does something with it, and returns a result. 
+For example, `sqrt()` is a built-in R function that calculates the square root of a number (functions always have open and closed parentheses that surround the arguments). 
+The `sqrt()` function has only one argument: the number that we want the square root of. 
+Thus, if we wanted to find the square root of `25`, we would enter `sqrt(25)`. 
+Try it out, or another number, below (ignore the drop-down menu for now; what that is will become clear soon).
+
+```{r sqrt, exercise = TRUE}
+```
+
+Other functions have multiple arguments. 
+To see what the arguments are, we can look at R's built-in help documentation. 
+If you know the name of the function, you can use `?`. 
+Otherwise, use `??` followed by some general keyword (if multiple keywords are involved, you have to surround them with quotation marks, so R recognizes that the words comprise one phrase).
+
+`seq()` is a common function used to generate a regular sequence of numbers.
+To see what the arguments for `seq()` are, we can look at the help documentation using `?seq`.
+Try it out below.
+
+```{r seq, exercise = TRUE}
+```
+
+### R's help documentation
+
+You can see that the help documentation appears through your web browser.
+All help files for functions consist of eight parts:
+
+1. **Description:** There is a general description of what the function does
+2. **Usage:** How to type and use the function
+3. **Arguments**: The arguments and what they are
+4. **Details**: details of what the function does
+5. **Value**: the values returned
+6. **References**: published references the function used
+7. **See Also**: related functions
+8. **Examples**: examples of how to use the function and what they do
+
+**NB:** Under "Examples", you'll see that some of the examples are followed by a `#` sign and some comment. 
+In R, everything that follows `#` will not be run in R.
+This is how you comment on code. 
+
+For `seq()`, we see there are five arguments: `from`, `to`, `by`, `length.out`, and `along.with`. 
+Read the descriptions of the arguments.
+Let's say we wanted to generate a sequence of numbers from 0 to 10. 
+According to the `seq()` help file, we would enter `seq(from = 0, to = 10)`, where we type out the argument names and define them with `=` and a value (this is why some R users advocate using `<-` as the assignment operator, to prevent confusion with using `=` to define arguments; I think it's fine since arguments always exist inside the parentheses of functions, though I use `<-` for what it's worth).
+Try this out in the console.
+What does it return?
+
+You don't have to specify the argument names if you enter in arguments in the same order as they're defined: `seq(0, 10)` returns the same sequence as `seq(from = 0, to = 10)`.
+A shortcut for generating a sequence of numbers that increase/decrease by one is `:`.
+That is, `0:10` is the same as `seq(0, 10)`.
+
+What if we wanted to generate a sequence of numbers from 0 to 10 that increase by 2? See the `seq()` help file to see if you can figure this out.
+Try it out below (click the "Hint" button if you're stuck).
+
+```{r seq_by, exercise = TRUE}
+```
+
+<div id = "seq_by-hint">
+It's the third argument, which you can also specify with `by = `.
+</div>
+
+Now we can make sense of the drop-down menu that magically appears when you type in a function name: it's R telling you what the arguments are.
+Sometimes the argument names are self-evident, but other times you will need to look at the help file.
+After you use a function many, many times, you will know the arguments by heart.
+
+
+## Arrays
+
+**Arrays** are collections of multiple numbers, characters, etc., each of which is called an **element**.
+All elements must be of the same type in an array (e.g., all numbers, all characters, all TRUE or FALSE).
+One-dimensional arrays are called **vectors**, and two-dimensional arrays are called **matrices.**
+Arrays can be as many dimensions as you want them to be, though vectors and matrices are most common.
+
+
+## 1D arrays: vectors
+
+The sequence of numbers you created with `seq()` is a vector.
+You can also use the concatenate function, `c()`, to combine separate elements into a single vector.
+For example, let's combine the numbers 1, 5, 10, 2 into a single vector and assign it to an object called `x`.
+We would accomplish this with `x <- c(1, 5, 10, 2)`.
+Try it below.
+
+```{r concat, exercise = TRUE}
+```
+
+We can count the number of elements within a vector using the `length()` function.
+Use this function to count how many elements are in `x`, i.e., `length(x)`.
+
+
+## Subsetting elements from an array
+
+If we wanted to subset out only some elements of an array, we use hard brackets: `[]`.
+For example, if we wanted to subset out the first element of `x`, we enter `x[1]`.
+`x[2:3]` returns the second and third element within `x`.
+
+Create an object `x` defined as `c(1, 221, 100, 3)`.
+Can you figure out how to subset out the 2nd and 4th element?
+
+```{r subset, exercise = TRUE}
+```
+
+<div id = "subset-hint">
+Use `c()`.
+</div>
+
+Note that R respects order.
+See what happens when you enter `x[c(3, 4)]` versus `x[c(4, 3)]`.
+
+### Removing elements from an array
+
+We can also remove elements from an array using `-`.
+For example, if we wanted to remove the first element of an array, we would enter `x[-1]`.
+If we wanted to remove the 5th and 7th element, we would enter `x[-c(5, 7)]`.
+
+Define `x` as `1:10`.
+Can you figure out how to remove the last element of an array?
+
+```{r del, exercise = TRUE}
+```
+
+<div id = "del-hint">
+You need to use `length()`
+</div>
+
+**Remember:** parentheses are associated with functions, while hard brackets are associated with subsetting!
+
+
+## 2D arrays: matrices
+
+A matrix is a two-dimensional collection of elements arranged in rows and columns.
+To create a matrix, we can use the `matrix()` function. 
+`X <- matrix(1:6, nrow = 3, ncol = 2)` returns a matrix with three rows and two columns, whose elements are the numbers 1 through 6.
+Try it out below.
+
+```{r matrix, exercise = TRUE}
+```
+
+To subset out elements from a matrix, we now need two numbers since we're working with two dimensions. 
+The first number indicates the row number, and the second indicates the column number.
+So, if we wanted to subset out the element in the first row and second column, we would enter `X[1, 2]`.
+If we use one number only, we would subset out an entire row or column (the `,` is still used to denote whether you're referring to rows or columns).
+For example, `X[1, ]` returns the entire first row, while `X[, 2]` returns the entire second column.
+We can also delete entire rows and columns using `-` as before.
+For example, `X[-1, ]` deletes the entire first row.
+Try these out in the console.
+
+Here are some useful functions for seeing how large your matrix is.
+
+```{r, echo = FALSE}
+mat.df <- data.frame(func = c("nrow()",
+                       "ncol()",
+                       "dim()"), purp = c("number of rows",
+                                          "number of columns",
+                                          "dimensions = c(nrow, ncol)"))
+
+kable(mat.df, col.names = c("Function name", "What it does"))
+```
+
+You can also use the `array()` function to create an array with however many dimensions you want.
+`array(1:6)` returns a vector with numbers 1 through 6; it gives the same result as `1:6` or `seq(1, 6)`.
+`array(1:6, dim = c(3, 2))` gives a 2D array with three row and two columns with elements 1 through 6 (i.e., it's identical to the matrix `X` as we defined it above).
+
+**NB:** In general, there are multiple ways to achieve the same thing in R. 
+As you're starting out, I would stick with familiarizing yourself with one of these ways first.
+
+
+## Operations on arrays
+
+Many operations and functions can be applied to single elements, vectors, and matrices.
+Operations are usually done element-by-element.
+
+For example, let's say we have a vector defined as `x <- 1:4`.
+What do you think you will get if you enter `x + 5`?
+What about `sqrt(x)`?
+Test out your predictions below.
+
+```{r oper, exercise = TRUE}
+```
+
+
+## Exercise 2: arrays (vectors and matrices)
+
+Here are some important things to remember for the questions below.
+
+```{r, echo = FALSE}
+exer.df <- data.frame(Action = c(
+  "Combine elements into a vector",
+  "Make a matrix using matrix()",
+  "Make a matrix using array()",
+  "Subset a vector",
+  "Subset a matrix by row and column",
+  "Subset a matrix by row only",
+  "Subset a matrix by column only"), 
+  
+  Example = c(
+    "c(10, 7, 33, 101, -1)",
+    "matrix(1:4, nrow = 2, ncol = 2)", 
+    "array(1:4, dim = c(2, 2))",
+    "y[3]  # 3rd element of vector y",
+    "X[1, 4]  # 1st row, 4th column",
+    "X[3, ]  # entire 3rd row", 
+    "X[, 4]  # entire 4th column"
+  ))
+
+kable(exer.df)
+```
+
+1. Create a matrix, `XX`, with 3 rows and 4 columns from the numbers 1 through 12. Take the 3rd row of this matrix, and assign it to a new variable `y`.
+
+2. Create a new vector called `z` that is the same size as `y`, with each element 10 times the corresponding value in `y`. 
+
+3. What does the following command give you: `dim(XX)[2]`?
+Reason it out first and then check your answer.
+
+```{r exer2, exercise = TRUE}
+# You can click the "Solution" button for the answers when you're done.
+```
+
+```{r exer2-solution}
+# Question 1
+XX <- matrix(1:12, nrow = 3, ncol = 4)
+y <- XX[3, ]
+
+# Question 2
+z <- y * 10
+
+# Question 3
+4
+```
+
+
+## Dataframes
+
+Dataframes are tables of information, where each column can be of a different variable type (e.g., numbers, characters).
+When you import data into R, it will usually be in dataframe form.
+Rows, columns, and elements are subsetted/removed in the same exact way as a 2D array (i.e., matrix).
+Look at the previous topic for a reminder of how to do this.
+
+For illustrative purposes, let's look at a dataframe that's built into R.
+We can access built-in R datasets using the `data()` function.
+We will look at the "Edgar Anderson's Iris" dataset, called `iris` in R.
+To access this dataset, enter `data(iris)`, and the dataset will be automatically saved to an object called `iris`.
+Try this out and take a look at the first five rows (do you remember how to do this?).
+
+```{r iris, exercise = TRUE}
+```
+
+<div id = "iris-hint">
+Try `1:5`.
+</div>
+
+Another quick way of looking at the first six rows of a dataframe (or matrix) is to use the `head()` function; `tail()` returns the last six rows.
+Try out `head(iris)`.
+This is what you should see:
+
+```{r, echo = FALSE}
+data(iris)
+
+kable(head(iris))
+```
+
+You can immediately see that the first four columns are numbers, and the last one is comprised of names, indicating which species is being measured.
+This illustrates that dataframes can have columns with different variable types, something arrays cannot do.
+
+But, what in the world are those column names?
+And for that matter, what in the world is this dataset?!
+You can pull up a help file for built-in R datasets in the same way you pull up help files for built-in R functions.
+Enter `?iris`.
+You can see what the dataset is under "Description", and what the column variables are under "Format".
+FYI, a sepal is the green, leaf-like part of a flower that encloses the petals.
+It looks like this:
+
+![](https://cdn.britannica.com/39/91239-004-44353E32/Diagram-flowering-plant.jpg)
+
+You can also bring up column and row names using `colnames()` and `rownames()`, respectively.
+Try it out below (I have already preloaded the `iris` dataset, so you don't need to reload it using `data()`).
+
+```{r names-setup}
+data(iris)
+```
+
+```{r names, exercise = TRUE}
+```
+
+The row names here are not very interesting, as they're just counting/indexing the specimens as you go from top to bottom.
+
+The nice thing about dataframes is that you can access a column using the column name with `$`.
+For example, lets say we wanted to subset out the `Sepal.Length` column only.
+You can do this using `iris$Sepal.Length`.
+Try this out (or another column name).
+**NB:** You can only use `$` with dataframes and cannot use it with matrices.
+
+
+## Exercise 3: dataframes
+
+We're going to look at another built-in R dataset: `mtcars`.
+Load it using the `data()` function, and pull up its help file to learn more about it.
+
+1. Bring up the row and column names.
+What are these?
+
+2. How many rows and columns are there in this dataset?
+
+3. `mean()` is a handy built-in R function to calculate the mean/average of a vector of numbers.
+Use this function to calculate mean fuel efficiency (`mpg`) and mean car weight (`wt`, in thousands of pounds) across all car models.
+
+4. How would you save to a different variable the following subsets of this dataframe: 
+a) columns 1 and 2
+b) columns 1 and 4
+c) the first ten rows
+d) the first ten rows and the first three columns.
+
+5. Make a new vector called `RelPower`, which is equal to the horsepower of a car (`hp`), divided by its weight (`wt`). 
+
+```{r exer3, exercise = TRUE}
+# You can click the "Solution" button for the answers when you're done.
+```
+
+```{r exer3-solution}
+1. rownames(mtcars); colnames(mtcars)
+# Row names are the different car models, and column names are different design and performance variables (see mtcars help file for more details). 
+2. nrow(mtcars); ncol(mtcars)
+dim(mtcars) # brings up both rows and columns
+3. mean(mtcars$mpg); mean(mtcars$wt)
+4a. x <- mtcars[, 1:2]
+4b. x <- mtcars[, c(1, 4)]
+4c. x <- mtcars[1:10, ]
+4d. x <- mtcars[1:10, 1:3]
+5. RelPower <- mtcars$hp / mtcars$wt
+```
+
+
+## Testing relationships
+
+R is great for testing relationships, e.g., whether values within a vector are greater than 5.
+Not only might this be interesting in and of itself, but it's also very useful for subsetting data according to some criterion.
+
+Let's start with a simple example.
+Enter `x <- 8` and then `x > 5`.
+
+```{r greater, exercise = TRUE}
+```
+
+You see that R returns `TRUE`, acknowledging that the object `x`, which is defined as `8`, is greater than 5. 
+
+We can do the same thing with a vector, recalling that operations on a vector are done on an element-by-element basis. 
+For example, let's define `x <- 1:10`.
+Look at what happens when you enter `x > 5`.
+
+R returns a vector of `TRUE`/`FALSE` statements, indicating which element is greater than 5.
+A handy function to use in this case is `sum()`, which returns the sum of all elements in a vector.
+When using `sum()` on a vector of logical `TRUE`/`FALSE` statements, `TRUE` is equal to one and `FALSE` is equal to zero.
+Therefore, using `sum()` will count the number of `TRUE` in your vector.
+Try out `sum(x > 5)`.
+
+**NB:** `sum()` is not only applied to vectors with logical elements, but is also applied to vectors with numbers.
+See what happens when you use `sum()` on `x <- 1:10`.
+
+Below is a table of all the relationships you can test with R:
+
+```{r, echo = FALSE}
+relation.df <- data.frame(Symbol = c(
+  ">, <", 
+  ">=, <=",
+  "==, !=",
+  "&, |"), Relationship = c(
+    "greater than, less than",
+    "greater or equal to, less than or equal to",
+    "equal, not equal",
+    "AND, OR"
+  ))
+
+kable(relation.df)
+```
+
+`&` and `|` are used for testing compound relationships, i.e., two or more stated relationships.
+`&` means an element has to satisfy *both* statements to produce a `TRUE`.
+"OR" in logic means "and/or", so `|` means an element has to satisfy at least one statement to produce a `TRUE`. 
+
+Define `x <- 1:10`.
+What do you think you'll get when you enter `x > 3 & x < 8`?
+What about `x > 3 | x < 8`?
+
+```{r comp, exercise = TRUE}
+```
+
+Can you explain why all elements are `TRUE` when using the second compound statement?
+
+
+## Subsetting using logical statements
+
+As we've seen before, we can subset a vector using indices, e.g., `x[c(3, 5)]`.
+More usefully, we can subset a vector using logical statements, where those elements equalling `TRUE` are the ones subsetted. 
+
+For example, create a vector `x <- c(4, 8, 30, 52)`.
+First, look at what happens when you enter `x > 10`.
+What do you think you'll get when you enter `x[x > 10]`?
+
+```{r log_sub, exercise = TRUE}
+```
+
+You can also use logical statements to subset a matrix.
+Create a matrix with 3 rows and 4 columns, where the elements are `1:12`.
+Subset out those elements greater than or equal to 10.
+
+```{r sub_mat, exercise = TRUE}
+# Click the "Solution" button if you're stuck
+```
+
+```{r sub_mat-solution}
+X <- matrix(1:12, nrow = 3, ncol = 4)
+X[X >= 10]
+```
+
+
+## Exercise 4: subsetting
+
+```{r, echo = FALSE}
+relation.df <- data.frame(Symbol = c(
+  ">, <", 
+  ">=, <=",
+  "==, !=",
+  "&, |"), Relationship = c(
+    "greater than, less than",
+    "greater or equal to, less than or equal to",
+    "equal, not equal",
+    "AND, OR"
+  ))
+
+kable(relation.df)
+```
+
+Let's use the `mtcars` dataset again (I've already loaded it for you).
+
+1. Using the `mean()` function, compute separately the mean fuel efficiency (`mpg`) of big cars (>3000 pounds) and small cars (<3000 pounds). 
+Remember `wt` is in units of thousands of pounds.
+
+2. Extract a vector of horsepower (`hp`) values for cars that are *both* small (`wt < 3`) *and* fuel-efficient (`mpg >= 25`).
+
+3. Create a logical vector called `muscle` that is `TRUE` when a car has high horsepower (`hp > 200`). Recall that the function `rownames()` returns the row names for a matrix or dataframe. Use this function, along with your `muscle` vector, to return the model names of the powerful cars.
+
+```{r exer4-setup}
+data(mtcars)
+```
+
+```{r exer4, exercise = TRUE}
+# You can click the "Solution" button for the answers when you're done.
+```
+
+```{r exer4-solution}
+1. mean(mtcars$mpg[mtcars$wt > 3])
+mean(mtcars$mpg[mtcars$wt < 3])
+2. mtcars$hp[mtcars$wt < 3 & mtcars$mpg >= 25]
+3. muscle <- mtcars$hp > 200
+model_names <- rownames(mtcars)
+model_names[muscle]
+# You could've also just went straight to rownames(mtcars)[muscle]
+```
+
+
+## Conclusion
+
+Congratulations, you just completed your first R tutorial in this class!
+
+![](https://www.askideas.com/media/16/Funny-Celebration-With-Cat.jpg){width="375" height="400"}
+
+R has a steep learning curve, so I know it was a lot to digest.
+My advice is to go through this tutorial everyday until it becomes second nature to you.
+The material herein serves as the foundation for all future tutorials, and this is typically the case as we progress week by week.
+In other words, you will get the most out of any given week's tutorial by "mastering" the material from previous weeks.
+
+So, don't give up, and if you have any questions, please email/ask me!
