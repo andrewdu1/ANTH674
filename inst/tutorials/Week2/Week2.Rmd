@@ -54,7 +54,8 @@ This includes sorting data, which you were already exposed to in last week's hom
 We will learn some additional functions for sorting data.
 
 Let's start with a vector `x <- c(3, 1, 3, 10)`.
-The `sort()` function creates an output vector where the elements are now sorted in ascending order.
+
+The `sort()` function creates an output vector where the elements are sorted in ascending order.
 How would you sort a vector, using `sort()`, wherein the elements are in *descending* order?
 *Hint*: look at the help file.
 
@@ -103,7 +104,7 @@ What do you think you'll get when you enter `which(x > 25)`?
 Recalling that you can subset a vector with indexes, you can subset out the elements that are greater than 25 using `x[which(x > 25)]`.
 Of course, you can achieve the same thing, cutting out the middleman, using the original vector of `TRUE` and `FALSE`, i.e., `x[x > 25]`.
 
-**NB:** `length(which(x))` tells you how many `TRUE` are in `x`, which can also be achieved with `sum(x)`. 
+**NB:** `length(which())` tells you how many `TRUE` are in a logical vector, which can also be achieved with `sum()`. 
 
 We can also delete elements from a vector using `which()`.
 Recall that you use `-` to delete elements from a vector by index.
@@ -244,7 +245,7 @@ For comparison, you can also see what kind of variable `Sepal.Length` is.
 ```
 
 To see the different levels of `Species`, enter `levels(iris$Species)`.
-You can see there are three levels corresponding to the three different species in the `iris` dataset.
+You can see that there are three levels corresponding to the three different species in the `iris` dataset.
 
 In general, when you import data into R, any column with text data will be treated as a factor.
 What exactly a factor is may be difficult to understand now, but it will become clearer when we actually analyze data.
@@ -295,7 +296,7 @@ Do this using `as.character()` (with long vectors, it's easier on the eye to loo
 Try this out above.
 
 We can now see that there is a `"zebra"`, as well as a `"zebra "`, which R is interpreting as two different names.
-How do we standardize all the different iterations of "zebra"?
+How do we standardize all these different iterations of "zebra"?
 
 ### Standardizing different names
 
@@ -365,7 +366,7 @@ To transform `x` back into factors, we have to use `as.factor()`.
 
 Missing data in R is represented using `NA`s.
 If there are blank cells in your spreadsheet (actual blanks, not cells with a space!), R will automatically transform them into `NA`s when you import the dataset.
-It's up to you whether you want to enter NA into your spreadsheet to indicate missing data.
+It's up to you whether you want to enter NA into your spreadsheet to indicate missing data (NA in a spreadsheet will be recognized as `NA` by R).
 I usually do so to distinguish missing data from empty cells where I forgot to enter data.
 
 ### Detecting `NA`s
@@ -418,7 +419,7 @@ x_df <- DF[, 1]
 ```{r NA_mean, exercise = TRUE}
 ```
 
-This is good because you always want to be in control of your data and analyses.
+This result is good because you always want to be in control of your data and analyses.
 That is, you don't want R using a function on data that has `NA`s you don't know about.
 It's better for R to return `NA` as the default, and make you actively ignore `NA`s by setting `na.rm = TRUE`. 
 
@@ -426,10 +427,10 @@ It's better for R to return `NA` as the default, and make you actively ignore `N
 ## Spaces & special characters in names
 
 It is good practice to never use spaces in names; instead, use underscores, periods, or camel case (e.g., `human_height`, `human.height`, `humanHeight`).
-Likewise, never use special characters (e.g., `!`, `@`, `#`, `/`, `*`, `&`, `?`, `(`)) in names.
+Likewise, never use special characters (e.g., `!`, `@`, `#`, `/`, `*`, `&`, `?`, `()`) in names.
 We will see what kinds of problems occur in R by including these things in names.
 
-But before we do so, a related note: remember to keep your names short but informative, and use lower case instead of upper case.
+But before we do so, a related note: **remember to keep your names short but informative, and use lower case instead of upper case.**
 All this just saves you time when typing and coding.
 
 ### Objects
@@ -463,7 +464,7 @@ I went with `x <- c("andrew!", "andrew?", "andrew du")`.
 To subset out `"andrew du"`, for example, I entered `x[x == "andrew du"]`.
 </div>
 
-Now try to subset out one of the character strings with spaces or special characters.
+Now try to subset out one of the character strings with special characters.
 
 You'll see that it works just fine, so spaces or special characters in character strings are okay (i.e., spaces/special characters are fine as long as they're surrounded by quotation marks).
 
@@ -471,7 +472,7 @@ You'll see that it works just fine, so spaces or special characters in character
 
 Let's see what happens when you create a dataframe, wherein variable names have a space or special character in them.
 I've provided you the code on how to do so.
-Note that you have to use character strings to define variable names with spaces or special characters.
+Note that you have to use character strings (i.e., quotation marks) to define variable names with spaces or special characters.
 Try out different special characters to see what happens.
 
 ```{r variab, exercise = TRUE}
@@ -488,7 +489,7 @@ Note that the same transformation of spaces and special characters into periods 
 ### Summary
 
 Even though spaces and special characters work for character strings, they present problems for object and variable names.
-Because of this, it's just easier to not use spaces or special characters in names at all (this includes file names)!
+Because of this, **it's just easier to not use spaces or special characters in names at all (this includes file names)!**
 
 
 ## Multiple data pieces in a cell
@@ -526,9 +527,9 @@ This combines two pieces of data: the age estimate (i.e., 3) and its uncertainty
 Better practice would be to create an extra column noting that this measurement is uncertain.
 3. Subject 4 has two measurements for height separated by a semicolon.
 Perhaps this is because two measurements were taken at two different periods, between which the subject grew.
-This is also a poor data practice.
+This is also poor data practice.
 
-### How the violations affect R
+### How these violations affect R
 
 In R, each column within a dataframe can be a different class (e.g., numeric, character, factor), but all elements *within* a column must be the same class.
 Let's see what happens when we import the above spreadsheet, where this is *not* the case.
@@ -595,7 +596,7 @@ Click "Hint" if you're stuck.
 We can also use `substr()` and `nchar()` to remove the `?` from the `age` column.
 We can figure out which element has the `?` using `grep()` or `grepl()`.
 
-The `5; 6` in column `height` can be split using `strsplit()`, though I won't go into the details of how to do that (you can look at the help file and try it out yourself if you'd like).
+The `5; 6` in column `height` can be split using `strsplit()`, though I won't go into the details of how to do this (you can look at the help file and try it out yourself if you'd like).
 The trickier part is what to do with the `5` and `6`.
 Delete one of the numbers?
 Average them?
@@ -609,12 +610,12 @@ Remember, one piece of data for each cell!**
 ## Exercise 2: Cleaning data
 
 I have created a dataset, `grades`, where the first column is the undergraduate year of the student, and the second column is the students' grades.
-Data were input by a non-R-user, so it needs a lot of cleaning!
+Data were input by a non-R-user, so it needs a *lot* of cleaning!
 **NB:** the first column consists of characters, not factors.
 
 1. How many students are there in each year?
 
-2. What's the average grade for the whole class? (it appears some grades were lost; ignore those)
+2. What's the average grade for the whole class? (it appears some grades were lost; ignore these)
 
 3. What's the average grade for each year? (again, ignore lost grades)
 
@@ -627,56 +628,56 @@ grades <- read.csv(text = exer2_url)
 ```
 
 ```{r exer2, exercise = TRUE}
-# You can click the "Solution" button for the answers when you're done.
+# You can click the "Hint" button for the answers when you're done. 
+# A design flaw in learnr meant solutions using the "Solutions" button were cut off...
 ```
 
-```{r exer2-solution}
-# need to clean data first
+<div id="exer2-hint">
+need to clean data first
 
-# standardize each year using grep()
-grades$year[grep("freshman", grades$year, ignore.case = TRUE)] <- "freshman"
-grades$year[grep("sopho", grades$year, ignore.case = TRUE)] <- "sophomore"
-grades$year[grep("junior", grades$year, ignore.case = TRUE)] <- "junior"
-grades$year[grep("sen", grades$year, ignore.case = TRUE)] <- "senior"
+standardize each year using `grep()`
+`grades$year[grep("freshman", grades$year, ignore.case = TRUE)] <- "freshman"`
+`grades$year[grep("sopho", grades$year, ignore.case = TRUE)] <- "sophomore"`
+`grades$year[grep("junior", grades$year, ignore.case = TRUE)] <- "junior"`
+`grades$year[grep("sen", grades$year, ignore.case = TRUE)] <- "senior"`
 
-# subset out grades with "(late)"
-late_grades <- grades$grade[grep("late", grades$grade)]
-# get ride of "(late)"
-late_grades_trim <- substr(late_grades, 1, nchar(late_grades) - 7)
-# replace the grades with "(late)" with the trimmed grades
-grades$grade[grep("late", grades$grade)] <- late_grades_trim
+subset out grades with "(late)"
+`late_grades <- grades$grade[grep("late", grades$grade)]`
+get ride of "(late)"
+`late_grades_trim <- substr(late_grades, 1, nchar(late_grades) - 7)`
+replace the grades with "(late)" with the trimmed grades
+`grades$grade[grep("late", grades$grade)] <- late_grades_trim`
 
-# There's one question mark grade. NB: when you search question marks with grep(), you have to use "\\?"
-grade_ques_mk <- grades$grade[grep("\\?", grades$grade)]
-grade_ques_mk_trim <- substr(grade_ques_mk, 1, nchar(grade_ques_mk) - 1)
-grades$grade[grep("\\?", grades$grade)] <- grade_ques_mk_trim
+There's one question mark grade. NB: when you search question marks with `grep()`, you have to use `"\\?"`
+`grade_ques_mk <- grades$grade[grep("\\?", grades$grade)]`
+`grade_ques_mk_trim <- substr(grade_ques_mk, 1, nchar(grade_ques_mk) - 1)`
+`grades$grade[grep("\\?", grades$grade)] <- grade_ques_mk_trim`
 
-# change to numeric
-grades$grade <- as.numeric(grades$grade)
+change to numeric
+`grades$grade <- as.numeric(grades$grade)`
 
-# I'm going to remove all rows with NAs for grades
-not_NA_grades <- complete.cases(grades)
-grades_no_NA <- grades[not_NA_grades, ]
+I'm going to remove all rows with NAs for grades
+`not_NA_grades <- complete.cases(grades)`
+`grades_no_NA <- grades[not_NA_grades, ]`
 
-# 1
-table(grades$year)
+1)
+`table(grades$year)`
 
-# 2
-mean(grades_no_NA$grade)
-mean(grades$grade, na.rm = TRUE) # do this if you didn't remove NAs ahead of time
+2)
+`mean(grades_no_NA$grade)`
+`mean(grades$grade, na.rm = TRUE) # do this if you didn't remove NAs ahead of time`
 
-# 3
-# use na.rm = TRUE if you didn't remove NAs ahead of time
-mean(grades_no_NA$grade[grades_no_NA$year == "freshman"])
-mean(grades_no_NA$grade[grades_no_NA$year == "sophomore"])
-mean(grades_no_NA$grade[grades_no_NA$year == "junior"])
-mean(grades_no_NA$grade[grades_no_NA$year == "senior"])
+3)
+use `na.rm = TRUE` if you didn't remove NAs ahead of time
+`mean(grades_no_NA$grade[grades_no_NA$year == "freshman"])`
+`mean(grades_no_NA$grade[grades_no_NA$year == "sophomore"])`
+`mean(grades_no_NA$grade[grades_no_NA$year == "junior"])`
+`mean(grades_no_NA$grade[grades_no_NA$year == "senior"])`
 
-# a quicker method
-tapply(grades_no_NA$grade, grades_no_NA$year, mean) 
-# tapply() will run a function (third argument) on a vector (first argument) for elements belonging to each unique value of a character/factor (second argument)
-# if you still have NAs in your data, there's an extra step involved
-```
+a quicker method
+`tapply(grades_no_NA$grade, grades_no_NA$year, mean)`
+`tapply()` will run a function (third argument) on a vector (first argument) for elements belonging to each unique value of a character/factor (second argument). If you still have NAs in your data, there's an extra step involved
+</div>
 
 
 ## Non-rectangular data
@@ -760,7 +761,7 @@ You can do a more rigorous check with the `identical()` function, which takes tw
 
 You can see how it would be difficult to combine these two datasets into one that is still rectangular.
 To illustrate, each taxon from each member in `abund` has only one number associated with it: the taxon's abundance from that member.
-In `iso`, on the other hand, each taxon from each member is associated with a number of enamel isotope measurements. 
+In `iso`, on the other hand, each taxon from each member is associated with multiple enamel isotope measurements. 
 These differences in data sizes for a given taxon and member make it difficult to combine these two datasets and still maintain a rectangular format.
 
 But because the datasets are linked by shared taxon and member names, it is straightforward to analyze them together.
@@ -805,7 +806,7 @@ Now we can do whatever analyses we'd like with these two pieces of related data!
 You learned the what and why of data wrangling in lecture, and now you've learned the how in this R tutorial.
 There is a lot of information in here, so I don't expect you to have learned and memorized everything right away. 
 Think of this tutorial as an introduction to data wrangling in R and a reference that you can look back to when you need to remember how to do something.
-I'm sure certain sections spoke out to you more, as these are more relevant for your research questions and the datasets you work with (it's best to focus on learning these sections more thoroughly first).
+I'm sure certain sections spoke to you more, as these are more relevant for your research questions and the datasets you work with (it's best to focus on learning these sections more thoroughly first).
 Again, the best way to learn R is by doing, and the best way to retain that information is by doing it over and over (i.e., practice makes perfect!).
 
 ![](https://analyticsindiamag.com/wp-content/uploads/2018/01/data-cleaning.png){width="80%"}
@@ -817,7 +818,7 @@ Having your data in a clean format also saves time for your colleagues when data
 As a reminder, here are the general rules for good data organization:
 
 1. Use consistent names
-2. Enter missing data as `NA`
+2. Enter missing data as NA
 3. Don't use spaces or special characters in names
 4. Keep names short but informative, and use lower case instead of upper case
 5. Each spreadsheet cell should have only one piece of data
@@ -825,5 +826,5 @@ As a reminder, here are the general rules for good data organization:
 7. Relate different datasets using shared variable(s) that have exactly the same names
 
 Data wrangling is an intuitive process (e.g., I was never formally taught how to data wrangle).
-Once you know what your research question is and what data and tests you need, it will become immediately clear how you should subset, clean, and organize your data.
+Once you know what your research question is and what data and tests you need, it will become immediately clear how you should clean, subset, and organize your data.
 This R tutorial gives you the tools for doing the latter.

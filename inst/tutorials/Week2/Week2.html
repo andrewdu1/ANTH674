@@ -147,7 +147,8 @@ $(document).ready(function () {
 <div id="section-sorting-data" class="section level2">
 <h2>Sorting data</h2>
 <p>Key in data wrangling is being able to manipulate data. This includes sorting data, which you were already exposed to in last week’s homework. We will learn some additional functions for sorting data.</p>
-<p>Let’s start with a vector <code>x &lt;- c(3, 1, 3, 10)</code>. The <code>sort()</code> function creates an output vector where the elements are now sorted in ascending order. How would you sort a vector, using <code>sort()</code>, wherein the elements are in <em>descending</em> order? <em>Hint</em>: look at the help file.</p>
+<p>Let’s start with a vector <code>x &lt;- c(3, 1, 3, 10)</code>.</p>
+<p>The <code>sort()</code> function creates an output vector where the elements are sorted in ascending order. How would you sort a vector, using <code>sort()</code>, wherein the elements are in <em>descending</em> order? <em>Hint</em>: look at the help file.</p>
 <p><code>order()</code> returns a vector of rank orders. Try it out on <code>x</code> below.</p>
 <div class="tutorial-exercise" data-label="sorting" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
@@ -168,7 +169,7 @@ $(document).ready(function () {
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>Thus, <code>which()</code> returns the indexes of elements within a vector that pass some logical statement. For example, take the vector <code>x &lt;- 20:30</code>. What do you think you’ll get when you enter <code>which(x &gt; 25)</code>? Recalling that you can subset a vector with indexes, you can subset out the elements that are greater than 25 using <code>x[which(x &gt; 25)]</code>. Of course, you can achieve the same thing, cutting out the middleman, using the original vector of <code>TRUE</code> and <code>FALSE</code>, i.e., <code>x[x &gt; 25]</code>.</p>
-<p><strong>NB:</strong> <code>length(which(x))</code> tells you how many <code>TRUE</code> are in <code>x</code>, which can also be achieved with <code>sum(x)</code>.</p>
+<p><strong>NB:</strong> <code>length(which())</code> tells you how many <code>TRUE</code> are in a logical vector, which can also be achieved with <code>sum()</code>.</p>
 <p>We can also delete elements from a vector using <code>which()</code>. Recall that you use <code>-</code> to delete elements from a vector by index. For example, if we wanted to delete the third element from a vector <code>x</code>, we would enter <code>x[-3]</code>. Thus, you can use <code>which()</code> to indicate which elements you want to delete. For example, if we wanted to <em>delete</em> elements greater than 25, we would enter <code>x[-which(x &gt; 25)]</code>. Of course, the same result can be achieved with <code>x[which(x &lt; 25)]</code> or <code>x[x &lt; 25]</code>. Also with <code>x[!(x &gt; 25)]</code>, where <code>!</code> indicates “not” in logical statements and transforms all <code>TRUE</code> to <code>FALSE</code>, and vice versa.</p>
 <p><strong>Remember, there are many ways to do the same thing in R, so pick the one that works best with how you think!</strong></p>
 </div>
@@ -237,7 +238,7 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div class="tutorial-exercise" data-label="factors" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
-<p>To see the different levels of <code>Species</code>, enter <code>levels(iris$Species)</code>. You can see there are three levels corresponding to the three different species in the <code>iris</code> dataset.</p>
+<p>To see the different levels of <code>Species</code>, enter <code>levels(iris$Species)</code>. You can see that there are three levels corresponding to the three different species in the <code>iris</code> dataset.</p>
 <p>In general, when you import data into R, any column with text data will be treated as a factor. What exactly a factor is may be difficult to understand now, but it will become clearer when we actually analyze data. For now, just know that names are represented as factors in R, and this can create unique challenges during data cleaning.</p>
 </div>
 <div id="section-inconsistent-names" class="section level2">
@@ -259,7 +260,7 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>A nice was of detecting pesky spaces is to transform your factor levels into characters. Do this using <code>as.character()</code> (with long vectors, it’s easier on the eye to look at unique elements only by wrapping <code>as.character()</code> around <code>unique()</code>, i.e., <code>as.character(unique())</code>). Try this out above.</p>
-<p>We can now see that there is a <code>"zebra"</code>, as well as a <code>"zebra "</code>, which R is interpreting as two different names. How do we standardize all the different iterations of “zebra”?</p>
+<p>We can now see that there is a <code>"zebra"</code>, as well as a <code>"zebra "</code>, which R is interpreting as two different names. How do we standardize all these different iterations of “zebra”?</p>
 </div>
 <div id="section-standardizing-different-names" class="section level3">
 <h3>Standardizing different names</h3>
@@ -290,7 +291,7 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 </div>
 <div id="section-missing-data" class="section level2">
 <h2>Missing data</h2>
-<p>Missing data in R is represented using <code>NA</code>s. If there are blank cells in your spreadsheet (actual blanks, not cells with a space!), R will automatically transform them into <code>NA</code>s when you import the dataset. It’s up to you whether you want to enter NA into your spreadsheet to indicate missing data. I usually do so to distinguish missing data from empty cells where I forgot to enter data.</p>
+<p>Missing data in R is represented using <code>NA</code>s. If there are blank cells in your spreadsheet (actual blanks, not cells with a space!), R will automatically transform them into <code>NA</code>s when you import the dataset. It’s up to you whether you want to enter NA into your spreadsheet to indicate missing data (NA in a spreadsheet will be recognized as <code>NA</code> by R). I usually do so to distinguish missing data from empty cells where I forgot to enter data.</p>
 <div id="section-detecting-nas" class="section level3">
 <h3>Detecting <code>NA</code>s</h3>
 <p>R is great at handling <code>NA</code>s. For example, below is a dataframe (<code>DF</code>) with two columns of numbers, some of which have <code>NA</code>s. I have created <code>DF</code> for you.</p>
@@ -314,13 +315,13 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div class="tutorial-exercise" data-label="NA_mean" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
-<p>This is good because you always want to be in control of your data and analyses. That is, you don’t want R using a function on data that has <code>NA</code>s you don’t know about. It’s better for R to return <code>NA</code> as the default, and make you actively ignore <code>NA</code>s by setting <code>na.rm = TRUE</code>.</p>
+<p>This result is good because you always want to be in control of your data and analyses. That is, you don’t want R using a function on data that has <code>NA</code>s you don’t know about. It’s better for R to return <code>NA</code> as the default, and make you actively ignore <code>NA</code>s by setting <code>na.rm = TRUE</code>.</p>
 </div>
 </div>
 <div id="section-spaces-special-characters-in-names" class="section level2">
 <h2>Spaces &amp; special characters in names</h2>
-<p>It is good practice to never use spaces in names; instead, use underscores, periods, or camel case (e.g., <code>human_height</code>, <code>human.height</code>, <code>humanHeight</code>). Likewise, never use special characters (e.g., <code>!</code>, <code>@</code>, <code>#</code>, <code>/</code>, <code>*</code>, <code>&amp;</code>, <code>?</code>, <code>(</code>)) in names. We will see what kinds of problems occur in R by including these things in names.</p>
-<p>But before we do so, a related note: remember to keep your names short but informative, and use lower case instead of upper case. All this just saves you time when typing and coding.</p>
+<p>It is good practice to never use spaces in names; instead, use underscores, periods, or camel case (e.g., <code>human_height</code>, <code>human.height</code>, <code>humanHeight</code>). Likewise, never use special characters (e.g., <code>!</code>, <code>@</code>, <code>#</code>, <code>/</code>, <code>*</code>, <code>&amp;</code>, <code>?</code>, <code>()</code>) in names. We will see what kinds of problems occur in R by including these things in names.</p>
+<p>But before we do so, a related note: <strong>remember to keep your names short but informative, and use lower case instead of upper case.</strong> All this just saves you time when typing and coding.</p>
 <div id="section-objects" class="section level3">
 <h3>Objects</h3>
 <p>R won’t even allow you to use spaces in object names (e.g., try entering <code>x y &lt;- 1</code> and see what happens).</p>
@@ -340,12 +341,12 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <p>I went with <code>x &lt;- c("andrew!", "andrew?", "andrew du")</code>.</p>
 <p>To subset out <code>"andrew du"</code>, for example, I entered <code>x[x == "andrew du"]</code>.</p>
 </div>
-<p>Now try to subset out one of the character strings with spaces or special characters.</p>
+<p>Now try to subset out one of the character strings with special characters.</p>
 <p>You’ll see that it works just fine, so spaces or special characters in character strings are okay (i.e., spaces/special characters are fine as long as they’re surrounded by quotation marks).</p>
 </div>
 <div id="section-variable-names" class="section level3">
 <h3>Variable names</h3>
-<p>Let’s see what happens when you create a dataframe, wherein variable names have a space or special character in them. I’ve provided you the code on how to do so. Note that you have to use character strings to define variable names with spaces or special characters. Try out different special characters to see what happens.</p>
+<p>Let’s see what happens when you create a dataframe, wherein variable names have a space or special character in them. I’ve provided you the code on how to do so. Note that you have to use character strings (i.e., quotation marks) to define variable names with spaces or special characters. Try out different special characters to see what happens.</p>
 <div class="tutorial-exercise" data-label="variab" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>DF &lt;- data.frame(&quot;mass(kg)&quot; = 1:10, &quot;upper case&quot; = LETTERS[1:10], lower_case = letters[1:10])</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
@@ -356,7 +357,7 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 </div>
 <div id="section-summary" class="section level3">
 <h3>Summary</h3>
-<p>Even though spaces and special characters work for character strings, they present problems for object and variable names. Because of this, it’s just easier to not use spaces or special characters in names at all (this includes file names)!</p>
+<p>Even though spaces and special characters work for character strings, they present problems for object and variable names. Because of this, <strong>it’s just easier to not use spaces or special characters in names at all (this includes file names)!</strong></p>
 </div>
 </div>
 <div id="section-multiple-data-pieces-in-a-cell" class="section level2">
@@ -377,11 +378,11 @@ mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <ol style="list-style-type: decimal">
 <li>The “mass” column has both the number and the unit (i.e., two pieces of data). Better practice would be to put the numbers and units in different columns, or to indicate in the “mass” variable name that the units are in kg (e.g., “mass_kg”).</li>
 <li>Subject 3 has an age estimate that is questionable (i.e., 3?). This combines two pieces of data: the age estimate (i.e., 3) and its uncertainty (i.e., ?). Better practice would be to create an extra column noting that this measurement is uncertain.</li>
-<li>Subject 4 has two measurements for height separated by a semicolon. Perhaps this is because two measurements were taken at two different periods, between which the subject grew. This is also a poor data practice.</li>
+<li>Subject 4 has two measurements for height separated by a semicolon. Perhaps this is because two measurements were taken at two different periods, between which the subject grew. This is also poor data practice.</li>
 </ol>
 </div>
-<div id="section-how-the-violations-affect-r" class="section level3">
-<h3>How the violations affect R</h3>
+<div id="section-how-these-violations-affect-r" class="section level3">
+<h3>How these violations affect R</h3>
 <p>In R, each column within a dataframe can be a different class (e.g., numeric, character, factor), but all elements <em>within</em> a column must be the same class. Let’s see what happens when we import the above spreadsheet, where this is <em>not</em> the case.</p>
 <p>The dataset is in a dataframe called <code>mult_data</code>. Use <code>head()</code> to look at the dataframe structure.</p>
 <div class="tutorial-exercise" data-label="mult_data" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
@@ -415,16 +416,16 @@ mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 </ol>
 <p>Click “Hint” if you’re stuck.</p>
 <p>We can also use <code>substr()</code> and <code>nchar()</code> to remove the <code>?</code> from the <code>age</code> column. We can figure out which element has the <code>?</code> using <code>grep()</code> or <code>grepl()</code>.</p>
-<p>The <code>5; 6</code> in column <code>height</code> can be split using <code>strsplit()</code>, though I won’t go into the details of how to do that (you can look at the help file and try it out yourself if you’d like). The trickier part is what to do with the <code>5</code> and <code>6</code>. Delete one of the numbers? Average them? Include both data points, which would require a slight restructing of the dataset (e.g., including a new column to accommodate multiple height estimates)? The answer will depend on your research question and what you aim to accomplish with your analyses.</p>
+<p>The <code>5; 6</code> in column <code>height</code> can be split using <code>strsplit()</code>, though I won’t go into the details of how to do this (you can look at the help file and try it out yourself if you’d like). The trickier part is what to do with the <code>5</code> and <code>6</code>. Delete one of the numbers? Average them? Include both data points, which would require a slight restructing of the dataset (e.g., including a new column to accommodate multiple height estimates)? The answer will depend on your research question and what you aim to accomplish with your analyses.</p>
 <p><strong>A better solution to all the problems above is to input your data into a spreadsheet in the proper format to begin with! Remember, one piece of data for each cell!</strong></p>
 </div>
 </div>
 <div id="section-exercise-2-cleaning-data" class="section level2">
 <h2>Exercise 2: Cleaning data</h2>
-<p>I have created a dataset, <code>grades</code>, where the first column is the undergraduate year of the student, and the second column is the students’ grades. Data were input by a non-R-user, so it needs a lot of cleaning! <strong>NB:</strong> the first column consists of characters, not factors.</p>
+<p>I have created a dataset, <code>grades</code>, where the first column is the undergraduate year of the student, and the second column is the students’ grades. Data were input by a non-R-user, so it needs a <em>lot</em> of cleaning! <strong>NB:</strong> the first column consists of characters, not factors.</p>
 <ol style="list-style-type: decimal">
 <li><p>How many students are there in each year?</p></li>
-<li><p>What’s the average grade for the whole class? (it appears some grades were lost; ignore those)</p></li>
+<li><p>What’s the average grade for the whole class? (it appears some grades were lost; ignore these)</p></li>
 <li><p>What’s the average grade for each year? (again, ignore lost grades)</p></li>
 </ol>
 <div class="tutorial-exercise-support" data-label="exer2-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
@@ -435,55 +436,23 @@ exer2_url &lt;- getURL(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674
 grades &lt;- read.csv(text = exer2_url)</code></pre>
 </div>
 <div class="tutorial-exercise" data-label="exer2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code># You can click the &quot;Solution&quot; button for the answers when you&#39;re done.</code></pre>
+<pre class="text"><code># You can click the &quot;Hint&quot; button for the answers when you&#39;re done. 
+# A design flaw in learnr meant solutions using the &quot;Solutions&quot; button were cut off...</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
-<div class="tutorial-exercise-support" data-label="exer2-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code># need to clean data first
-
-# standardize each year using grep()
-grades$year[grep(&quot;freshman&quot;, grades$year, ignore.case = TRUE)] &lt;- &quot;freshman&quot;
-grades$year[grep(&quot;sopho&quot;, grades$year, ignore.case = TRUE)] &lt;- &quot;sophomore&quot;
-grades$year[grep(&quot;junior&quot;, grades$year, ignore.case = TRUE)] &lt;- &quot;junior&quot;
-grades$year[grep(&quot;sen&quot;, grades$year, ignore.case = TRUE)] &lt;- &quot;senior&quot;
-
-# subset out grades with &quot;(late)&quot;
-late_grades &lt;- grades$grade[grep(&quot;late&quot;, grades$grade)]
-# get ride of &quot;(late)&quot;
-late_grades_trim &lt;- substr(late_grades, 1, nchar(late_grades) - 7)
-# replace the grades with &quot;(late)&quot; with the trimmed grades
-grades$grade[grep(&quot;late&quot;, grades$grade)] &lt;- late_grades_trim
-
-# There&#39;s one question mark grade. NB: when you search question marks with grep(), you have to use &quot;\\?&quot;
-grade_ques_mk &lt;- grades$grade[grep(&quot;\\?&quot;, grades$grade)]
-grade_ques_mk_trim &lt;- substr(grade_ques_mk, 1, nchar(grade_ques_mk) - 1)
-grades$grade[grep(&quot;\\?&quot;, grades$grade)] &lt;- grade_ques_mk_trim
-
-# change to numeric
-grades$grade &lt;- as.numeric(grades$grade)
-
-# I&#39;m going to remove all rows with NAs for grades
-not_NA_grades &lt;- complete.cases(grades)
-grades_no_NA &lt;- grades[not_NA_grades, ]
-
-# 1
-table(grades$year)
-
-# 2
-mean(grades_no_NA$grade)
-mean(grades$grade, na.rm = TRUE) # do this if you didn&#39;t remove NAs ahead of time
-
-# 3
-# use na.rm = TRUE if you didn&#39;t remove NAs ahead of time
-mean(grades_no_NA$grade[grades_no_NA$year == &quot;freshman&quot;])
-mean(grades_no_NA$grade[grades_no_NA$year == &quot;sophomore&quot;])
-mean(grades_no_NA$grade[grades_no_NA$year == &quot;junior&quot;])
-mean(grades_no_NA$grade[grades_no_NA$year == &quot;senior&quot;])
-
-# a quicker method
-tapply(grades_no_NA$grade, grades_no_NA$year, mean) 
-# tapply() will run a function (third argument) on a vector (first argument) for elements belonging to each unique value of a character/factor (second argument)
-# if you still have NAs in your data, there&#39;s an extra step involved</code></pre>
+<div id="section-exer2-hint">
+<p>need to clean data first</p>
+<p>standardize each year using <code>grep()</code> <code>grades$year[grep("freshman", grades$year, ignore.case = TRUE)] &lt;- "freshman"</code> <code>grades$year[grep("sopho", grades$year, ignore.case = TRUE)] &lt;- "sophomore"</code> <code>grades$year[grep("junior", grades$year, ignore.case = TRUE)] &lt;- "junior"</code> <code>grades$year[grep("sen", grades$year, ignore.case = TRUE)] &lt;- "senior"</code></p>
+<p>subset out grades with “(late)” <code>late_grades &lt;- grades$grade[grep("late", grades$grade)]</code> get ride of “(late)” <code>late_grades_trim &lt;- substr(late_grades, 1, nchar(late_grades) - 7)</code> replace the grades with “(late)” with the trimmed grades <code>grades$grade[grep("late", grades$grade)] &lt;- late_grades_trim</code></p>
+<p>There’s one question mark grade. NB: when you search question marks with <code>grep()</code>, you have to use <code>"\\?"</code> <code>grade_ques_mk &lt;- grades$grade[grep("\\?", grades$grade)]</code> <code>grade_ques_mk_trim &lt;- substr(grade_ques_mk, 1, nchar(grade_ques_mk) - 1)</code> <code>grades$grade[grep("\\?", grades$grade)] &lt;- grade_ques_mk_trim</code></p>
+<p>change to numeric <code>grades$grade &lt;- as.numeric(grades$grade)</code></p>
+<p>I’m going to remove all rows with NAs for grades <code>not_NA_grades &lt;- complete.cases(grades)</code> <code>grades_no_NA &lt;- grades[not_NA_grades, ]</code></p>
+<ol style="list-style-type: decimal">
+<li><p><code>table(grades$year)</code></p></li>
+<li><p><code>mean(grades_no_NA$grade)</code> <code>mean(grades$grade, na.rm = TRUE) # do this if you didn't remove NAs ahead of time</code></p></li>
+<li><p>use <code>na.rm = TRUE</code> if you didn’t remove NAs ahead of time <code>mean(grades_no_NA$grade[grades_no_NA$year == "freshman"])</code> <code>mean(grades_no_NA$grade[grades_no_NA$year == "sophomore"])</code> <code>mean(grades_no_NA$grade[grades_no_NA$year == "junior"])</code> <code>mean(grades_no_NA$grade[grades_no_NA$year == "senior"])</code></p></li>
+</ol>
+<p>a quicker method <code>tapply(grades_no_NA$grade, grades_no_NA$year, mean)</code> <code>tapply()</code> will run a function (third argument) on a vector (first argument) for elements belonging to each unique value of a character/factor (second argument). If you still have NAs in your data, there’s an extra step involved</p>
 </div>
 </div>
 <div id="section-non-rectangular-data" class="section level2">
@@ -526,7 +495,7 @@ abund &lt;- read.csv(text = csv_url_abund, row.names = 1)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>You can see that these two datasets share two variables that link them together: <code>iso$member</code> is the column names for <code>abund</code>, and <code>iso$taxon</code> is the row names for <code>abund</code>. You can double-check this visually by comparing <code>sort(unique(iso$member))</code> with <code>sort(colnames(abund))</code> and <code>sort(unique(iso$taxon))</code> with <code>sort(rownames(abund))</code>. You can do a more rigorous check with the <code>identical()</code> function, which takes two R objects as separate arguments to see if they are <em>exactly</em> equal (e.g., <code>identical(sort(unique(iso$member)), sort(colnames(abund)))</code>).</p>
-<p>You can see how it would be difficult to combine these two datasets into one that is still rectangular. To illustrate, each taxon from each member in <code>abund</code> has only one number associated with it: the taxon’s abundance from that member. In <code>iso</code>, on the other hand, each taxon from each member is associated with a number of enamel isotope measurements. These differences in data sizes for a given taxon and member make it difficult to combine these two datasets and still maintain a rectangular format.</p>
+<p>You can see how it would be difficult to combine these two datasets into one that is still rectangular. To illustrate, each taxon from each member in <code>abund</code> has only one number associated with it: the taxon’s abundance from that member. In <code>iso</code>, on the other hand, each taxon from each member is associated with multiple enamel isotope measurements. These differences in data sizes for a given taxon and member make it difficult to combine these two datasets and still maintain a rectangular format.</p>
 <p>But because the datasets are linked by shared taxon and member names, it is straightforward to analyze them together. For example, we can look at the enamel isotope measurements and abundance for Aepycerotini from the Sidi Hakoma Member. FYI, this is what Aepycerotini (e.g., an impala) looks like:</p>
 <p><img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Trotting_impala_ram%2C_crop.jpg" style="width:60.0%" /></p>
 <p>And this is what Hadar (where the Sidi Hakoma Member is) looks like:</p>
@@ -544,20 +513,20 @@ abund &lt;- read.csv(text = csv_url_abund, row.names = 1)</code></pre>
 </div>
 <div id="section-conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>You learned the what and why of data wrangling in lecture, and now you’ve learned the how in this R tutorial. There is a lot of information in here, so I don’t expect you to have learned and memorized everything right away. Think of this tutorial as an introduction to data wrangling in R and a reference that you can look back to when you need to remember how to do something. I’m sure certain sections spoke out to you more, as these are more relevant for your research questions and the datasets you work with (it’s best to focus on learning these sections more thoroughly first). Again, the best way to learn R is by doing, and the best way to retain that information is by doing it over and over (i.e., practice makes perfect!).</p>
+<p>You learned the what and why of data wrangling in lecture, and now you’ve learned the how in this R tutorial. There is a lot of information in here, so I don’t expect you to have learned and memorized everything right away. Think of this tutorial as an introduction to data wrangling in R and a reference that you can look back to when you need to remember how to do something. I’m sure certain sections spoke to you more, as these are more relevant for your research questions and the datasets you work with (it’s best to focus on learning these sections more thoroughly first). Again, the best way to learn R is by doing, and the best way to retain that information is by doing it over and over (i.e., practice makes perfect!).</p>
 <p><img src="https://analyticsindiamag.com/wp-content/uploads/2018/01/data-cleaning.png" style="width:80.0%" /></p>
 <p>By learning how to fix data issues in R, you have learned how data should be structured and entered into a spreadsheet in the first place. This will save you time and energy later on, as there is less data cleaning to do in R. Having your data in a clean format also saves time for your colleagues when data are shared or published.</p>
 <p>As a reminder, here are the general rules for good data organization:</p>
 <ol style="list-style-type: decimal">
 <li>Use consistent names</li>
-<li>Enter missing data as <code>NA</code></li>
+<li>Enter missing data as NA</li>
 <li>Don’t use spaces or special characters in names</li>
 <li>Keep names short but informative, and use lower case instead of upper case</li>
 <li>Each spreadsheet cell should have only one piece of data</li>
 <li>Always keep your data rectangular</li>
 <li>Relate different datasets using shared variable(s) that have exactly the same names</li>
 </ol>
-Data wrangling is an intuitive process (e.g., I was never formally taught how to data wrangle). Once you know what your research question is and what data and tests you need, it will become immediately clear how you should subset, clean, and organize your data. This R tutorial gives you the tools for doing the latter. 
+Data wrangling is an intuitive process (e.g., I was never formally taught how to data wrangle). Once you know what your research question is and what data and tests you need, it will become immediately clear how you should clean, subset, and organize your data. This R tutorial gives you the tools for doing the latter. 
 <script type="application/shiny-prerendered" data-context="server-start">
 library(learnr)
 library(knitr)
