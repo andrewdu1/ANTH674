@@ -21,7 +21,8 @@ library(knitr)
 
 This week is all about wrangling data in R. 
 **Data wrangling** is the process of cleaning and organizing raw data into a format that is suitable for your analyses.
-As you will see, there are all kinds of errors and issues in raw data that prevent you from analyzing data easily and efficiently.
+Many data scientists only wrangle data for their companies (i.e., they don't analyze data), so this is a very marketable skill!
+As you will see, there are all kinds of errors and issues in raw data that need to be fixed before data analysis can begin.
 
 ![](https://22570l2e793j2oo9c81ug2nh-wpengine.netdna-ssl.com/wp-content/uploads/2018/05/data-wrangling-how-to-do-effectively.jpg){width="70%"}
 
