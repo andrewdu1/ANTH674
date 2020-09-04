@@ -531,9 +531,7 @@ The dataset is in a dataframe called `mult_data`.
 Use `head()` to look at the dataframe structure.
 
 ```{r multData-setup, message = FALSE, echo = FALSE}
-mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
-
-mult_data <- read.csv(text = mult_data_url)
+mult_data <- readr::read_csv(url("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv"))
 ```
 
 ```{r multData, exercise = TRUE}
