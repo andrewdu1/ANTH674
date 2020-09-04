@@ -368,7 +368,7 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <p>We’re going to use a fake dataset I created. For me to import the dataset for you, you need to first install the <code>RCurl</code> package on your computer. Do this using <code>install.packages("RCurl", dep = TRUE)</code> (you need to do this in RStudio and not in the tutorial).</p>
 <pre class="r"><code>require(RCurl)
 
-mult_data_url &lt;- getURL(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv&quot;)
+mult_data_url &lt;- getURLContent(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv&quot;)
 
 mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <p>This is what the dataset looks like in spreadsheet form:</p>

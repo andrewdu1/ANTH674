@@ -507,7 +507,7 @@ Do this using `install.packages("RCurl", dep = TRUE)` (you need to do this in RS
 ```{r multData-setup, message = FALSE}
 require(RCurl)
 
-mult_data_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+mult_data_url <- getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
 
 mult_data <- read.csv(text = mult_data_url)
 ```
@@ -563,7 +563,7 @@ Try it out below.
 ```{r multData1-setup, message = FALSE, echo = FALSE}
 require(RCurl)
 
-mult_data_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+mult_data_url <- getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
 
 mult_data <- read.csv(text = mult_data_url)
 ```
