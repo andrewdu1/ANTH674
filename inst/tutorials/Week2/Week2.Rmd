@@ -537,6 +537,11 @@ mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 You can enter `sapply(mult_data, class)` to see the class of each variable.

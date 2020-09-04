@@ -380,7 +380,17 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <h3>How these violations affect R</h3>
 <p>In R, each column within a dataframe can be a different class (e.g., numeric, character, factor), but all elements <em>within</em> a column must be the same class. Let’s see what happens when we import the above spreadsheet, where this is <em>not</em> the case.</p>
 <p>The dataset is in a dataframe called <code>mult_data</code>. Use <code>head()</code> to look at the dataframe structure.</p>
+<div class="tutorial-exercise-support" data-label="multData-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>mult_data_url &lt;- RCurl::getURLContent(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv&quot;)
+
+mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="multData" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>You can enter <code>sapply(mult_data, class)</code> to see the class of each variable.</p>
