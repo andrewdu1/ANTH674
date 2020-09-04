@@ -504,7 +504,7 @@ We're going to use a fake dataset I created.
 For me to import the dataset for you, you need to first install the `RCurl` package on your computer.
 Do this using `install.packages("RCurl", dep = TRUE)` (you need to do this in RStudio and not in the tutorial).
 
-```{r mult_data-setup, message = FALSE}
+```{r multData-setup, message = FALSE}
 require(RCurl)
 
 mult_data_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
@@ -538,7 +538,7 @@ Let's see what happens when we import the above spreadsheet, where this is *not*
 The dataset is in a dataframe called `mult_data`.
 Use `head()` to look at the dataframe structure.
 
-```{r mult_data, exercise = TRUE}
+```{r multData, exercise = TRUE}
 ```
 
 You can enter `sapply(mult_data, class)` to see the class of each variable.
@@ -560,7 +560,7 @@ Imagine we have a character called `"andrew"`, and we want to extract the first 
 `nchar()` tells us how many letters are in `"andrew"`, so we would extract our desired letters by entering `substr("andrew", 1, nchar("andrew") - 1)`.
 Try it out below.
 
-```{r mult_data1-setup, message = FALSE, echo = FALSE}
+```{r multData1-setup, message = FALSE, echo = FALSE}
 require(RCurl)
 
 mult_data_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
@@ -568,10 +568,10 @@ mult_data_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/mas
 mult_data <- read.csv(text = mult_data_url)
 ```
 
-```{r mult_data1, exercise = TRUE}
+```{r multData1, exercise = TRUE}
 ```
 
-<div id = "mult_data1-hint">
+<div id = "multData1-hint">
 `mass <- mult_data$mass`
 
 `mass_trim <- substr(mass, 1, nchar(mass) - 3)`

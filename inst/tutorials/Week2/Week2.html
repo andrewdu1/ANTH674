@@ -385,7 +385,7 @@ mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <h3>How these violations affect R</h3>
 <p>In R, each column within a dataframe can be a different class (e.g., numeric, character, factor), but all elements <em>within</em> a column must be the same class. Let’s see what happens when we import the above spreadsheet, where this is <em>not</em> the case.</p>
 <p>The dataset is in a dataframe called <code>mult_data</code>. Use <code>head()</code> to look at the dataframe structure.</p>
-<div class="tutorial-exercise" data-label="mult_data" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<div class="tutorial-exercise" data-label="multData" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>You can enter <code>sapply(mult_data, class)</code> to see the class of each variable.</p>
@@ -396,10 +396,10 @@ mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <p>One way would be to fix the issues by hand in the original spreadsheet, but that can be tedious, especially for the <code>mass</code> column.</p>
 <p>We can instead use the <code>substr()</code> and <code>nchar()</code> functions to extract substrings from a character vector (<strong>NB:</strong> this only works for characters!). What do I mean by this?</p>
 <p>Imagine we have a character called <code>"andrew"</code>, and we want to extract the first to penultimate letters. <code>nchar()</code> tells us how many letters are in <code>"andrew"</code>, so we would extract our desired letters by entering <code>substr("andrew", 1, nchar("andrew") - 1)</code>. Try it out below.</p>
-<div class="tutorial-exercise" data-label="mult_data1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<div class="tutorial-exercise" data-label="multData1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
-<div id="section-mult_data1-hint">
+<div id="section-multData1-hint">
 <p><code>mass &lt;- mult_data$mass</code></p>
 <p><code>mass_trim &lt;- substr(mass, 1, nchar(mass) - 3)</code></p>
 <p><code>mass_trim_num &lt;- as.numeric(mass_trim)</code></p>
@@ -670,16 +670,16 @@ output$`tutorial-exercise-variab-output` <- renderUI({
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-`tutorial-exercise-mult_data-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-mult_data-code-editor`)), session)
-output$`tutorial-exercise-mult_data-output` <- renderUI({
-  `tutorial-exercise-mult_data-result`()
+`tutorial-exercise-multData-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-multData-code-editor`)), session)
+output$`tutorial-exercise-multData-output` <- renderUI({
+  `tutorial-exercise-multData-result`()
 })
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
-`tutorial-exercise-mult_data1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-mult_data1-code-editor`)), session)
-output$`tutorial-exercise-mult_data1-output` <- renderUI({
-  `tutorial-exercise-mult_data1-result`()
+`tutorial-exercise-multData1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-multData1-code-editor`)), session)
+output$`tutorial-exercise-multData1-output` <- renderUI({
+  `tutorial-exercise-multData1-result`()
 })
 </script>
  
