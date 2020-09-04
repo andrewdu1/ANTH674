@@ -531,10 +531,17 @@ The dataset is in a dataframe called `mult_data`.
 Use `head()` to look at the dataframe structure.
 
 ```{r multData-setup, message = FALSE, echo = FALSE}
-mult_data <- readr::read_csv(url("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv"))
+mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+
+mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 You can enter `sapply(mult_data, class)` to see the class of each variable.
@@ -563,6 +570,11 @@ mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData1, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 <div id = "multData1-hint">
