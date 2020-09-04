@@ -366,11 +366,6 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div id="section-how-the-rule-is-violated" class="section level3">
 <h3>How the rule is violated</h3>
 <p>We’re going to use a fake dataset I created. For me to import the dataset for you, you need to first install the <code>RCurl</code> package on your computer. Do this using <code>install.packages("RCurl", dep = TRUE)</code> (you need to do this in RStudio and not in the tutorial).</p>
-<pre class="r"><code>require(RCurl)
-
-mult_data_url &lt;- getURLContent(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv&quot;)
-
-mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <p>This is what the dataset looks like in spreadsheet form:</p>
 <p><img src="https://github.com/andrewdu1/ANTH674/blob/master/Datasets/multData_perCell_image.jpg?raw=true" style="width:50.0%" /></p>
 <p>We can imagine that this is a dataset of 10 individuals from some imaginary animal, where we measured their mass, age, and height. (The units for height are whatever you want them to be, though this is bad practice; it should be clear in the dataset or metadata what the units are)</p>
@@ -468,11 +463,6 @@ mult_data &lt;- read.csv(text = mult_data_url)</code></pre>
 <p>A <strong>rectangular dataset</strong> is one where rows correspond to observations and columns correspond to variables. <em>Only</em> the first row should contain variable names. We will see what happens when this is not the case, using the non-rectangular dataset example from Figure 2b in Broman &amp; Woo (2018).</p>
 <p>I will import the dataset for you, which is a spreadsheet that looks exactly like it does in Figure 2b:</p>
 <p><img src="https://github.com/andrewdu1/ANTH674/blob/master/Datasets/BromanWoo2018_Fig2b.jpg?raw=true" style="width:80.0%" /></p>
-<pre class="r"><code>require(RCurl)
-
-csv_url &lt;- getURL(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Fig2b_BromanWoo2018.csv&quot;)
-
-non_rect &lt;- read.csv(text = csv_url)</code></pre>
 <p>Now bring up the dataset, which is in the object <code>non_rect</code>. You can see that R has interpreted the first spreadsheet row as variable names, even though there were only two filled cells with the rest empty. Empty cells are given arbitrary variable names (e.g., <code>X</code>, <code>X.1</code>, <code>X.2</code>, and so on). You can also see what happens when you start a variable name with a number: R automatically puts an <code>X</code> in front of it (e.g., <code>X1min</code>). So, never start variable names with numbers!</p>
 <div class="tutorial-exercise" data-label="non_rect" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
@@ -491,13 +481,6 @@ non_rect &lt;- read.csv(text = csv_url)</code></pre>
 <div id="section-relating-different-datasets" class="section level2">
 <h2>Relating different datasets</h2>
 <p>In order to keep datasets rectangular, sometimes you have to divide them up into separate rectangles. For example, let’s load two published datasets from Du et al. (2019).</p>
-<pre class="r"><code>require(RCurl)
-
-csv_url_iso &lt;- getURL(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv&quot;)
-iso &lt;- read.csv(text = csv_url_iso)
-
-csv_url_abund &lt;- getURL(&quot;https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv&quot;)
-abund &lt;- read.csv(text = csv_url_abund, row.names = 1)</code></pre>
 <p><code>iso</code> is a dataframe with stable carbon isotope measurements from fossil tooth enamel and ancient soil carbonates for geological members in eastern Africa. <code>abund</code> is a dataframe with abundances of taxa whose teeth were analyzed from these members. Use <code>head()</code> to see what these datasets are like.</p>
 <div class="tutorial-exercise" data-label="relate_data" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>

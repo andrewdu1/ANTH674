@@ -504,14 +504,6 @@ We're going to use a fake dataset I created.
 For me to import the dataset for you, you need to first install the `RCurl` package on your computer.
 Do this using `install.packages("RCurl", dep = TRUE)` (you need to do this in RStudio and not in the tutorial).
 
-```{r multData-setup, message = FALSE}
-require(RCurl)
-
-mult_data_url <- getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
-
-mult_data <- read.csv(text = mult_data_url)
-```
-
 This is what the dataset looks like in spreadsheet form:
 
 ![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/multData_perCell_image.jpg?raw=true){width="50%"}
@@ -538,6 +530,12 @@ Let's see what happens when we import the above spreadsheet, where this is *not*
 The dataset is in a dataframe called `mult_data`.
 Use `head()` to look at the dataframe structure.
 
+```{r multData-setup, message = FALSE, echo = FALSE}
+mult_data_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+
+mult_data <- read.csv(text = mult_data_url)
+```
+
 ```{r multData, exercise = TRUE}
 ```
 
@@ -561,9 +559,7 @@ Imagine we have a character called `"andrew"`, and we want to extract the first 
 Try it out below.
 
 ```{r multData1-setup, message = FALSE, echo = FALSE}
-require(RCurl)
-
-mult_data_url <- getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+mult_data_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
 
 mult_data <- read.csv(text = mult_data_url)
 ```
@@ -751,10 +747,8 @@ I will import the dataset for you, which is a spreadsheet that looks exactly lik
 
 ![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/BromanWoo2018_Fig2b.jpg?raw=true){width="80%"}
 
-```{r non_rect-setup, message = FALSE}
-require(RCurl)
-
-csv_url <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Fig2b_BromanWoo2018.csv")
+```{r non_rect-setup, message = FALSE, echo = FALSE}
+csv_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Fig2b_BromanWoo2018.csv")
 
 non_rect <- read.csv(text = csv_url)
 ```
@@ -799,13 +793,11 @@ Calling the dataframe `d`, the code would be `subset(d, strain == "A" & genotype
 In order to keep datasets rectangular, sometimes you have to divide them up into separate rectangles.
 For example, let's load two published datasets from Du et al. (2019).
 
-```{r relate_data-setup, message = FALSE}
-require(RCurl)
-
-csv_url_iso <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
+```{r relate_data-setup, message = FALSE, echo = FALSE}
+csv_url_iso <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
 iso <- read.csv(text = csv_url_iso)
 
-csv_url_abund <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
+csv_url_abund <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
 abund <- read.csv(text = csv_url_abund, row.names = 1)
 ```
 
