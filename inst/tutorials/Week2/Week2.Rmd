@@ -531,7 +531,7 @@ The dataset is in a dataframe called `mult_data`.
 Use `head()` to look at the dataframe structure.
 
 ```{r multData-setup, message = FALSE, echo = FALSE}
-mult_data_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
 
 mult_data <- read.csv(text = mult_data_url)
 ```
@@ -564,12 +564,17 @@ Imagine we have a character called `"andrew"`, and we want to extract the first 
 Try it out below.
 
 ```{r multData1-setup, message = FALSE, echo = FALSE}
-mult_data_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
+mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
 
 mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData1, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 <div id = "multData1-hint">
@@ -753,7 +758,7 @@ I will import the dataset for you, which is a spreadsheet that looks exactly lik
 ![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/BromanWoo2018_Fig2b.jpg?raw=true){width="80%"}
 
 ```{r non_rect-setup, message = FALSE, echo = FALSE}
-csv_url <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Fig2b_BromanWoo2018.csv")
+csv_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Fig2b_BromanWoo2018.csv")
 
 non_rect <- read.csv(text = csv_url)
 ```
@@ -765,6 +770,11 @@ You can also see what happens when you start a variable name with a number: R au
 So, never start variable names with numbers!
 
 ```{r non_rect, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 The second spreadsheet row includes variables names, but R interprets them as real data, which is a mix of character strings and `NA`s.
@@ -799,10 +809,10 @@ In order to keep datasets rectangular, sometimes you have to divide them up into
 For example, let's load two published datasets from Du et al. (2019).
 
 ```{r relate_data-setup, message = FALSE, echo = FALSE}
-csv_url_iso <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
+csv_url_iso <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
 iso <- read.csv(text = csv_url_iso)
 
-csv_url_abund <- RCurl::getURLContent("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
+csv_url_abund <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
 abund <- read.csv(text = csv_url_abund, row.names = 1)
 ```
 
@@ -811,6 +821,11 @@ abund <- read.csv(text = csv_url_abund, row.names = 1)
 Use `head()` to see what these datasets are like.
 
 ```{r relate_data, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 You can see that these two datasets share two variables that link them together: `iso$member` is the column names for `abund`, and `iso$taxon` is the row names for `abund`.
@@ -836,16 +851,19 @@ Subset out the enamel isotope measurements (`d13C`) for Aepycerotini and Sidi Ha
 (I have kept the datasets loaded for you.)
 
 ```{r relate_data_example-setup, echo = FALSE, message = FALSE}
-require(RCurl)
-
-csv_url_iso <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
+csv_url_iso <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
 iso <- read.csv(text = csv_url_iso)
 
-csv_url_abund <- getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
+csv_url_abund <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_abundances.csv")
 abund <- read.csv(text = csv_url_abund, row.names = 1)
 ```
 
 ```{r relate_data_example, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 <div id = "relate_data_example-hint">
