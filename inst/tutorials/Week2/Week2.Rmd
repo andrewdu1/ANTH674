@@ -602,7 +602,7 @@ Click "Hint" if you're stuck.
 
 We can also use `substr()` and `nchar()` to remove the `?` from the `age` column.
 We can figure out which element has the `?` using `grep()` or `grepl()`.
-**NB:** finding question marks using `grep()` or `grepl()` is slightly complicated: you have to use `"//?"` instead of `"?"`.
+**NB:** finding question marks using `grep()` or `grepl()` is slightly complicated: you have to use `"\\?"` instead of `"?"`.
 
 The `5; 6` in column `height` can be split using `strsplit()`, though I won't go into the details of how to do this (you can look at the help file and try it out yourself if you'd like).
 The trickier part is what to do with the `5` and `6`.
