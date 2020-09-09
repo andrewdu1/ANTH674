@@ -242,7 +242,7 @@ FYI, *Paranthropus* is a hominin genus that looks like this:
 The vector is called `paran`.
 Get a feel for it in the console below.
 
-```{r discrete-setup, echo = FALSE}
+```{r discrete-setup}
 paran <- c(rep(0, 33), rep(1, 4), 2:7, 10, 16, 17, 21, 33, 34, 120)
 ```
 
