@@ -95,7 +95,7 @@ This is done using the `barplot()` function.
 For its first argument, this function needs a vector of numbers describing the height of each bar.
 Try entering a vector of numbers (e.g., `1:10`) into `barplot()` and see what happens.
 
-```{r hair_bar-setup, echo = FALSE}
+```{r hair_bar-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
 hair_color <- rep(names(hair_color), hair_color)
 hair_color <- as.factor(hair_color)
@@ -164,7 +164,7 @@ So, hair color could be ordered as `Blond`, `Red`, `Brown`, `Black`.
 Let's look at our `hair_color` vector of hair colors again.
 We can use the `levels()` function to see what the factor levels are and what order they're in.
 
-```{r hair_order-setup, echo = FALSE}
+```{r hair_order-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
 hair_color <- rep(names(hair_color), hair_color)
 hair_color <- as.factor(hair_color)
@@ -505,7 +505,7 @@ First use the `table()` function on `hair_color` and then use the `which.max()` 
 This is the mode!
 Give this a try below.
 
-```{r mode-setup, echo = FALSE}
+```{r mode-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
 hair_color <- rep(names(hair_color), hair_color)
 hair_color <- as.factor(hair_color)
@@ -521,7 +521,7 @@ The proper statistic here is the median, and the corresponding R function is `me
 We will work with the `hair_color` dataset again, but this time with the factor levels reordered according to hair color darkness as before.
 I have done this for you already, and the vector is called `hair.color_ordered`.
 
-```{r median-setup, echo = FALSE}
+```{r median-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
 hair_color <- rep(names(hair_color), hair_color)
 hair_color <- as.factor(hair_color)
@@ -651,7 +651,7 @@ Nevertheless, I will go over here how to calculate one famous information measur
 Shannon's index calculates how much "surprise" there is in some piece of information.
 For example, let's say we tabulated how many times each word appears in a novel, and this was the result:
 
-```{r, echo = FALSE}
+```{r}
 barplot(c(100, rep(1, 19)))
 ```
 
@@ -660,7 +660,7 @@ Likewise, there is not much variation in the distribution, as it is pretty much 
 
 Now look at this distribution:
 
-```{r, echo = FALSE}
+```{r}
 barplot(rep(20, 20))
 ```
 
@@ -700,7 +700,7 @@ As before, first convert the factor levels into numeric data.
 Then use `IQR()` on the vector.
 What do you get?
 
-```{r iqr-setup, echo = FALSE}
+```{r iqr-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
 hair_color <- rep(names(hair_color), hair_color)
 hair_color <- as.factor(hair_color)
@@ -831,7 +831,7 @@ The same is true of morphological traits (e.g., hominin brain size, primate femu
 Below, I have created a vector called `pop_size` that contains a population that grows by 10% every year, starting from 50 individuals.
 Let's see how the population has increased by entering `plot(1:50, pop_size)`.
 
-```{r pop-setup, echo = FALSE}
+```{r pop-setup}
 pop_size <- numeric(50)
 
 pop_size[1] <- 50
