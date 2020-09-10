@@ -88,6 +88,11 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r hair, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 To portray a distribution of categorical variables, we use a bar plot, which visualizes the number of data points within each category.
@@ -102,6 +107,11 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r hair_bar, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 For `hair_color`, we want a vector of the number of students in each hair color category.
@@ -172,6 +182,10 @@ hair_color <- as.factor(hair_color)
 
 ```{r hair_order, exercise = TRUE}
 # Click solution button for reordering factor levels
+#
+#
+#
+#
 ```
 
 ```{r hair_order-solution}
@@ -201,6 +215,10 @@ hair.color_sex <- apply(HairEyeColor, c(1, 3), sum)
 
 ```{r two_var, exercise = TRUE}
 # Click solution button to see how to create a side-by-side bar plot with a legend & with variables flipped
+#
+#
+#
+#
 ```
 
 ```{r two_var-solution}
@@ -247,6 +265,11 @@ paran <- c(rep(0, 33), rep(1, 4), 2:7, 10, 16, 17, 21, 33, 34, 120)
 ```
 
 ```{r discrete, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 A line plot is a great way for portraying the distribution of discrete data.
@@ -512,6 +535,11 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r mode, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 ## Location: ordinal
@@ -530,6 +558,11 @@ hair.color_ordered <- ordered(hair_color, levels = c("Blond", "Red", "Brown", "B
 ```
 
 ```{r median, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 To calculate the median, we need to convert hair color (which is a factor class) into a numeric class (do you remember how to do this?).
@@ -686,6 +719,11 @@ surprise <- rep(20, 20)
 ```
 
 ```{r shan, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 The index is difficult to interpret on its own and is most useful for comparing spread among categorical distributions.
@@ -709,6 +747,11 @@ hair.color_ordered <- ordered(hair_color, levels = c("Blond", "Red", "Brown", "B
 ```
 
 ```{r iqr, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 We see the answer is `1`, meaning the center 50% of our ordered data encompasses one "step" in hair color.
@@ -840,6 +883,11 @@ for(i in seq_along(pop_size)[-1]) pop_size[i] <- ceiling(pop_size[i - 1] * 1.1)
 ```
 
 ```{r pop, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 You can see that a 10% increase per year has resulted in exponential growth.
