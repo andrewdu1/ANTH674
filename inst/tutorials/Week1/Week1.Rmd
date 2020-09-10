@@ -187,8 +187,8 @@ What do you get when you enter `y` on the next line?
 ```
 
 ```{r exer1-solution}
-xx is 25.
-y is "a".
+# xx is 25.
+# y is "a".
 ```
 
 
