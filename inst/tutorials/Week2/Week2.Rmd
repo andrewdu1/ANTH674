@@ -273,6 +273,11 @@ x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep(
 Enter `x` below.
 
 ```{r zebra, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 You can see that `x` is a vector of factors with five different levels: "elephant" spelled one way and "zebra" spelled four different ways.
