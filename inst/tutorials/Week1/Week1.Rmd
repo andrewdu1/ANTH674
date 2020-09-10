@@ -475,6 +475,11 @@ data(iris)
 ```
 
 ```{r names, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 The row names here are not very interesting, as they're just counting/indexing the specimens as you go from top to bottom.
@@ -640,6 +645,10 @@ data(mtcars)
 
 ```{r exer4, exercise = TRUE}
 # You can click the "Solution" button for the answers when you're done.
+#
+#
+#
+#
 ```
 
 ```{r exer4-solution}
