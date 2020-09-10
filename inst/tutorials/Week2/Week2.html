@@ -195,10 +195,17 @@ $(document).ready(function () {
 <h2>Combining rows and columns</h2>
 <p>During data wrangling, not only are we interested in subsetting out rows and columns, but we might be interested in adding rows and columns.</p>
 <p>For example, let’s imagine that the <code>mtcars</code> dataset did not include <code>wt</code>, but instead weight data was located in another dataset. I’ve simulated this situation for you by creating a new dataframe called <code>mtcars_no_wt</code>, which has all the original <code>mtcars</code> variables except for <code>wt</code>. I’ve also created a new vector, <code>car_wt</code>, which has all the weights from <code>mtcars</code>.</p>
-<pre class="r"><code>mtcars_no_wt &lt;- subset(mtcars, select = -wt)
+<div class="tutorial-exercise-support" data-label="mtcars_no_wt-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>mtcars_no_wt &lt;- subset(mtcars, select = -wt)
 car_wt &lt;- mtcars$wt</code></pre>
+</div>
 <p>Let’s say we wanted to take our car weight data from <code>car_wt</code> and add it as a new column/variable to <code>mtcars_no_wt</code>. <em>As long as</em> <code>length(car_wt)</code> <em>equals the number of rows in</em> <code>mtcars_no_wt</code> (i.e., <code>length(car_wt) == nrow(mtcars_no_wt)</code>), we can use <code>cbind()</code> to combine <code>car_wt</code> with the columns in <code>mtcars_no_wt</code>. This is done with <code>cbind(mtcars_no_wt, car_wt)</code>. Try it out below.</p>
 <div class="tutorial-exercise" data-label="mtcars_no_wt" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p><code>cbind()</code> doesn’t only have to be used for combining a vector with a dataframe, it can also be used to combine multiple dataframes or a matrix with a dataframe, as long as they all have the same number of rows. Just for fun, try combining <code>mtcars</code> with itself using <code>cbind(mtcars, mtcars)</code> and see what happens.</p>
@@ -263,7 +270,15 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div id="section-subsetting-unique-elements" class="section level3">
 <h3>Subsetting unique elements</h3>
 <p>We can use the <code>unique()</code> function to get out the unique elements in our vector (this function works for numbers too). Wrapping <code>sort()</code> around <code>unique()</code>, i.e., <code>sort(unique())</code>, will bring up the unique elements in alphabetical order. <code>table()</code> is another useful function which tabulates and counts unique elements. Try these functions out below.</p>
+<div class="tutorial-exercise-support" data-label="uniq-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>x &lt;- factor(c(rep(&quot;zebra&quot;, 10), rep(&quot;Zebra&quot;, 6), rep(&quot;zebra &quot;, 2), &quot;zEbra&quot;, rep(&quot;elephant&quot;, 10)))</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="uniq" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>A nice was of detecting pesky spaces is to transform your factor levels into characters. Do this using <code>as.character()</code> (with long vectors, it’s easier on the eye to look at unique elements only by wrapping <code>as.character()</code> around <code>unique()</code>, i.e., <code>as.character(unique())</code>). Try this out above.</p>
@@ -273,7 +288,15 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <h3>Standardizing different names</h3>
 <p>Your best friends here are the <code>grep()</code> and <code>grepl()</code> functions. <code>grep()</code> returns the indexes of elements whose names match some specified pattern. <code>grepl()</code> does the same but returns a logical vector of <code>TRUE</code> and <code>FALSE</code>, where <code>TRUE</code> indicates matches to the specified pattern.</p>
 <p>Let’s try this out below. We want to subset all the different iterations of “zebra” in <code>x</code>. Thus, we would enter <code>grep("zebra", x, ignore.case = TRUE)</code>, where the first argument is the pattern to be matched against, the second argument is the vector to be investigated, and <code>ignore.case</code> indicates whether pattern matching is case sensitive.</p>
+<div class="tutorial-exercise-support" data-label="grep-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>x &lt;- factor(c(rep(&quot;zebra&quot;, 10), rep(&quot;Zebra&quot;, 6), rep(&quot;zebra &quot;, 2), &quot;zEbra&quot;, rep(&quot;elephant&quot;, 10)))</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="grep" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div id="section-grep-hint">
@@ -288,7 +311,15 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <h3>Standardizing names to a new one</h3>
 <p>What if we wanted to standardize our species names to be capitalized (i.e., <code>Zebra</code> and <code>Elephant</code>)? This is straightforward for “zebra” because there is already a capitalized <code>Zebra</code> in <code>x</code>, but there is no capitalized <code>Elephant</code> in our vector. This is where the factor class of <code>x</code> can be a bit annoying.</p>
 <p>Let’s revisit our original <code>x</code> vector. Try to replace <code>elephant</code> with <code>Elephant</code>. What happens?</p>
+<div class="tutorial-exercise-support" data-label="new-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>x &lt;- factor(c(rep(&quot;zebra&quot;, 10), rep(&quot;Zebra&quot;, 6), rep(&quot;zebra &quot;, 2), &quot;zEbra&quot;, rep(&quot;elephant&quot;, 10)))</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="new" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>R returns a warning message, saying <code>invalid factor level, NA generated</code>. This warning is basically saying that <code>Elephant</code> as a factor level is invalid because no such level exists in <code>x</code>, so it replaced <code>elephant</code> with <code>NA</code>s. Not good (this is also why it’s a good idea to save modified vectors as new ones, e.g., <code>x1</code>, in case something goes wrong)!</p>
@@ -302,8 +333,15 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div id="section-detecting-nas" class="section level3">
 <h3>Detecting <code>NA</code>s</h3>
 <p>R is great at handling <code>NA</code>s. For example, below is a dataframe (<code>DF</code>) with two columns of numbers, some of which have <code>NA</code>s. I have created <code>DF</code> for you.</p>
-<pre class="r"><code>DF &lt;- data.frame(x = c(1, NA, 3, 6, 10, NA, -2), y = c(NA, NA, 2, 5, 14, 3, 1))</code></pre>
+<div class="tutorial-exercise-support" data-label="NAs-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>DF &lt;- data.frame(x = c(1, NA, 3, 6, 10, NA, -2), y = c(NA, NA, 2, 5, 14, 3, 1))</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="NAs" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div id="section-NAs-hint">
@@ -319,7 +357,16 @@ iris.sepal_setosa_ordered1 &lt;- cbind(iris.sepal_setosa_ordered, Sepal.Area)</c
 <div id="section-functions" class="section level3">
 <h3>Functions</h3>
 <p>Many functions have an argument <code>na.rm</code> that will remove <code>NA</code>s if <code>TRUE</code>. For example, enter <code>mean(x_df, na.rm = TRUE)</code> to calculate the mean of <code>x_df</code> with <code>NA</code>s removed. What happens when you set <code>na.rm = FALSE</code> (the default)?</p>
+<div class="tutorial-exercise-support" data-label="NA_mean-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>DF &lt;- data.frame(x = c(1, NA, 3, 6, 10, NA, -2), y = c(NA, NA, 2, 5, 14, 3, 1))
+x_df &lt;- DF[, 1]</code></pre>
+</div>
 <div class="tutorial-exercise" data-label="NA_mean" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>This result is good because you always want to be in control of your data and analyses. That is, you don’t want R using a function on data that has <code>NA</code>s you don’t know about. It’s better for R to return <code>NA</code> as the default, and make you actively ignore <code>NA</code>s by setting <code>na.rm = TRUE</code>.</p>

@@ -186,6 +186,11 @@ This is done with `cbind(mtcars_no_wt, car_wt)`.
 Try it out below.
 
 ```{r mtcars_no_wt, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 `cbind()` doesn't only have to be used for combining a vector with a dataframe, it can also be used to combine multiple dataframes or a matrix with a dataframe, as long as they all have the same number of rows.
@@ -295,6 +300,11 @@ x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep(
 ```
 
 ```{r uniq, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 A nice was of detecting pesky spaces is to transform your factor levels into characters.
@@ -319,6 +329,11 @@ x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep(
 ```
 
 ```{r grep, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 <div id = "grep-hint">
@@ -355,6 +370,11 @@ x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep(
 ```
 
 ```{r new, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 R returns a warning message, saying `invalid factor level, NA generated`.
@@ -386,6 +406,11 @@ DF <- data.frame(x = c(1, NA, 3, 6, 10, NA, -2), y = c(NA, NA, 2, 5, 14, 3, 1))
 ```
 
 ```{r NAs, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 <div id="NAs-hint">
@@ -423,6 +448,11 @@ x_df <- DF[, 1]
 ```
 
 ```{r NA_mean, exercise = TRUE}
+#
+#
+#
+#
+#
 ```
 
 This result is good because you always want to be in control of your data and analyses.
