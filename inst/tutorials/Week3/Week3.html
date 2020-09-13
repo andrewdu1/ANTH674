@@ -336,12 +336,12 @@ barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex)
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>Let’s say we wanted to plot <code>Petal.Length</code> as a function of <code>Species</code>.</p>
-<div id="section-box-plots" class="section level3" data-progressive="TRUE">
+<div id="section-box-plots" class="section level3">
 <h3>Box plots</h3>
 <p>To create a box plot, we use the <code>boxplot()</code> function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R). Think about it as plotting “variable Y” as a function of “variable X”, which translates to <code>y ~ x</code> in R speak. Here, we want to plot <code>Petal.Length</code> as a function of <code>Species</code>, so we enter <code>boxplot(iris$Petal.Length ~ iris$Species)</code>. Try it out above.</p>
 <p>We have our box plot! Now let’s say that we wanted the categorical variable on the y-axis instead because that’s our dependent variable (we’ll learn more about independent and dependent variables when we cover linear models). So basically, we want to flip the variables on the x- and y-axes. This is easy to do in R: you just add an argument <code>horizontal = TRUE</code>. Try it out above.</p>
 </div>
-<div id="section-violin-plots" class="section level3" data-progressive="TRUE">
+<div id="section-violin-plots" class="section level3">
 <h3>Violin plots</h3>
 <p>Violin plots are a relatively new phenomenon, and many researchers prefer it over box plots, as they think violins are more informative. R does not have a built-in function for creating violin plots, so we need to install a package to create them. We will install the <code>vioplot</code> package using <code>install.packages("vioplot", dep = TRUE)</code>. You need to do this in the RStudio console, not the tutorial. Take a moment to do so now.</p>
 <p>Once the package is installed, load it using the <code>library()</code> function below, i.e., <code>library(vioplot)</code>.</p>
@@ -350,7 +350,7 @@ barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex)
 </div>
 <p>Now you can make violin plots using the same exact code as box plots. Try entering <code>vioplot(iris$Petal.Length ~ iris$Species)</code> above. The <code>horizontal = TRUE</code> argument works for this function as well.</p>
 </div>
-<div id="section-density-plots" class="section level3" data-progressive="TRUE">
+<div id="section-density-plots" class="section level3">
 <h3>Density plots</h3>
 <p>You have already learned how to plot one distribution of values using <code>density()</code>. Now, we will learn how to plot three. In R, you have to plot each curve separately. This gives you more control over how each curve is plotted (e.g., its line type, color, thickness).</p>
 <p>First, plot the density of <code>Petal.Length</code> for one species (pick whichever one you want! Do you remember how to subset out <code>Petal.Length</code> for one species only?). Enter in the subsetted <code>Petal.Length</code> into <code>plot(density())</code> below.</p>
@@ -383,7 +383,7 @@ legend(&quot;topright&quot;, legend = unique(iris$Species), lty = c(1, 1, 1), co
 # legend(&quot;topright&quot;, legend = unique(iris$Species), lty = c(1, 2, 3)) # using lty</code></pre>
 </div>
 </div>
-<div id="section-creating-a-legend" class="section level3" data-progressive="TRUE">
+<div id="section-creating-a-legend" class="section level3">
 <h3>Creating a legend</h3>
 <p>Now we want to add a legend, so the audience knows which color/line type corresponds to which species. We do so using the <code>legend()</code> function after the plot has been created. The arguments for this function can be broken down into three general parts:</p>
 <ol style="list-style-type: decimal">

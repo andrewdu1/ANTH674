@@ -318,7 +318,7 @@ Use `head()` to remind yourself what the variables are.
 
 Let's say we wanted to plot `Petal.Length` as a function of `Species`.
 
-### Box plots {data-progressive=TRUE}
+### Box plots
 
 To create a box plot, we use the `boxplot()` function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R).
 Think about it as plotting "variable Y" as a function of "variable X", which translates to `y ~ x` in R speak.
@@ -331,7 +331,7 @@ So basically, we want to flip the variables on the x- and y-axes.
 This is easy to do in R: you just add an argument `horizontal = TRUE`.
 Try it out above.
 
-### Violin plots {data-progressive=TRUE}
+### Violin plots
 
 Violin plots are a relatively new phenomenon, and many researchers prefer it over box plots, as they think violins are more informative.
 R does not have a built-in function for creating violin plots, so we need to install a package to create them.
@@ -348,7 +348,7 @@ Now you can make violin plots using the same exact code as box plots.
 Try entering `vioplot(iris$Petal.Length ~ iris$Species)` above.
 The `horizontal = TRUE` argument works for this function as well.
 
-### Density plots {data-progressive=TRUE}
+### Density plots
 
 You have already learned how to plot one distribution of values using `density()`.
 Now, we will learn how to plot three.
@@ -405,7 +405,7 @@ legend("topright", legend = unique(iris$Species), lty = c(1, 1, 1), col = c("bla
 # legend("topright", legend = unique(iris$Species), lty = c(1, 2, 3)) # using lty
 ```
 
-### Creating a legend {data-progressive=TRUE}
+### Creating a legend
 
 Now we want to add a legend, so the audience knows which color/line type corresponds to which species.
 We do so using the `legend()` function after the plot has been created.
