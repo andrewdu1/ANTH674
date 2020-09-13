@@ -318,7 +318,7 @@ Use `head()` to remind yourself what the variables are.
 
 Let's say we wanted to plot `Petal.Length` as a function of `Species`.
 
-### Box plots
+### Box plots {data-progressive=TRUE}
 
 To create a box plot, we use the `boxplot()` function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R).
 Think about it as plotting "variable Y" as a function of "variable X", which translates to `y ~ x` in R speak.
@@ -331,7 +331,7 @@ So basically, we want to flip the variables on the x- and y-axes.
 This is easy to do in R: you just add an argument `horizontal = TRUE`.
 Try it out above.
 
-### Violin plots
+### Violin plots {data-progressive=TRUE}
 
 Violin plots are a relatively new phenomenon, and many researchers prefer it over box plots, as they think violins are more informative.
 R does not have a built-in function for creating violin plots, so we need to install a package to create them.
@@ -348,7 +348,7 @@ Now you can make violin plots using the same exact code as box plots.
 Try entering `vioplot(iris$Petal.Length ~ iris$Species)` above.
 The `horizontal = TRUE` argument works for this function as well.
 
-### Density plots
+### Density plots {data-progressive=TRUE}
 
 You have already learned how to plot one distribution of values using `density()`.
 Now, we will learn how to plot three.
@@ -377,7 +377,7 @@ So, we want to enter subsetted `Petal.Length` for the second species using `line
 Try using `col = "blue"` for a blue curve or `lty = 2` for a dashed line.
 Here's how different `lty` numbers correspond to different line types.
 
-![](https://lh3.googleusercontent.com/proxy/-4zoJHoMtHw8MK2BpLGgi7wATHMNh7-LJcdZhK-_nK_ebCCoPBiqJBRrQtlo78zfNDq-Q0eoEIVSPcZPEieY7mSjgM3z1C5BC6Gz2cIpIHxMNbPWQptujuJ3U4M5GYEC2Gbd){width="50%"}
+![](http://www.sthda.com/sthda/RDoc/figure/graphs/linetypes-in-r-line-types.png){width="50%"}
 
 Now finish adding the third curve for the last species.
 Try out different colors and line types to see how they work (you can even use them in combination, e.g., a dashed, blue curve).
@@ -405,7 +405,7 @@ legend("topright", legend = unique(iris$Species), lty = c(1, 1, 1), col = c("bla
 # legend("topright", legend = unique(iris$Species), lty = c(1, 2, 3)) # using lty
 ```
 
-### Creating a legend
+### Creating a legend {data-progressive=TRUE}
 
 Now we want to add a legend, so the audience knows which color/line type corresponds to which species.
 We do so using the `legend()` function after the plot has been created.
@@ -684,7 +684,7 @@ Nevertheless, I will go over here how to calculate one famous information measur
 Shannon's index calculates how much "surprise" there is in some piece of information.
 For example, let's say we tabulated how many times each word appears in a novel, and this was the result:
 
-```{r}
+```{r, echo = FALSE}
 barplot(c(100, rep(1, 19)))
 ```
 
@@ -693,7 +693,7 @@ Likewise, there is not much variation in the distribution, as it is pretty much 
 
 Now look at this distribution:
 
-```{r}
+```{r, echo = FALSE}
 barplot(rep(20, 20))
 ```
 

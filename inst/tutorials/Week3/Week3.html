@@ -336,12 +336,12 @@ barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex)
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <p>Let’s say we wanted to plot <code>Petal.Length</code> as a function of <code>Species</code>.</p>
-<div id="section-box-plots" class="section level3">
+<div id="section-box-plots" class="section level3" data-progressive="TRUE">
 <h3>Box plots</h3>
 <p>To create a box plot, we use the <code>boxplot()</code> function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R). Think about it as plotting “variable Y” as a function of “variable X”, which translates to <code>y ~ x</code> in R speak. Here, we want to plot <code>Petal.Length</code> as a function of <code>Species</code>, so we enter <code>boxplot(iris$Petal.Length ~ iris$Species)</code>. Try it out above.</p>
 <p>We have our box plot! Now let’s say that we wanted the categorical variable on the y-axis instead because that’s our dependent variable (we’ll learn more about independent and dependent variables when we cover linear models). So basically, we want to flip the variables on the x- and y-axes. This is easy to do in R: you just add an argument <code>horizontal = TRUE</code>. Try it out above.</p>
 </div>
-<div id="section-violin-plots" class="section level3">
+<div id="section-violin-plots" class="section level3" data-progressive="TRUE">
 <h3>Violin plots</h3>
 <p>Violin plots are a relatively new phenomenon, and many researchers prefer it over box plots, as they think violins are more informative. R does not have a built-in function for creating violin plots, so we need to install a package to create them. We will install the <code>vioplot</code> package using <code>install.packages("vioplot", dep = TRUE)</code>. You need to do this in the RStudio console, not the tutorial. Take a moment to do so now.</p>
 <p>Once the package is installed, load it using the <code>library()</code> function below, i.e., <code>library(vioplot)</code>.</p>
@@ -350,7 +350,7 @@ barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex)
 </div>
 <p>Now you can make violin plots using the same exact code as box plots. Try entering <code>vioplot(iris$Petal.Length ~ iris$Species)</code> above. The <code>horizontal = TRUE</code> argument works for this function as well.</p>
 </div>
-<div id="section-density-plots" class="section level3">
+<div id="section-density-plots" class="section level3" data-progressive="TRUE">
 <h3>Density plots</h3>
 <p>You have already learned how to plot one distribution of values using <code>density()</code>. Now, we will learn how to plot three. In R, you have to plot each curve separately. This gives you more control over how each curve is plotted (e.g., its line type, color, thickness).</p>
 <p>First, plot the density of <code>Petal.Length</code> for one species (pick whichever one you want! Do you remember how to subset out <code>Petal.Length</code> for one species only?). Enter in the subsetted <code>Petal.Length</code> into <code>plot(density())</code> below.</p>
@@ -359,7 +359,7 @@ barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex)
 </div>
 <p>You can see that we’re going to run into a problem: if <code>Petal.Length</code> for other species is very different, there’s no room to plot them! Therefore, we need to change the range of values on our x-axis with the <code>xlim</code> argument (to change the range of values on the y-axis, you use <code>ylim</code>). We want to set this equal to the minimum and maximum value of <code>Petal.Length</code> across all species. Sure, we can look at the <code>Petal.Length</code> vector and visually pick out the smallest and largest value, but we should automate everything now that we’re R coders. The relevant functions for extracting the minimum and maximum values in a vector are <code>min()</code> and <code>max()</code>, or <code>range()</code> will give us both values simultaneously. Now we’re ready to set <code>xlim</code> equal to a vector of two elements: the minimum and maximum values. Can you figure out how to do this?</p>
 <p>Now we need to add the curves for the other two species. Whenever we want to add points or lines to a plot, we use the <code>points()</code> or <code>lines()</code> functions. Here we want to use <code>lines()</code> because we’re plotting curves. Make sure to make the lines a different color (e.g., red, blue) or type (e.g., dotted, dashed) to differentiate the curves (using the <code>col</code> and <code>lty</code> arguments). So, we want to enter subsetted <code>Petal.Length</code> for the second species using <code>lines(density())</code>. Try using <code>col = "blue"</code> for a blue curve or <code>lty = 2</code> for a dashed line. Here’s how different <code>lty</code> numbers correspond to different line types.</p>
-<p><img src="https://lh3.googleusercontent.com/proxy/-4zoJHoMtHw8MK2BpLGgi7wATHMNh7-LJcdZhK-_nK_ebCCoPBiqJBRrQtlo78zfNDq-Q0eoEIVSPcZPEieY7mSjgM3z1C5BC6Gz2cIpIHxMNbPWQptujuJ3U4M5GYEC2Gbd" style="width:50.0%" /></p>
+<p><img src="http://www.sthda.com/sthda/RDoc/figure/graphs/linetypes-in-r-line-types.png" style="width:50.0%" /></p>
 <p>Now finish adding the third curve for the last species. Try out different colors and line types to see how they work (you can even use them in combination, e.g., a dashed, blue curve). You can also use the <code>lwd</code> argument to change the line thickness (e.g., <code>lwd = 2</code> will make the line twice as thick, whereas <code>lwd = 0.5</code> will make it half as thick).</p>
 <div class="tutorial-exercise" data-label="dens3" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code># Click the &quot;Solution&quot; button to see how to create the density plot and legend</code></pre>
@@ -383,7 +383,7 @@ legend(&quot;topright&quot;, legend = unique(iris$Species), lty = c(1, 1, 1), co
 # legend(&quot;topright&quot;, legend = unique(iris$Species), lty = c(1, 2, 3)) # using lty</code></pre>
 </div>
 </div>
-<div id="section-creating-a-legend" class="section level3">
+<div id="section-creating-a-legend" class="section level3" data-progressive="TRUE">
 <h3>Creating a legend</h3>
 <p>Now we want to add a legend, so the audience knows which color/line type corresponds to which species. We do so using the <code>legend()</code> function after the plot has been created. The arguments for this function can be broken down into three general parts:</p>
 <ol style="list-style-type: decimal">
@@ -533,11 +533,9 @@ hair.color_ordered &lt;- ordered(hair_color, levels = c(&quot;Blond&quot;, &quot
 <h2>Spread: categorical</h2>
 <p>For these types of data, we use information measures, though researchers rarely calculate a summary statistic of spread for categorical data. Perhaps the most straightforward way to see how much variation there is in categorical data is just to create a bar plot. Nevertheless, I will go over here how to calculate one famous information measure: Shannon’s index.</p>
 <p>Shannon’s index calculates how much “surprise” there is in some piece of information. For example, let’s say we tabulated how many times each word appears in a novel, and this was the result:</p>
-<pre class="r"><code>barplot(c(100, rep(1, 19)))</code></pre>
 <p><img src="Week3_files/figure-html/unnamed-chunk-2-1.png" width="624" /></p>
 <p>We see one word is used far more often than others, so we can predict quite confidently what a randomly selected word would be (i.e., not much “surprise” here). Likewise, there is not much variation in the distribution, as it is pretty much all one word.</p>
 <p>Now look at this distribution:</p>
-<pre class="r"><code>barplot(rep(20, 20))</code></pre>
 <p><img src="Week3_files/figure-html/unnamed-chunk-3-1.png" width="624" /></p>
 <p>This distribution has much more “surprise” as it would be more difficult to predict what a randomly selected word would be. Likewise, there is much more variation in the data.</p>
 <p>This is the general thinking behind using information measures to quantify spread in categorical data.</p>
@@ -928,7 +926,7 @@ output$`tutorial-exercise-exer2-output` <- renderUI({
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37]}},"value":[{"type":"character","attributes":{},"value":["backports","base","compiler","datasets","digest","evaluate","fastmap","graphics","grDevices","highr","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["1.1.9","4.0.2","4.0.2","4.0.2","0.6.25","0.14","1.0.1","4.0.2","4.0.2","0.8","0.5.0","1.5.1","1.5.4","1.7.1","1.29","1.1.0.1","0.10.1","1.5","1.1","4.0.2","0.9","1.1.1","2.4.1","1.0.5","0.4.7","2.3","1.3-2","1.5.0","4.0.2","1.4.6","1.4.0","4.0.2","4.0.2","2.2.0","0.16","1.8-4","2.2.1"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37]}},"value":[{"type":"character","attributes":{},"value":["backports","base","compiler","datasets","digest","evaluate","fastmap","graphics","grDevices","highr","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["1.1.7","4.0.2","4.0.2","4.0.2","0.6.25","0.14","1.0.1","4.0.2","4.0.2","0.8","0.5.0","1.5.1","1.5.4","1.7.0","1.29","1.1.0.1","0.10.1","1.5","1.1","4.0.2","0.9","1.1.1","2.4.1","1.0.5","0.4.7","2.3","1.3-2","1.5.0","4.0.2","1.4.6","1.4.0","4.0.2","4.0.2","2.2.0","0.16","1.8-4","2.2.1"]}]}]}
 </script>
 <!--/html_preserve-->
 </div>
