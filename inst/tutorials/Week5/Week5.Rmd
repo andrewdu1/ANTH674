@@ -285,7 +285,7 @@ lm.res <- lm(y ~ x)
 
 **NB:** extrapolation can be dangerous if the linear regression form does not extend outside the range of your data.
 
-![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Interpolation%20extrapolation.jpg?raw=true){width="70%"}
+![](https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Interpolation%20extrapolation.jpg){width="70%"}
 
 How do we know if the linear relationship can be extrapolated?
 This is where theory, an expert knowledge of the patterns and processes involved, and other studies help.
