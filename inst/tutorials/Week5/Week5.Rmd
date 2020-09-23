@@ -182,7 +182,7 @@ They can be thought of as the signal in the DV not accounted for by the IV.
 This noise is attributed to unmeasured factors not incorporated into your model (i.e., as you incorporate more IVs that can explain more of the noise, the magnitude of your residuals will decrease).
 
 `lm.res$residuals` returns a vector of residuals for each of our observed DV data points.
-If you plot the IV and DV with the estimated regression line, you can see which points are far above the line (large positive residuals), which are far below (small positive residuals), and which are close to the line (small residuals).
+If you plot the IV and DV with the estimated regression line, you can see which points are far above the line (large positive residuals), which are far below (large negative residuals), and which are close to the line (small residuals).
 You can compare these points to the residuals from `lm.res$residuals`, keeping in mind that the residuals are in the same order as your IV and DV.
 
 We can further illustrate that the residuals are indeed the difference between each observed DV and the predicted values.
