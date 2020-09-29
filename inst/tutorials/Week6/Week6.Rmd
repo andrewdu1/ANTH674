@@ -13,7 +13,9 @@ library(knitr)
 
 knitr::opts_chunk$set(echo = TRUE)
 
-library(Hmisc)
+require(Hmisc)
+require(gstat)
+require(sp)
 ```
 
 # **Week 6:** Statistical inferential goals
@@ -549,9 +551,9 @@ Two common methods used for cross-validation are the **holdout method** and ***k
 *k*-fold cross-validation is basically the holdout method repeated *k* times (i.e., with a `for()` loop), so we will learn cross-validation using the simpler (but still effective) holdout method.
 
 To learn how to cross-validate, we're going to practice on the spatially autocorrelated raster I used in lecture.
-The code for this is below and is adapted [from this site](https://gwenantell.com/exploring-spatial-autocorrelation-in-r/) (you will need to install the `gstat` and `sp` packages first, using `install.packages()`).
+The code for this is adapted [from this site](https://gwenantell.com/exploring-spatial-autocorrelation-in-r/) (you will need to install the `gstat` and `sp` packages first, using `install.packages()`).
 
-```{r message = FALSE, results = "hide"}
+```{r ac-setup}
 # create empty dataframe for coordinates of 50x50 grid
 gridDim <- 50
 xy <- expand.grid(x = 1:gridDim, y = 1:gridDim)
@@ -581,23 +583,51 @@ DV_AC <- IV_AC + noise_AC + rnorm(length(noise_AC))
 
 # combine IV and DV into one dataframe
 AC <- data.frame(x = xyz_AC$x, y = xyz_AC$y, IV = IV_AC, DV = DV_AC)
-
-# prepare dataframe for plotting
-xyz_AC1 <- xyz_AC
-xyz_AC1$sim1 <- DV_AC
-
-library(sp)
-# grid spatial data
-gridded(xyz_AC1) = ~x + y
 ```
 
 This is what the DV looks like:
 
-```{r}
+```{r echo = FALSE, results = "hide"}
+# create empty dataframe for coordinates of 50x50 grid
+gridDim <- 50
+xy <- expand.grid(x = 1:gridDim, y = 1:gridDim)
+
+# create variogram model, using exponential decay, with defined sill and range
+varioMod_AC <- vgm(psill = 0.05, range = 10, model = "Exp")
+
+# create an additional variable from simple kriging
+zDummy_AC <- gstat(formula = z ~ 1, locations = ~x + y, dummy = TRUE, beta = 1, model = varioMod_AC, nmax = 20)
+
+# simulate autocorrelated variable, which will be our spatially autocorrelated noise
+set.seed(3)
+xyz_AC <- predict(zDummy_AC, newdata = xy, nsim = 1)
+
+# scale noise and multiply by 5 (sd = 5) to create more noise 
+noise_AC <- scale(xyz_AC$sim1)[, 1] * 5
+
+# create IV as random uniform variable with max = 10.
+# Need to sort so it matches the rows of xyz_AC, which are pretty much spatially ordered
+set.seed(101)
+IV_AC <- sort(runif(length(noise_AC), max = 10))
+
+# create DV with slope = 1, intercept = 0 as: IV + spatially autocorrelated noise + some white noise (random normal variable with mean = 0, sd = 1)
+set.seed(101)
+DV_AC <- IV_AC + noise_AC + rnorm(length(noise_AC))
+
+# combine IV and DV into one dataframe
+AC <- data.frame(x = xyz_AC$x, y = xyz_AC$y, IV = IV_AC, DV = DV_AC)
+# prepare dataframe for plotting
+xyz_AC1 <- xyz_AC
+xyz_AC1$sim1 <- DV_AC
+
+# grid spatial data
+gridded(xyz_AC1) = ~x + y
+
 spplot(xyz_AC1[1], scales = list(draw = TRUE))
 ```
 
 The IV and DV are in a dataframe called `AC`, which also has the x and y coordinates (`x` and `y`, respectively).
+This dataset is preloaded into your console below.
 
 Let's do a 75-25 holdout, where 75% of the dataset is used for training and 25% is used for testing.
 This is typically done by randomly sampling 75% of the data points from one's dataset (with the remaining 25% for testing), but we know from lecture that this strategy is fraught when the data are autocorrelated ([here is a good article illustrating the problem](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1600-0706.2012.00299.x?casa_token=Vy2V1WNu-vUAAAAA:sdMScTkcVfK_YVSuavhZcHSFl-QfeUCDzw_28rpWiMH31g8oyCAEQoZK3cwG5CfAofqRreDsgDUizkVc)).
@@ -613,8 +643,12 @@ Subset out these data for your test dataset, and the remainder will be the train
 You can also compare your calculated $R^2$ and RMSE to those calculated using the training dataset and model.
 Click the "Solution" button if stuck.
 
-```{r ac, exercise = TRUE}
+```{r ac, exercise = TRUE, exercise.setup = "ac-prepare"}
 # click "Solution" button if stuck
+#
+#
+#
+#
 ```
 
 ```{r ac-solution}

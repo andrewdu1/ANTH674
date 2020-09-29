@@ -442,8 +442,9 @@ sum(p.adjust(p.vals, method = &quot;BH&quot;) &lt; 0.05) # 13</code></pre>
 <div id="section-cross-validation" class="section level2">
 <h2>Cross-validation</h2>
 <p>Two common methods used for cross-validation are the <strong>holdout method</strong> and <strong><em>k</em>-fold</strong> cross-validation. <em>k</em>-fold cross-validation is basically the holdout method repeated <em>k</em> times (i.e., with a <code>for()</code> loop), so we will learn cross-validation using the simpler (but still effective) holdout method.</p>
-<p>To learn how to cross-validate, we’re going to practice on the spatially autocorrelated raster I used in lecture. The code for this is below and is adapted <a href="https://gwenantell.com/exploring-spatial-autocorrelation-in-r/">from this site</a> (you will need to install the <code>gstat</code> and <code>sp</code> packages first, using <code>install.packages()</code>).</p>
-<pre class="r"><code># create empty dataframe for coordinates of 50x50 grid
+<p>To learn how to cross-validate, we’re going to practice on the spatially autocorrelated raster I used in lecture. The code for this is adapted <a href="https://gwenantell.com/exploring-spatial-autocorrelation-in-r/">from this site</a> (you will need to install the <code>gstat</code> and <code>sp</code> packages first, using <code>install.packages()</code>).</p>
+<div class="tutorial-exercise-support" data-label="ac-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># create empty dataframe for coordinates of 50x50 grid
 gridDim &lt;- 50
 xy &lt;- expand.grid(x = 1:gridDim, y = 1:gridDim)
 
@@ -471,19 +472,11 @@ set.seed(101)
 DV_AC &lt;- IV_AC + noise_AC + rnorm(length(noise_AC))
 
 # combine IV and DV into one dataframe
-AC &lt;- data.frame(x = xyz_AC$x, y = xyz_AC$y, IV = IV_AC, DV = DV_AC)
-
-# prepare dataframe for plotting
-xyz_AC1 &lt;- xyz_AC
-xyz_AC1$sim1 &lt;- DV_AC
-
-library(sp)
-# grid spatial data
-gridded(xyz_AC1) = ~x + y</code></pre>
+AC &lt;- data.frame(x = xyz_AC$x, y = xyz_AC$y, IV = IV_AC, DV = DV_AC)</code></pre>
+</div>
 <p>This is what the DV looks like:</p>
-<pre class="r"><code>spplot(xyz_AC1[1], scales = list(draw = TRUE))</code></pre>
-<p><img src="Week6_files/figure-html/unnamed-chunk-5-1.png" width="624" /></p>
-<p>The IV and DV are in a dataframe called <code>AC</code>, which also has the x and y coordinates (<code>x</code> and <code>y</code>, respectively).</p>
+<p><img src="Week6_files/figure-html/unnamed-chunk-4-1.png" width="624" /></p>
+<p>The IV and DV are in a dataframe called <code>AC</code>, which also has the x and y coordinates (<code>x</code> and <code>y</code>, respectively). This dataset is preloaded into your console below.</p>
 <p>Let’s do a 75-25 holdout, where 75% of the dataset is used for training and 25% is used for testing. This is typically done by randomly sampling 75% of the data points from one’s dataset (with the remaining 25% for testing), but we know from lecture that this strategy is fraught when the data are autocorrelated (<a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1600-0706.2012.00299.x?casa_token=Vy2V1WNu-vUAAAAA:sdMScTkcVfK_YVSuavhZcHSFl-QfeUCDzw_28rpWiMH31g8oyCAEQoZK3cwG5CfAofqRreDsgDUizkVc">here is a good article illustrating the problem</a>). This is because the underlying autocorrelation structure of the training dataset will be present in the test dataset, thus rendering our model assessment using the test dataset overly optimistic (remember that any new dataset we want to predict on will likely have a different autocorrelation structure). To address this issue with spatial autocorrelation, we want to designate a segregated corner of the map as the test dataset.</p>
 <ol style="list-style-type: decimal">
 <li>Let’s use the bottom-right corner of the dataset (i.e., <code>x &gt;= 25</code> and <code>y &lt;= 25</code>). Subset out these data for your test dataset, and the remainder will be the training dataset.</li>
@@ -493,8 +486,12 @@ gridded(xyz_AC1) = ~x + y</code></pre>
 <li>That’s it! You can also compare your calculated <span class="math inline">\(R^2\)</span> and RMSE to those calculated using the training dataset and model. Click the “Solution” button if stuck.</li>
 </ol>
 <div class="tutorial-exercise" data-label="ac" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
-<pre class="text"><code># click &quot;Solution&quot; button if stuck</code></pre>
-<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+<pre class="text"><code># click &quot;Solution&quot; button if stuck
+#
+#
+#
+#</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.setup":"ac-prepare","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="ac-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
 <pre class="text"><code>test.index &lt;- AC$x &gt;= 25 &amp; AC$y &lt;= 25
@@ -577,7 +574,9 @@ library(knitr)
 
 knitr::opts_chunk$set(echo = TRUE)
 
-library(Hmisc)
+require(Hmisc)
+require(gstat)
+require(sp)
 </script>
  
 <script type="application/shiny-prerendered" data-context="server">
