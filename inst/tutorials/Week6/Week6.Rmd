@@ -643,7 +643,7 @@ Subset out these data for your test dataset, and the remainder will be the train
 You can also compare your calculated $R^2$ and RMSE to those calculated using the training dataset and model.
 Click the "Solution" button if stuck.
 
-```{r ac, exercise = TRUE, exercise.setup = "ac-prepare"}
+```{r ac, exercise = TRUE}
 # click "Solution" button if stuck
 #
 #
