@@ -448,7 +448,6 @@ sum(p.adjust(p.vals, method = &quot;BH&quot;) &lt; 0.05) # 13</code></pre>
 gridDim &lt;- 50
 xy &lt;- expand.grid(x = 1:gridDim, y = 1:gridDim)
 
-library(gstat)
 # create variogram model, using exponential decay, with defined sill and range
 varioMod_AC &lt;- vgm(psill = 0.05, range = 10, model = &quot;Exp&quot;)
 

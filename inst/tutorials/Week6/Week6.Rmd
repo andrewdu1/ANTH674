@@ -558,7 +558,6 @@ The code for this is adapted [from this site](https://gwenantell.com/exploring-s
 gridDim <- 50
 xy <- expand.grid(x = 1:gridDim, y = 1:gridDim)
 
-library(gstat)
 # create variogram model, using exponential decay, with defined sill and range
 varioMod_AC <- vgm(psill = 0.05, range = 10, model = "Exp")
 
