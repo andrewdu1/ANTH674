@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<meta name="progressive" content="false" />
+<meta name="allow-skip" content="true" />
+
+<title>Multiple linear regression</title>
+
+
+<!-- highlightjs -->
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+<!-- taken from https://github.com/rstudio/rmarkdown/blob/67b7f5fc779e4cfdfd0f021d3d7745b6b6e17149/inst/rmd/h/default.html#L296-L362 -->
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+<!-- end tabsets -->
+
+
+
+</head>
+
+<body>
+
+
+
+<div class="pageContent band">
+<div class="bandContent page">
+
+<div class="topics">
+
+<div id="section-week-7-multiple-linear-regression" class="section level1">
+<h1><strong>Week 7:</strong> Multiple linear regression</h1>
+<div id="section-anth-674-research-design-and-analysis-in-anthropology" class="section level4">
+<h4>ANTH 674: Research Design and Analysis in Anthropology</h4>
+</div>
+<div id="section-professor-andrew-du" class="section level4">
+<h4>Professor Andrew Du</h4>
+</div>
+<div id="section-introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This week, we learned all about <strong>multiple linear regression</strong>. Multiple linear regression (hereafter, “multiple regression”) is a straightforward extension of simple linear regression, where the former has two or more independent variables, while the latter has only one. Therefore, virtually everything you learned for simple linear regression applies here. In fact, I don’t even make a distinction between the two in my head: they’re the same model and all that differs is the number of independent variables.</p>
+<p><img src="https://i0.wp.com/r-exercises.com/wp-content/uploads/2017/01/fancy-rgl-1-300x300.png?zoom=2.640000104904175&amp;resize=300%2C300" style="width:50.0%" /></p>
+<p>The dependent variable in multiple regression is typically continuous, whereas the independent variables can be continuous or categorical. For this week, however, we will go over continuous independent variables only (categorical independent variables are the topic of next week’s lecture).</p>
+<p>This tutorial will cover many of the neat things we can do with multiple regression, and why it is many times better to compare the slopes (i.e., coefficients) of independent variables within the same multiple regression model, as opposed to multiple simple linear models (provided that the multiple regression model assumptions are not grossly violated).</p>
+</div>
+<div id="section-goals-for-this-tutorial" class="section level2">
+<h2>Goals for this tutorial</h2>
+<div id="section-continue-the-never-ending-journey-of-familiarizing-yourself-with-r." class="section level4">
+<h4>1) Continue the never-ending journey of familiarizing yourself with R.</h4>
+</div>
+<div id="section-learn-how-to-interpret-the-coefficients-in-multiple-regression." class="section level4">
+<h4>2) Learn how to interpret the coefficients in multiple regression.</h4>
+</div>
+<div id="section-learn-what-happens-when-you-add-more-independent-variables-to-your-model." class="section level4">
+<h4>3) Learn what happens when you add more independent variables to your model.</h4>
+</div>
+<div id="section-learn-what-interaction-terms-are-and-how-theyre-interpreted." class="section level4">
+<h4>4) Learn what interaction terms are and how they’re interpreted.</h4>
+</div>
+<div id="section-quickly-learn-about-diagnosing-your-multiple-regression-model-using-plots." class="section level4">
+<h4>5) Quickly learn about diagnosing your multiple regression model using plots.</h4>
+</div>
+<div id="section-learn-how-collinearity-influences-multiple-regression-results." class="section level4">
+<h4>6) Learn how collinearity influences multiple regression results.</h4>
+</div>
+<div id="section-learn-what-variance-partitioning-is-and-how-to-do-it." class="section level4">
+<h4>7) Learn what variance partitioning is and how to do it.</h4>
+</div>
+</div>
+<div id="section-multiple-regression-coefficients" class="section level2">
+<h2>Multiple regression coefficients</h2>
+<p>As I taught in lecture, multiple regression coefficients are estimated in the same exact way as in simple linear regression: ordinary least squares, where residuals are minimized. The fitted plane must pass through the mean of the DV and all IVs. Thus, one can think of fitting the plane to data by rotating the plane around a fixed swivel point (i.e., the mean of DV and IVs), until the residuals are minimized. For a multiple regression model with two IVs, this can be visualized in three dimensions, where the two IVs and DV are plotted on a scatter plot with three axes, and the plane is a two-dimensional surface.</p>
+<p><img src="http://www.rnfc.org/courses/isl/Lesson%203/Summary/Figures/Figure3-4.png" style="width:60.0%" /></p>
+<p>With more than two IVs, we would need more than three dimensions, which humans cannot visualize, so just think of the same process happening in some abstract higher-dimensional space.</p>
+</div>
+<div id="section-interpreting-coefficients" class="section level2">
+<h2>Interpreting coefficients</h2>
+<p>This is the formula for a multiple regression model:</p>
+<p><span class="math display">\[\begin{align}
+  Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + + \beta_3 X_3 ... + + \beta_n X_n + \epsilon,
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(Y\)</span> is the DV, <span class="math inline">\(X_{1..n}\)</span> are the different IVs, <span class="math inline">\(\beta_0\)</span> is the intercept, <span class="math inline">\(\beta_{1...n}\)</span> are the slope estimates for each IV, and <span class="math inline">\(\epsilon\)</span> is the error term or residual.</p>
+<p>The intercept is interpreted in the same exact way as in simple linear regression: the DV value when all IVs are set to zero. Each estimated slope is interpreted as the change in DV when the IV in question increases by one, <em>when all other IVs are held constant.</em> One can see why this would be of interest: we often want to isolate and understand the effect of a single IV on the DV. In fact, researchers will often include an IV that they’re not interested, just so they can remove its effect when interpreting other multiple regression coefficients (these “uninteresting” IVs are called <strong>covariates</strong>).</p>
+<p>Let’s fit a multiple regression to some data from <code>mtcars</code> and understand how the coefficients are interpreted.</p>
+<p>We will start with two IVs only, but everything you will learn can easily be extended to more. In R, the IVs within a multiple regression model are to the right of <code>~</code> and are separated by <code>+</code>. Fit the model <code>lm(qsec ~ hp + drat, data = mtcars)</code> below, and save it to an object.</p>
+<div class="tutorial-exercise" data-label="mr" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="mr-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>lm.res &lt;- lm(qsec ~ hp + drat, data = mtcars)
+
+predict(lm.res, data.frame(hp = 0, drat = 0))
+diff(predict(lm.res, data.frame(hp = c(10, 10), drat = 1:2)))</code></pre>
+</div>
+<p>Let’s first use the <code>predict()</code> function to get the expected DV when <code>hp</code> and <code>drat</code> are set to zero (click the “Solution” button if you don’t remember how to do this). As you’ll see, the predicted DV value is the estimated intercept.</p>
+<p>Now let’s sharpen our intuition about interpreting multiple regression coefficients by increasing <code>drat</code> from 1 to 2, while fixing <code>hp</code> at some value (pick whichever value you’d like!). Use the <code>predict()</code> function again and see if the change in DV is exactly the coefficient estimate for <code>drat</code> (you can wrap <code>diff()</code> around your code to get the difference in values). Try other values for <code>hp</code> and see if you get the same answer.</p>
+</div>
+<div id="section-interpreting-coefficients-as-partialing-out-other-ivs" class="section level2">
+<h2>Interpreting coefficients as partialing out other IVs</h2>
+<p>Another very similar way to think about, for example, the <code>drat</code> coefficient is by removing or <strong>partialing</strong> out the effect of <code>hp</code> (this is also why multiple regression coefficients are often called <strong>partial regression coefficients</strong>). Recall that the residuals from <code>lm(y ~ x)</code> are interpreted as the signal in <code>y</code> after the effect of <code>x</code> has been removed. Thus, to partial out the effect of <code>hp</code> from both <code>qsec</code> and <code>drat</code>, we fit linear models of each as a function of <code>hp</code> and then take the residuals. Do this below, and then regress the residuals from <code>qsec ~ hp</code> onto the residuals from <code>drat ~ hp</code>. The resulting slope should be exactly the coefficient for <code>drat</code> in the multiple regression model (i.e., <code>lm(qsec ~ hp + drat, data = mtcars)</code>).</p>
+<div class="tutorial-exercise" data-label="mr_partial" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="mr_partial-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>e_qsec.hp &lt;- lm(qsec ~ hp, data = mtcars)$residuals
+e_drat.hp &lt;- lm(drat ~ hp, data = mtcars)$residuals
+
+lm(e_qsec.hp ~ e_drat.hp)</code></pre>
+</div>
+</div>
+<div id="section-adding-more-ivs-to-your-model" class="section level2">
+<h2>Adding more IVs to your model</h2>
+<p>One might think that adding more IVs to your multiple regression model is a good thing, since you can account for more IVs when studying your IV(s) of interest and <span class="math inline">\(R^2\)</span> increases. However, there is no “free lunch” in statistics and benefits are usually accrued at a cost elsewhere. Here, we will see how this happens in action.</p>
+<div id="section-increasing-r2" class="section level3">
+<h3>Increasing <span class="math inline">\(R^2\)</span></h3>
+<p><span class="math inline">\(R^2\)</span> can only increase or stay the same as you add more IVs to your model. This is because another IV can only explain more of the residual variation (<span class="math inline">\(R^2\)</span> increases), or it does not help at all (<span class="math inline">\(R^2\)</span> stays the same). <em><span class="math inline">\(R^2\)</span> will never decrease if you add more IVs.</em></p>
+<p>Let’s see how this works by comparing the <span class="math inline">\(R^2\)</span> of <code>lm(qsec ~ hp + drat)</code> to that of <code>lm(qsec ~ hp + drat + wt)</code>.</p>
+<div class="tutorial-exercise" data-label="coef_det" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p><span class="math inline">\(R^2\)</span> increased by about ~0.1. It’ll increase again if you add <code>mpg</code> (try this out above).</p>
+<p>At some point, however, your model will overfit the data. That is, it’ll start fitting the noise in your dataset (bad), as opposed to the signal (good).</p>
+<p><img src="https://miro.medium.com/max/1848/1*_7OPgojau8hkiPUiHoGK_w.png" style="width:90.0%" /></p>
+<p>This is especially true as your your ratio of data points to parameters decreases (rule of thumb is you should have 20 data points per parameter). Overfitting is bad since you’re not describing the signal and pattern of interest anymore (i.e., how your DV changes with some IV). Overfitting is extremely bad when you want to predict DVs for a new dataset, since the noise structure in the new dataset will not match what is in your training data.</p>
+<p>The <strong>adjusted <span class="math inline">\(R^2\)</span></strong> corrects the <span class="math inline">\(R^2\)</span> to account for additional parameters. Its formula is:</p>
+<p><span class="math display">\[\begin{align}
+  R_a^2 = 1 - \frac{n - 1}{n - p - 1}(1 - R^2),
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(n\)</span> is the number of data points, <span class="math inline">\(p\)</span> is the number of independent variables, and <span class="math inline">\(R^2\)</span> is the original coefficient of determination. As you can see from the formula, as <span class="math inline">\(p\)</span> goes up, <span class="math inline">\(R_a^2\)</span> goes down.</p>
+<p>Compare the adjusted <span class="math inline">\(R^2\)</span> between <code>lm(qsec ~ hp + drat)</code> and <code>lm(qsec ~ hp + drat + mpg)</code> (the adjusted <span class="math inline">\(R^2\)</span> can be called with <code>summary(lm())$adj.r.squared</code>).</p>
+</div>
+<div id="section-increasing-standard-error" class="section level3">
+<h3>Increasing standard error</h3>
+<p>Increasing your number of IVs will also increase the standard error of your coefficient estimates. I like to think of it as if you increase the number of IVs, keeping the number of data points the same, you have less information and statistical power to devote to each coefficient (recall from an earlier lecture that larger sample sizes decrease standard errors). Larger standard errors mean larger P-values and less precise predicted DVs.</p>
+<p>Compare the standard errors for <code>hp</code> and <code>drat</code> in <code>lm(qsec ~ hp + drat)</code> vs. <code>lm(qsec ~ hp + drat + wt + mpg)</code>.</p>
+<div class="tutorial-exercise" data-label="se" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>The somewhat paradoxical result is that a more precise prediction might result if you <em>don’t</em> include all IVs that actually affect the DV in reality. This trade-off is known as the bias-variance trade-off: with more IVs, your prediction will become less biased (they will be closer to the true value on average), but they will become less precise. The goal is to find the “Goldilocks” middle-ground, where you have some bias and imprecision but both are minimized together. This is a big issue in machine learning.</p>
+<p><img src="https://miro.medium.com/max/1848/1*YWiPkZW0glh0iW-9_zeFVA.jpeg" style="width:80.0%" /></p>
+</div>
+</div>
+<div id="section-interaction-terms" class="section level2">
+<h2>Interaction terms</h2>
+<p>Interaction terms are needed when the slope of a DV against an IV changes as a function of another IV. The example I used in class is that of a marathon runner whose time decreases as they train more. This relationship is most likely affected by the quality of equipment they use: with better equipment, one might expect the slope to decrease, such that marathon time decreases even more with training time.</p>
+<p><img src="https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Interaction%20marathon.jpg?raw=true" style="width:70.0%" /></p>
+<p>In this example, an interaction is needed between training time and equipment equality.</p>
+<p>So in brief, an interaction term indicates the slope between <span class="math inline">\(Y\)</span> and <span class="math inline">\(X_1\)</span>, for example, changes as a function of <span class="math inline">\(X_2\)</span>. The multiple regression formula, including an interaction term is:</p>
+<p><span class="math display">\[\begin{align}
+  Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 (X_1 \times X_2) + \epsilon.
+\end{align}\]</span></p>
+<p>In R, one fits an interaction model with <code>lm(y ~ x1 * x2)</code>; the <code>*</code> implies <span class="math inline">\(\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span> (from the formula) are estimated too. If you just want to fit the interaction term and estimate <span class="math inline">\(\beta_3\)</span> only, you use <code>:</code>instead of <code>*</code>, though this is rarely done.</p>
+<p>A positive interaction term means the slope of <span class="math inline">\(Y\)</span> as a function of <span class="math inline">\(X_1\)</span> <em>increases</em> as <span class="math inline">\(X_2\)</span> increases. A negative interaction term means the slope of <span class="math inline">\(Y\)</span> as a function of <span class="math inline">\(X_1\)</span> <em>decreases</em> as <span class="math inline">\(X_2\)</span> increases.</p>
+<p>We can see how this works, using the multiple regression formula itself. I have simulated a DV (<code>y</code>) and two IVs that interact (<code>x1</code> and <code>x2</code>); all variables are found in the dataframe, <code>DF</code>, which is preloaded into your console. Fit a multiple regression model with an interaction term between <code>x1</code> and <code>x2</code>, and save the results to an object. I have also created a function for you in the console (<code>slope_x1()</code>) to get out the slope of <code>x1</code> for a given value of <code>x2</code>; the two arguments are the fitted interaction model and a vector of values for <code>x2</code>. So, use <code>slope_x1()</code> to get a vector of expected <code>x1</code> slopes for the interaction model and a vector of <code>x2</code> values. Plot the slopes against <code>x2</code> and fit a linear model to get the slope of this relationship.</p>
+<div class="tutorial-exercise" data-label="interact" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="interact-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>set.seed(100)
+x1 &lt;- runif(80, max = 10)
+set.seed(101)
+x2 &lt;- runif(80, max = 10)
+set.seed(100)
+y &lt;- 2 + 1.5 * x1 + 1.2 * x2 + 2 * x1 * x2 + rnorm(80)
+
+DF &lt;- data.frame(y, x1, x2)
+
+slope_x1 &lt;- function(lm.res, x2){
+  
+  return(lm.res$coefficients[&quot;x1&quot;] + x2 * lm.res$coefficients[&quot;x1:x2&quot;])
+}</code></pre>
+</div>
+<p>As you can see, the estimated slope (<code>slopes ~ x2</code>) is the interaction term itself! So you can now interpret an interaction term, which is the exact amount the slope of <code>y ~ x1</code> changes as <code>x2</code> increases by one. Interactions are symmetrical, so the interaction term is also the amount the slope of <code>y ~ x2</code> changes as <code>x1</code> increases by one.</p>
+<div id="section-quadratic-regression" class="section level3">
+<h3>Quadratic regression</h3>
+<p>An IV can interact with itself, and this is known as a quadratic function:</p>
+<p><span class="math display">\[\begin{align}
+  Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \epsilon.
+\end{align}\]</span></p>
+<p>If the quadratic term is positive, then the slope of <span class="math inline">\(Y\)</span> as a function of <span class="math inline">\(X\)</span> <em>increases</em> as <span class="math inline">\(X\)</span> increases. This can either produce an accelerating curve (see below) or a horseshoe-shaped curve, where a negative slope decreases until it hits zero and then becomes positive with increasing magnitude.</p>
+<p><img src="Week7_files/figure-html/unnamed-chunk-1-1.png" width="624" /></p>
+<p>If the quadratic term is negative, then the slope of <span class="math inline">\(Y\)</span> as a function of <span class="math inline">\(X\)</span> <em>decreases</em> as <span class="math inline">\(X\)</span> increases, producing either a decelerating curve or an upside-down horseshoe.</p>
+<p><img src="Week7_files/figure-html/unnamed-chunk-2-1.png" width="624" /></p>
+<p>Below I have simulated a quadratic relationship between <code>x</code> and <code>y</code> (i.e., <span class="math inline">\(Y = X + 5X^2 + \epsilon\)</span>). Create a scatter plot to see what the relationship looks like.</p>
+<div class="tutorial-exercise" data-label="quad" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>#
+#
+#
+#
+#</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="quad-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>set.seed(100)
+x &lt;- runif(60, max = 10)
+set.seed(101)
+y &lt;- x + 5 * x ^ 2 + rnorm(60, sd = 20)</code></pre>
+</div>
+<p>To fit a quadratic linear model, you need one extra function within <code>lm()</code>: <code>I()</code>. For example, to fit a quadratic model to <code>y</code> and <code>x</code>, you need to enter <code>lm(y ~ x + I(x ^ 2))</code>. The <code>I()</code> tells R that <code>^</code> is a raised-to-the-power operator in the formula. See what happens when you fit a linear model without <code>I()</code> (compare it to <code>y ~ x</code>).</p>
+<p>Go ahead and fit the quadratic model. To add the regression line to the scatter plot, we cannot use <code>abline()</code> anymore, which only works for linear models with two coefficients (i.e., the intercept and slope in simple linear regression). We now have to use the <code>curve()</code> and <code>predict()</code>, so calling the fitted quadratic model <code>lm.quad</code>, the proper code is <code>curve(predict(lm.quad, data.frame(x = x)), add = TRUE)</code>. Use this code to add the fitted quadratic model to the scatter plot.</p>
+</div>
+</div>
+<div id="section-assumptions-and-diagnostics" class="section level2">
+<h2>Assumptions and diagnostics</h2>
+<div id="section-assumptions" class="section level3">
+<h3>Assumptions</h3>
+<p>The assumptions of multiple regression are the same as that of simple linear regression, except there is one extra.</p>
+<ol style="list-style-type: decimal">
+<li>The relationship between the DV and IVs is linear.</li>
+<li>The IV is measured without error.</li>
+<li>Error terms are normally distributed with a mean of zero.</li>
+<li>Error terms are drawn from a population with constant variance.</li>
+<li>Error terms are independent.</li>
+<li>IVs are not collinear.*</li>
+</ol>
+<p>The sixth assumption is unique to multiple regression and therefore will get its own topic section.</p>
+</div>
+<div id="section-diagnostics" class="section level3">
+<h3>Diagnostics</h3>
+<p>Assumption violations are diagnosed using plots (e.g., residual plots), just like in simple linear regression.</p>
+<p>Let’s see this in action by simulating a DV with two IVs that interact in reality. I have included the code for you in the console below.</p>
+<div class="tutorial-exercise" data-label="diag" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>set.seed(100)
+x1 &lt;- runif(80, max = 10)
+set.seed(101)
+x2 &lt;- runif(80, max = 10)
+
+set.seed(100)
+y &lt;- 5 + x1 + 1.5 * x2 + 2 * x1 * x2 + rnorm(80)</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>Create a multiple regression with NO interaction term to start off with (i.e., <code>lm(y ~ x1 + x2)</code>). We know this model is not specified correctly, so we’ll see what this looks like in the diagnostic plots. Now plot the diagnostic plots using the <code>lm</code> object just as you would with a simple linear model.</p>
+<p>Note that the residuals show a horseshoe shape, indicating the relationship between the DV and IVs is not linear.</p>
+<p>Now include the interaction term and create the diagnostic plots. The residuals look a lot better now, demonstrating the model is specified correctly and no assumptions are violated.</p>
+<p>You can even see what the estimated coefficients are and how well they match what we simulated: intercept = 0, <code>x1</code> coefficient = 1, <code>x2</code> coefficient = 1.5, and interaction term = 2.</p>
+</div>
+</div>
+<div id="section-exercise-1" class="section level2">
+<h2>Exercise 1</h2>
+<p>Let’s stick with the <code>mtcars</code> dataset.</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit a multiple regression model, where <code>mpg</code> is the DV and <code>hp</code> and <code>wt</code> are two IVs. How would you interpret each coefficient (i.e., the intercept and each coefficient for <code>hp</code> and <code>wt</code>)? What are the P-values for each coefficient?</p></li>
+<li><p>Look at the diagnostic plots for this model. Do the residuals indicate the model is well-specified (i.e., no assumptions are violated)?</p></li>
+<li><p>Try including an interaction term between <code>hp</code> and <code>wt</code>. Is the interaction term significant? How would you interpret the interaction term?</p></li>
+<li><p>Create the diagnostic plots for your interaction model. Have the residuals improved?</p></li>
+</ol>
+<div class="tutorial-exercise" data-label="exer1" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button when done</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="exer1-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Q1
+lm.res &lt;- lm(mpg ~ hp + wt, data = mtcars)
+# intercept is the value of DV when IVs equal zero
+# other coefficients are change in DV as target IV increases by one with the other IV held constant.
+# all coefficients are significant (P &lt; 0.05)
+
+# Q2
+plot(lm.res)
+# Residual plot shows some non-linearity
+
+# Q3
+lm.interact &lt;- lm(mpg ~ hp * wt, data = mtcars)
+# interaction term is significant
+# interaction term is the change in slope of DV against an IV as the other IV increases by one
+
+# Q4
+plot(lm.interact)
+# non-linearity issue goes away. Combined with the significance of the interaction term, this shows we need to include the interaction term</code></pre>
+</div>
+</div>
+<div id="section-collinearity" class="section level2">
+<h2>Collinearity</h2>
+<p><strong>Collinearity</strong>, also known as <strong>multicollinearity</strong>, occurs when two or more IVs are strongly correlated in a multiple regression model. This is a violation of one of the assumptions of multiple regression, and it results in coefficient estimates that are unstable (the “bouncing betas” problem; coefficients are informally called “betas”). What do I mean by “unstable”? This is best illustrated through example.</p>
+<p>Let’s look at the multiple regression model, <code>lm(qsec ~ hp + wt, data = mtcars)</code>. To see how these variables are related to each other, create a scatter plot matrix (it might help to first subset out these three variables from the <code>mtcars</code> dataframe). Feel free to add lowess curves, correlation coefficients, or any other scatter plot matrix modification you learned in last week’s tutorial.</p>
+<div class="tutorial-exercise" data-label="scatter" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<p>You can see that <code>qsec</code> is strongly correlated with <code>hp</code>, but not so much with <code>wt</code>, and <code>hp</code> and <code>wt</code> are strongly correlated.</p>
+<p>Estimate the coefficients for the multiple linear regression model, and look at the P-values as well.</p>
+<p>Now estimate the coefficients for <code>hp</code> and <code>wt</code> separately in two simple linear regression models (i.e., <code>lm(qsec ~ hp)</code> and <code>lm(qsec ~ wt)</code>). Compare the coefficients and P-values for each IV between the multiple regression and simple regression models.</p>
+<p>You can see that the <code>hp</code> coefficient did not change too much between the models, but the P-value increased by two orders of magnitude. More striking is that the <code>wt</code> coefficient changed from positive to negative and significant to not significant when going from multiple to simple regression. Such a drastic change in coefficient values and significance is prime evidence for collinearity, i.e., coefficients will change quite a bit when a collinear IV is added to or dropped from the model. We know based on intuition that a larger <code>wt</code> should result in a slower car (<code>qsec</code>) on average, so the positive coefficient in the multiple regression is suspect and indicates collinearity. This is borne out by the high correlation coefficient between <code>hp</code> and <code>wt</code>.</p>
+<p>Thus, the <code>wt</code> coefficient in the multiple regression model is unreliable. If a coefficient in multiple regression is defined as the change in DV as IV increases by one, holding all other IVs constant, the model is having trouble holding other IVs constant given that at least one is collinear. The more collinear your IVs are, the more your coefficients and P-values will change if a collinear IV is added or dropped. If your IVs are 100% unrelated, then the multiple regression coefficients will be identical to their counterparts in simple linear regression.</p>
+<p>Solutions to collinearity include dropping one of the collinear IVs, since they offer redundant information anyway. The variables could also be combined using principal components analysis (which you’ll learn about in a future lecture). Or nothing can be done, since collinearity does not affect predictions nor <span class="math inline">\(R^2\)</span> values. So, how to address collinearity depends on your research question!</p>
+</div>
+<div id="section-detecting-collinearity" class="section level2">
+<h2>Detecting collinearity</h2>
+<p>This can be done using correlation coefficients and scatter plot matrices (as in the previous topic). Another useful metric is the <strong>variance inflation factor</strong>, which is defined as:</p>
+<p><span class="math display">\[\begin{align}
+  VIF_j = \frac{1}{1 - R_j^2},
+\end{align}\]</span></p>
+<p>where <span class="math inline">\(R_j^2\)</span> is the <span class="math inline">\(R^2\)</span> calculated from a regression model regressing <span class="math inline">\(X_j\)</span> on all other IVs. While correlation coefficients only tell us about collinearity when comparing two IVs at a time, VIFs can tell us if collinearity exists among three or more IVs.</p>
+<p>Calculate the VIF for <code>wt</code> in the <code>lm(qsec ~ hp + wt)</code> model (there is also a <code>vif()</code> function in the <code>car</code> package). Note that a rule of thumb is a VIF &gt; 10 indicates that your IV is collinear with others.</p>
+<div class="tutorial-exercise" data-label="vif" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click the &quot;Solution&quot; button if stuck</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="vif-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>r2 &lt;- summary(lm(wt ~ hp, data = mtcars))$r.squared
+1 / (1 - r2)
+
+library(car)
+vif(lm(qsec ~ hp + wt, data = mtcars))</code></pre>
+</div>
+<p>You can see that the VIF is actually quite low (1.77)! This is an example where statistical nuance trumps rules of thumb. The coefficient for <code>wt</code> going from positive to negative and significant to not significant is clearly worrisome, so collinearity is definitely a problem here.</p>
+</div>
+<div id="section-variance-partitioning" class="section level2">
+<h2>Variance partitioning</h2>
+<p>A really useful and informative statistical tool is <strong>variance partitioning</strong>, where the variation in the DV is partitioned into components explained by each IV uniquely and jointly across multiple IVs. This is clearly of interest for most, if not all, research questions, but it remains unused in anthropology (definitely in paleoanthropology). Moreover, the results are unaffected by collinearity, and in fact, they can tell us how collinear variables are.</p>
+<p>We will learn how to do variance partitioning using the <code>mpg</code> (DV), <code>hp</code>, and <code>wt</code> variables from <code>mtcars</code>. Below is the Venn Diagram from my lecture, showing how we should think about how DV variation is attributed to each of the three parts of the Venn Diagram.</p>
+<p><img src="https://github.com/andrewdu1/ANTH674/blob/master/Datasets/varpart.jpg?raw=true" style="width:80.0%" /></p>
+<p>First, we need to get the <span class="math inline">\(R^2\)</span> from the full model: <code>lm(mpg ~ hp + wt)</code>. Then, we need to get the <span class="math inline">\(R^2\)</span> from the simple regressions for each IV. See if you can then reason through how to get each of the three components: DV variation explained (1) uniquely by <code>hp</code>, (2) uniquely by <code>wt</code>, and (3) jointly by <code>hp</code> and <code>wt</code>. A nice way of checking your calculations is by summing the three components to see if they match the <span class="math inline">\(R^2\)</span> of the full model. You can click the “Solution” button if stuck.</p>
+<div class="tutorial-exercise" data-label="varpart" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="varpart-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>full.r2 &lt;- summary(lm(mpg ~ hp + wt, data = mtcars))$r.squared
+hp.r2 &lt;- summary(lm(mpg ~ hp, data = mtcars))$r.squared
+wt.r2 &lt;- summary(lm(mpg ~ wt, data = mtcars))$r.squared
+
+uniq.wt &lt;- full.r2 - hp.r2
+uniq.hp &lt;- full.r2 - wt.r2
+joint &lt;- hp.r2 - uniq.hp</code></pre>
+</div>
+<p>As you can see, the variance component explained by both <code>hp</code> and <code>wt</code> is quite high, especially compared to the unique components attributed to the IVs separately. This illustrates how collinear <code>hp</code> and <code>wt</code> are in the multiple regression model. Nevertheless, it is incredibly informative to know how much DV variation is attributed to each IV separately, and how much cannot be disentangled between the two IVs.</p>
+<p>Variance partitioning can be done on more than two IVs. It helps to have a Venn Diagram drawn out, so you can reason out how to calculate each variance component. For example, here is a variance partitioning analysis done with four IVs:</p>
+<p><img src="https://www.researchgate.net/profile/Tiffany_Schriever/publication/272787302/figure/fig4/AS:294680144171021@1447268629298/Variance-partitioning-R-2-for-trait-composition-A-and-taxonomic-composition-B-of_W640.jpg" style="width:70.0%" /></p>
+</div>
+<div id="section-exercise-2" class="section level2">
+<h2>Exercise 2</h2>
+<p>I have created a dataframe for you (<code>DF</code>), with one DV (<code>y</code>) and two IVs (<code>x1</code> and <code>x2</code>).</p>
+<ol style="list-style-type: decimal">
+<li><p>Create a scatter plot matrix to see how the variables are related to each other.</p></li>
+<li><p>Fit the multiple regression model to the data, and then compare the estimated coefficients and P-values to their counterparts in simple linear regression models. Is there a “bouncing betas” problem?</p></li>
+<li><p>Calculate variance inflation factors for the IVs.</p></li>
+<li><p>Conduct a variance partitioning analysis on the dataset.</p></li>
+</ol>
+<div class="tutorial-exercise-support" data-label="exer2-setup" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code>set.seed(100)
+x1 &lt;- runif(60, max = 10)
+set.seed(100)
+x2 &lt;- x1 * 1.5 + rnorm(60, sd = 5)
+set.seed(101)
+y &lt;- 2 + 1.5 * x1 + 1.2 * x2 + rnorm(60)
+
+DF &lt;- data.frame(y, x1, x2)</code></pre>
+</div>
+<div class="tutorial-exercise" data-label="exer2" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button when done
+#
+#
+#
+#</code></pre>
+<script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="exer2-solution" data-caption="Code" data-completion="1" data-diagnostics="1" data-startover="1" data-lines="0">
+<pre class="text"><code># Q1
+panel.cor &lt;- function(x, y, digits = 2, prefix = &quot;&quot;, cex.cor, ...)
+{
+    usr &lt;- par(&quot;usr&quot;); on.exit(par(usr))
+    par(usr = c(0, 1, 0, 1))
+    r &lt;- abs(cor(x, y))
+    txt &lt;- format(c(r, 0.123456789), digits = digits)[1]
+    txt &lt;- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor &lt;- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+pairs(DF, lower.panel = panel.smooth, upper.panel = panel.cor)
+
+# Q2
+lm.full &lt;- lm(y ~ x1 + x2, data = DF)
+lm.x1 &lt;- lm(y ~ x1, data = DF) # x1 changes by a lot
+lm.x2 &lt;- lm(y ~ x2, data = DF)
+
+# Q3
+library(car)
+vif(lm.res)
+
+# Q4
+x1.uniq &lt;- summary(lm.full)$r.squared - summary(lm.x2)$r.squared
+x2.uniq &lt;- summary(lm.full)$r.squared - summary(lm.x1)$r.squared
+both &lt;- summary(lm.x1)$r.squared - x1.uniq</code></pre>
+</div>
+</div>
+<div id="section-conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>We have covered all the fundamentals necessary for you to use multiple regression in your own research. Multiple regression is a powerful way to compare the effects of each IV on the DV, while holding the other IVs constant. Transformations might be needed to aid interpretation of the coefficients: centering and scaling if IVs are in different units or differ by multiple orders of magnitude, or log-transformations if variables increase multiplicatively (also gets rid of the problem of different units).</p>
+<p>However, as models become more complicated, there are more assumptions involved and more pitfalls you have to watch out for (always check your diagnostic plots!). For multiple regression, these include being aware of the “penalty” incurred for including extra IVs and collinearity. Collinearity is problematic when you’re interested in making inferences about the coefficients themselves (i.e., what their estimates are, whether they’re significant), but it’s not a problem if you’re interested in prediction or goodness of fit. In other words, whether collinearity matters depends on your research question (this is true of virtually all model assumption violations)!</p>
+<p>Interactions are a powerful way to interpret your data in a more nuanced fashion. They may also be necessary if the model without interactions terms is misspecified (i.e., assumptions are violated). However, try not to add interactions haphazardly; it is instead better to incorporate them if theory or intuition dictates it. If the goal of your research question requires an assumption to not be violated and this can only happen with an interaction term, then you can go ahead and add it.</p>
+<p>Lastly, variance partitioning is a great tool for scientific inference! I strongly encourage you to use it if you’ll use multiple regression in your research.</p>
+Make sure you understand everything we covered in lecture and this tutorial. All of this material will served as the foundation for next week’s lecture, where we will learn about general linear models with non-continuous IVs and DVs (e.g., ANOVA, logistic regression). Thus, everything you learned here applies there as well! 
+<script type="application/shiny-prerendered" data-context="server-start">
+library(learnr)
+library(knitr)
+
+knitr::opts_chunk$set(echo = TRUE)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+learnr:::register_http_handlers(session, metadata = NULL)
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+session$onSessionEnded(function() {
+        learnr:::session_stop_event(session)
+      })
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-mr-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-mr-code-editor`)), session)
+output$`tutorial-exercise-mr-output` <- renderUI({
+  `tutorial-exercise-mr-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-mr_partial-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-mr_partial-code-editor`)), session)
+output$`tutorial-exercise-mr_partial-output` <- renderUI({
+  `tutorial-exercise-mr_partial-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-coef_det-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-coef_det-code-editor`)), session)
+output$`tutorial-exercise-coef_det-output` <- renderUI({
+  `tutorial-exercise-coef_det-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-se-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-se-code-editor`)), session)
+output$`tutorial-exercise-se-output` <- renderUI({
+  `tutorial-exercise-se-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-interact-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-interact-code-editor`)), session)
+output$`tutorial-exercise-interact-output` <- renderUI({
+  `tutorial-exercise-interact-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-quad-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-quad-code-editor`)), session)
+output$`tutorial-exercise-quad-output` <- renderUI({
+  `tutorial-exercise-quad-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-diag-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-diag-code-editor`)), session)
+output$`tutorial-exercise-diag-output` <- renderUI({
+  `tutorial-exercise-diag-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-exer1-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-exer1-code-editor`)), session)
+output$`tutorial-exercise-exer1-output` <- renderUI({
+  `tutorial-exercise-exer1-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-scatter-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-scatter-code-editor`)), session)
+output$`tutorial-exercise-scatter-output` <- renderUI({
+  `tutorial-exercise-scatter-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-vif-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-vif-code-editor`)), session)
+output$`tutorial-exercise-vif-output` <- renderUI({
+  `tutorial-exercise-vif-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-varpart-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-varpart-code-editor`)), session)
+output$`tutorial-exercise-varpart-output` <- renderUI({
+  `tutorial-exercise-varpart-result`()
+})
+</script>
+ 
+<script type="application/shiny-prerendered" data-context="server">
+`tutorial-exercise-exer2-result` <- learnr:::setup_exercise_handler(reactive(req(input$`tutorial-exercise-exer2-code-editor`)), session)
+output$`tutorial-exercise-exer2-output` <- renderUI({
+  `tutorial-exercise-exer2-result`()
+})
+</script>
+ <!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="dependencies">
+{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootstrap"]},{"type":"character","attributes":{},"value":["3.3.5"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/bootstrap"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["viewport"]}},"value":[{"type":"character","attributes":{},"value":["width=device-width, initial-scale=1"]}]},{"type":"character","attributes":{},"value":["js/bootstrap.min.js","shim/html5shiv.min.js","shim/respond.min.js"]},{"type":"character","attributes":{},"value":["css/cerulean.min.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["pagedtable"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/pagedtable-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["js/pagedtable.js"]},{"type":"character","attributes":{},"value":["css/pagedtable.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["textmate.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-format"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmarkdown/templates/tutorial/resources"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-format.js"]},{"type":"character","attributes":{},"value":["tutorial-format.css","rstudio-theme.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["navigation"]},{"type":"character","attributes":{},"value":["1.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/navigation-1.1"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tabsets.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["highlightjs"]},{"type":"character","attributes":{},"value":["9.12.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/highlightjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["highlight.js"]},{"type":"character","attributes":{},"value":["default.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["jquery"]},{"type":"character","attributes":{},"value":["1.11.3"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/jquery"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["jquery.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["font-awesome"]},{"type":"character","attributes":{},"value":["5.1.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["rmd/h/fontawesome"]}]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["css/all.css","css/v4-shims.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["rmarkdown"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["2.3"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["bootbox"]},{"type":"character","attributes":{},"value":["4.4.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/bootbox"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["bootbox.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["idb-keyvalue"]},{"type":"character","attributes":{},"value":["3.2.0"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/idb-keyval"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["idb-keyval-iife-compat.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[false]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial.js"]},{"type":"character","attributes":{},"value":["tutorial.css"]},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-autocompletion"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-autocompletion.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["tutorial-diagnostics"]},{"type":"character","attributes":{},"value":["0.10.1"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/tutorial"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["tutorial-diagnostics.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["ace"]},{"type":"character","attributes":{},"value":["1.2.6"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/ace"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["ace.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","version","src","meta","script","stylesheet","head","attachment","package","all_files","pkgVersion"]},"class":{"type":"character","attributes":{},"value":["html_dependency"]}},"value":[{"type":"character","attributes":{},"value":["clipboardjs"]},{"type":"character","attributes":{},"value":["1.5.15"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["file"]}},"value":[{"type":"character","attributes":{},"value":["lib/clipboardjs"]}]},{"type":"NULL"},{"type":"character","attributes":{},"value":["clipboard.min.js"]},{"type":"NULL"},{"type":"NULL"},{"type":"NULL"},{"type":"character","attributes":{},"value":["learnr"]},{"type":"logical","attributes":{},"value":[true]},{"type":"character","attributes":{},"value":["0.10.1"]}]}]}
+</script>
+<!--/html_preserve-->
+<!--html_preserve-->
+<script type="application/shiny-prerendered" data-context="execution_dependencies">
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36]}},"value":[{"type":"character","attributes":{},"value":["backports","base","compiler","datasets","digest","evaluate","fastmap","graphics","grDevices","htmltools","htmlwidgets","httpuv","jsonlite","knitr","later","learnr","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["1.1.9","4.0.2","4.0.2","4.0.2","0.6.25","0.14","1.0.1","4.0.2","4.0.2","0.5.0","1.5.1","1.5.4","1.7.1","1.29","1.1.0.1","0.10.1","1.5","1.1","4.0.2","0.9","1.1.1","2.4.1","1.0.5","0.4.7","2.3","1.3-2","1.5.0","4.0.2","1.4.6","1.4.0","4.0.2","4.0.2","2.2.0","0.16","1.8-4","2.2.1"]}]}]}
+</script>
+<!--/html_preserve-->
+</div>
+</div>
+
+</div> <!-- topics -->
+
+<div class="topicsContainer">
+<div class="topicsPositioner">
+<div class="band">
+<div class="bandContent topicsListContainer">
+
+<!-- begin doc-metadata -->
+<div id="doc-metadata">
+<h2 class="title toc-ignore" style="display:none;">Multiple linear regression</h2>
+</div>
+<!-- end doc-metadata -->
+
+</div> <!-- bandContent.topicsListContainer -->
+</div> <!-- band -->
+</div> <!-- topicsPositioner -->
+</div> <!-- topicsContainer -->
+
+
+</div> <!-- bandContent page -->
+</div> <!-- pageContent band -->
+
+
+
+
+<script>
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+</script>
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+
+</body>
+
+</html>
