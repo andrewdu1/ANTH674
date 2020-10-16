@@ -103,7 +103,7 @@ Remember that linear regression assumes variance of the DV is constant across al
 
 Once you have rerun the t-test on the `mpg` data, fit a linear model, where the DV is `mpg` and the IV is `am`.
 Note that here is where factors and factors levels in R become tangible: the IV is always a factor class and the number of levels is two (in ANOVA it's more).
-You can set your baseline factor level (if you don't like the default) using the `relevel()` function.
+You can set your baseline factor level using the `relevel()` function if you don't like the default.
 
 ```{r t_test_lm, exercise = TRUE}
 ```
@@ -129,7 +129,7 @@ Try it out below using the same `mpg` data.
 ```{r mann, exercise = TRUE}
 ```
 
-You will see the P-value has gone up compared to that in the t-test.
+You will see the P-value has increased compared to that in the t-test.
 
 
 ## ANOVA
@@ -267,42 +267,42 @@ For this ANCOVA model, there *IS* an interaction between the IVs.
 The interaction term is what changes the slope as you go from the baseline level to the other level, and the estimated coefficient for the categorical IV is what changes the intercept as you change levels.
 You can fit an ANCOVA where only the slope changes (e.g., `lm(DV ~ IV1:IV2)`), but this is almost never done.
 
-So, lets fit an interaction multiple regression model, where the DV is `mtcars$hp` and the IVs are `mtcars$am` and `mtcars$mpg`.
+So, lets fit an interaction multiple regression model, where the DV is `mtcars$mpg` and the IVs are `mtcars$am` and `mtcars$wt`.
 
 ```{r ancova2, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
 ```{r ancova2-solution}
-ancova.res <- lm(hp ~ am * mpg, data = mtcars)
+ancova.res <- lm(mpg ~ am * wt, data = mtcars)
 
-plot(mtcars$hp ~ mtcars$mpg, type = "n")
-points(mtcars$hp[mtcars$am == 0] ~ mtcars$mpg[mtcars$am == 0], pch = 16, col = "red")
-points(mtcars$hp[mtcars$am == 1] ~ mtcars$mpg[mtcars$am == 1], pch = 16, col = "blue")
+plot(mtcars$mpg ~ mtcars$wt, type = "n")
+points(mtcars$mpg[mtcars$am == 0] ~ mtcars$wt[mtcars$am == 0], pch = 16, col = "red")
+points(mtcars$mpg[mtcars$am == 1] ~ mtcars$wt[mtcars$am == 1], pch = 16, col = "blue")
 
 legend("topright", c("Automatic (0)", "Manual (1)"), pch = c(16, 16), col = c("red", "blue"))
 
-abline(ancova.res$coefficients["(Intercept)"], ancova.res$coefficients["mpg"], col = "red")
-abline(ancova.res$coefficients["(Intercept)"] + ancova.res$coefficients["am"], ancova.res$coefficients["mpg"] + ancova.res$coefficients["am:mpg"], col = "blue")
+abline(ancova.res$coefficients["(Intercept)"], ancova.res$coefficients["wt"], col = "red")
+abline(ancova.res$coefficients["(Intercept)"] + ancova.res$coefficients["am"], ancova.res$coefficients["wt"] + ancova.res$coefficients["am:wt"], col = "blue")
 ```
 
 As you can see, there are now four estimated coefficients, one more than before (in real life, we need to be careful here, since we have only 32 data points, so we're likely overfitting our data somewhat).
-As before, the intercept is the intercept of the `hp ~ mpg` regression when `am == 0` (the baseline level, which is "Automatic").
-The estimated `mpg` coefficient (i.e., the continuous IV) is the corresponding slope for `am == 0`.
+As before, the intercept is the intercept of the `mpg ~ wt` regression when `am == 0` (the baseline level, which is "Automatic").
+The estimated `wt` coefficient (i.e., the continuous IV) is the corresponding slope for `am == 0`.
 Use `abline()` to add this line to the plot.
 
 It's a nice fit!
 
 To fit the line for points corresponding to `am == 1`, we have to understand what the other coefficients are doing.
 As before, the `am` coefficient (i.e., the categorical IV) is how much the intercept changes as you go from the baseline `am == 0` to `am == 1`.
-The interaction term, `am:mpg`, is how much the slope changes as you go from `am == 0` to `am == 1`. 
+The interaction term, `am:wt`, is how much the slope changes as you go from `am == 0` to `am == 1`. 
 With this knowledge, add the line for points where `am == 1`.
 
 Again, it's a good fit.
 And you can see that the lines are not parallel, indicating different slopes, and you can see the intercepts are different.
 
-The `am` and `am:mpg` coefficients are significant, telling us that the intercepts and slopes, respectively, are significantly different between `am == 0` and `am == 1`.
-And the coefficients tell us by how much the intercepts and slopes are changing (111.88 and -3.56, respectively).
+The `am` and `am:wt` coefficients are significant, telling us that the intercepts and slopes, respectively, are significantly different between `am == 0` and `am == 1`.
+And the coefficients tell us by how much the intercepts and slopes are changing (14.88 and -5.30, respectively).
 So in sum, ANCOVA is a really useful statistical method!
 
 
