@@ -378,9 +378,9 @@ The data are better fit by a logistic function:
 ```{r echo = FALSE}
 plot(mtcars$am ~ mtcars$wt)
 
-binom.glm <- glm(am ~ wt, data = mtcars, family = binomial)
+glm.binom <- glm(am ~ wt, data = mtcars, family = binomial)
 
-pred.binom <- predict(binom.glm, data.frame(wt = seq(1, 6, length.out=100)))
+pred.binom <- predict(glm.binom, data.frame(wt = seq(1, 6, length.out=100)))
 
 inv.logit <- function(x) return(exp(x) / (1 + exp(x)))
 
@@ -421,7 +421,7 @@ plot(am ~ wt, data = mtcars)
 
 inv.logit <- function(x) return(exp(x) / (1 + exp(x)))
 
-lines(seq(1, 6, length.out = 100), inv.logit(predict(binom.glm, data.frame(wt = seq(1, 6, length.out = 100)))))
+lines(seq(1, 6, length.out = 100), inv.logit(predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))))
 ```
 
 Use `summary()` to bring up the detailed output.
@@ -429,7 +429,7 @@ As you can see, a lot of things are the same as your standard `lm()` output, but
 Nevertheless, you still get estimated coefficients, their standard errors, their P-values, and you can use `confint()` on the `glm()` object to get the 95% CI of the coefficient estimates.
 
 To add the fitted logistic curve to your plot, we have to use the `predict()` function to get out predicted values.
-Calling the `glm()` object `binom.glm`, enter `predict(binon.glm, data.frame(wt = seq(1, 6, length.out = 100)))` (the `seq(1, 6, length.out = 100)` simply creates a vector of many values within the range of the IV, so a smooth curve can be plotted).
+Calling the `glm()` object `glm.binom`, enter `predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))` (the `seq(1, 6, length.out = 100)` simply creates a vector of many values within the range of the IV, so a smooth curve can be plotted).
 However, you'll see that the values returned are not probabilities but logit-transformed probabilities.
 To transform them back into probabilities, we need to use an inverse logit transformation, which I've written a function for:
 
@@ -438,7 +438,7 @@ inv.logit <- function(x) return(exp(x) / (1 + exp(x)))
 ```
 
 Wrap this function around `predict()` to get out the predicted probability values.
-You can then add the fitted logistic curve, using `lines(seq(1, 6, length.out = 100), inv.logit(predict(binon.glm, data.frame(wt = seq(1, 6, length.out = 100)))))`.
+You can then add the fitted logistic curve, using `lines(seq(1, 6, length.out = 100), inv.logit(predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))))`.
 
 ### Interpreting coefficients
 
