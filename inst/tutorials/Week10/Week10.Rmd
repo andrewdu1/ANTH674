@@ -209,6 +209,7 @@ At this point, feel free to compare the estimated slope and intercept for each l
 Remember that each level's intercept in an ANCOVA is obtained by adding the baseline intercept to that level's main effect (e.g., to get the intercept for `Subject309` add `244.193` with `-39.138`).
 To get the level's slope, add the baseline slope to that subject's interaction term (e.g., to get the slope for `Subject309`, add `21.765` with `-19.503`).
 To get a level's intercept and slope from a LMM, you just add the deviation to its respective fixed effect (`Subject309`'s intercept is `251.405` plus `-40.398`).
+Recall that you extract the deviations using `ranef()`.
 
 ```{r shrink, exercise = TRUE}
 ```
