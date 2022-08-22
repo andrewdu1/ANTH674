@@ -20,13 +20,13 @@ library(knitr)
 
 ## Introduction
 
-Welcome to your first in-class R tutorial! 
+Welcome to your first lab R tutorial! 
 
 ![](https://ccawebfiles.blob.core.windows.net/images/happyCoder02.jpg){width="60%"}
 
-From here on out, the first half of class will be me lecturing about a certain topic, and the second half will be devoted to you operationalizing what you learned using R (after all, the best way to learn statistics is to *do* statistics). 
+From here on out, Monday's class will be me lecturing about a certain topic, and Wednesday's lab will be devoted to you operationalizing what you learned using R (after all, the best way to learn statistics is to *do* statistics). 
 In this way, topics are doubly reinforced (and triply so when homework is included), and you will hone your R skills.
-Also, by using R in class, you can ask me whatever questions you'd like whenever you run into issues.
+Also, by using R during the lab, you can ask me whatever questions you'd like whenever you run into issues.
 
 These days, R seems to be in the toolkit of every young researcher, so it is *very* important that you "master" R as much as you can, given a semester's time.
 R is a language: it has a vocabulary and grammatical rules.
@@ -109,7 +109,7 @@ arith <- data.frame(symb = c("+",
 kable(arith, col.names = c("R symbol", "Arithmetic operator"))
 ```
 
-Note that R follows order of operations (PEMDAS: parentheses, exponents, multiplicaitons and division, addition and subtraction).
+Note that R follows order of operations (PEMDAS: parentheses, exponents, multiplication and division, addition and subtraction).
 Play around with the different arithmetic operators below.
 For example, what do you think you'll get when you enter in `(2 + 2) ^ 2 / 4`?
 
@@ -187,8 +187,14 @@ What do you get when you enter `y` on the next line?
 ```
 
 ```{r exer1-solution}
-# xx is 25.
-# y is "a".
+# 1. xx is 25
+x <- 10
+xx <- (x / 2) ^ 2
+xx
+# 2. y is "a".
+y <- TRUE
+y <- "a"
+y
 ```
 
 
@@ -475,11 +481,6 @@ data(iris)
 ```
 
 ```{r names, exercise = TRUE}
-#
-#
-#
-#
-#
 ```
 
 The row names here are not very interesting, as they're just counting/indexing the specimens as you go from top to bottom.
@@ -645,10 +646,6 @@ data(mtcars)
 
 ```{r exer4, exercise = TRUE}
 # You can click the "Solution" button for the answers when you're done.
-#
-#
-#
-#
 ```
 
 ```{r exer4-solution}
