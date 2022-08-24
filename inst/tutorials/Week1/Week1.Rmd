@@ -223,7 +223,7 @@ Try it out below.
 
 ### R's help documentation
 
-You can see that the help documentation appears through your web browser.
+You can see that the help documentation appears in one of your RStudio panels.
 All help files for functions consist of eight parts:
 
 1. **Description:** There is a general description of what the function does
@@ -466,8 +466,6 @@ Try out `head(iris)`.
 This is what you should see:
 
 ```{r, echo = FALSE}
-data(iris)
-
 kable(head(iris))
 ```
 
