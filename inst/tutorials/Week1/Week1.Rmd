@@ -223,24 +223,24 @@ Try it out below.
 
 ### R's help documentation
 
-You can see that the help documentation appears in one of your RStudio panels.
+You can see that the help documentation appears in your web browser (as it does for me) or one of your RStudio panels.
 All help files for functions consist of eight parts:
 
-1. **Description:** There is a general description of what the function does
+1. **Description:** This is a general description of what the function does
 2. **Usage:** How to type and use the function
 3. **Arguments**: The arguments and what they are
-4. **Details**: details for understanding the function and its arguments
-5. **Value**: the values returned
-6. **References**: published references the function used
-7. **See Also**: related functions
-8. **Examples**: examples of how to use the function and what they do
+4. **Details**: Details for understanding the function and its arguments
+5. **Value**: The values returned
+6. **References**: Published references the function used
+7. **See Also**: Related functions
+8. **Examples**: Examples of how to use the function and what they do
 
 **NB:** Under "Examples", you'll see that some of the examples are followed by a `#` sign and some comment. 
 In R, everything that follows `#` will not be run in R.
 This is how you comment on code, either to inform yourself or whomever is reading your code.
 Comments are *very* useful, and it is better to comment more than less!
 
-For `seq()`, we see there are five arguments: `from`, `to`, `by`, `length.out`, and `along.with`. 
+For `seq()`, we see that there are five arguments: `from`, `to`, `by`, `length.out`, and `along.with`. 
 Read the descriptions of the arguments in the help file.
 Let's say we wanted to generate a sequence of numbers from 0 to 10. 
 According to the `seq()` help file, we would enter `seq(from = 0, to = 10)`, where we type out the argument names and define them with `=` and a value (this is why some R users advocate using `<-` as the assignment operator, to prevent confusion with using `=` to define arguments; I think it's fine using `=` as the assignment operator since arguments always exist inside the parentheses of functions, though I use `<-` for what it's worth).
@@ -376,7 +376,7 @@ As you're starting out, I would stick with familiarizing yourself with one of th
 
 ## Operations on arrays
 
-Many operations and functions can be applied to single elements, vectors, and matrices.
+Many operations and functions can be applied to single elements, vectors, or matrices.
 Operations are usually done element-by-element.
 
 For example, let's say we have a vector defined as `x <- 1:4`.
@@ -446,7 +446,7 @@ z <- y * 10
 
 Data frames are tables of information, where each column can be of a different variable type (e.g., numbers, characters).
 When you import data into R, it will usually be in data frame form.
-Rows, columns, and elements are subsetted/removed in the same exact way as a 2D array (i.e., matrix).
+Rows, columns, and elements are subsetted/removed in the *same exact way* as a 2D array (i.e., matrix).
 Look at the previous topic for a reminder of how to do this if necessary.
 
 For illustrative purposes, let's look at a data frame that's built into R.
@@ -626,6 +626,23 @@ Subset out those elements greater than or equal to 10.
 X <- matrix(1:12, nrow = 3, ncol = 4)
 X[X >= 10]
 ```
+
+### Hard vs. soft coding
+
+In the context of subsetting, **hard coding** involves typing in the number itself to subset out an element, row, column, etc.
+For example, let's say I have a vector defined as `x <- 11:20`.
+I can subset out all elements less than 15 by printing out the vector and noting which elements are less than 15 (i.e., the first through fourth elements).
+Thus, I can just code `x[1:4]`.
+But what if I revisit my code months later, and I still want to subset out elements less than 15 but now my vector is revised to be `x <- 5:20`?
+
+To make your code as flexible as possible (so you don't need to constantly update it), you should use **soft coding**.
+That is, instead of typing the number itself, use R code to call upon the proper element, row, column, etc.
+So in the above example, I would code `x[x < 15]`.
+Now my code is flexible enough to be used on any vector, `x`, provided the goal is to subset out all elements less than 15.
+
+All this also applies to subsetting out rows/columns in matrices and dataframes.
+Any time you're coding and you use the number(s) itself to subset, ask yourself if you can accomplish the same task with soft coding!
+**All code in your HW should be soft code!**
 
 
 ## Exercise 4: subsetting
