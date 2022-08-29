@@ -37,7 +37,7 @@ As a result, you will learn what good data practices are just from being an R us
 
 Note that I will teach you how to wrangle data using R's base language, building upon what you learned in last week's tutorial.
 There is an R package `dplyr` ([more information here](https://dplyr.tidyverse.org)) that is now commonly used for data wrangling.
-There is a learning curve involved, but I would encourage you to learn `dplyr` if you need to do some heavy-duty wrangling or if you work with really large datasets.
+There is a learning curve involved, but I would encourage you to learn `dplyr` if you need to do some heavy-duty wrangling or if you work with really large datasets ([here's a nice introduction to `dplyr`](https://cran.r-project.org/web/packages/dplyr/vignettes/dplyr.html)).
 For what it's worth, I myself do not know `dplyr` that well, and I have gotten away with using base R for data wrangling (so far).
 
 
@@ -77,8 +77,9 @@ Recalling that data within a vector can be ordered/subset using indexes (e.g., `
 
 For example, let's say I had two vectors: fossil specimen ID number and year of discovery.
 I can use `order()` to easily order fossil specimen ID numbers according to the year they were discovered: `spec_ID[order(year_disc)]`.
-You can also reorder an entire dataframe in the same way.
+You can also reorder an entire data frame in the same way.
 For example, if I wanted to reorder the rows in `mtcars` by increasing weight (`wt`), I would enter `mtcars[order(mtcars$wt), ]`.
+Try this out above.
 Recall that for two-dimensional R objects, code before the `,` applies to rows, while code after the `,` applies to columns.
 
 
@@ -112,14 +113,15 @@ Recall that you use `-` to delete elements from a vector by index.
 For example, if we wanted to delete the third element from a vector `x`, we would enter `x[-3]`.
 Thus, you can use `which()` to indicate which elements you want to delete.
 For example, if we wanted to *delete* elements greater than 25, we would enter `x[-which(x > 25)]`.
-Of course, the same result can be achieved with `x[which(x < 25)]` or `x[x < 25]`.
+Of course, the same result can be achieved with `x[which(x <= 25)]` or `x[x <= 25]`.
 Also with `x[!(x > 25)]`, where `!` indicates "not" in logical statements and transforms all `TRUE` to `FALSE`, and vice versa.
+You can try out `!` above by defining `x <- c(FALSE, TRUE, FALSE)` and then seeing what happens when you enter `!x`.
 
 **Remember, there are many ways to do the same thing in R, so pick the one that works best with how you think!**
 
 ### Using `subset()`
 
-`subset()` is a function that can be used to subset a vector or variables within a dataframe according to some logical statement.
+`subset()` is a function that can be used to subset a vector or variables within a data frame according to some logical statement.
 Start with the vector `x <- 20:30` again.
 Let's say we want to again subset out the elements that are greater than 25, but this time we'll use `subset()`.
 The first argument is the R object you want to subset (i.e., `x`), and the second argument is the logical statement indicating which elements you want to subset (i.e., `x > 25`).
@@ -132,19 +134,16 @@ Try it out below.
 Note that `subset(x, x > 25)` is the same as `x[x > 25]` or `x[which(x> 25)]`.
 For what it's worth, I use `x[x > 25]`. 
 
-`subset()` is more useful for subsetting variables within a dataframe.
+`subset()` is perhaps more useful for subsetting variables (columns) within a data frame.
 Let's work again with the `mtcars` dataset built into R.
-**NB:** before, I told you to load the dataset into R with `data(mtcars)`.
-I think the newest version of R already has all its datasets pre-loaded, so no need for this extra line of code now!
-
 Let's say we want to subset out fuel efficiency (`mpg`) for those car models whose weights (`wt`) are below `3` (i.e., 3000 lbs.).
-Remember that the first argument is the R object we want to subset (i.e., the `mtcars` dataframe), the second argument is the logical statement indicating which elements (or in this case, rows) to keep (i.e., `wt < 3`), and we need a third argument indicating which columns to select (i.e., `mpg`).
+Remember that the first argument is the R object we want to subset (i.e., the `mtcars` data frame), the second argument is the logical statement indicating which elements (or in this case, rows) to keep (i.e., `wt < 3`), and we need a third argument indicating which columns to select (i.e., `mpg`).
 So, the proper code is `subset(mtcars, wt < 3, mpg)`.
 Try it out above.
 Note that this is the same as using `mtcars$mpg[mtcars$wt < 3]` or `mtcars$mpg[which(mtcars$wt < 3)]`. 
 Use whichever method is more sensible to you!
 
-We can also delete variables from a dataframe using `subset()`.
+We can also delete variables from a data frame using `subset()`.
 Let's say we wanted to delete the `wt` variable from `mtcars`.
 The code for doing so is `subset(mtcars, select = -wt)`, remembering that `-` can be used to delete things.
 Note that we had to explicitly define the third argument (i.e., `select`, indicating which columns to retain) because we skipped over the second argument (i.e., `subset`, a logical statement indicating which rows to subset).
@@ -155,7 +154,7 @@ See the help file for `subset()` for more information on its arguments and their
 Deletion of the `wt` variable can also be achieved with `mtcars[, colnames(mtcars) != "wt"]`, where `colnames()` brings up the variable names of `mtcars`.
 Recall that for two-dimensional R objects, code before the `,` applies to rows, while code after the `,` applies to columns.
 
-We can also use `subset()` to subset out multiple variables (i.e., columns) from a dataframe according to some logical statement.
+We can also use `subset()` to subset out multiple variables (i.e., columns) from a data frame according to some logical statement.
 Let's say we wanted to subset out *both* fuel efficiency (`mpg`) *and* horsepower (`hp`) for those car models whose weights (`wt`) are below `3` (i.e., 3000 lbs.).
 We would enter `subset(mtcars, wt < 3, c(mpg, hp))`.
 Try it out below.
@@ -163,7 +162,7 @@ Try it out below.
 ```{r subset_mult, exercise = TRUE}
 ```
 
-The result is a new dataframe with just two variables (`mpg` and `hp`) for those car models whose weight (`wt`) is below 3000 lbs.
+The result is a new data frame with just two variables (`mpg` and `hp`) for those car models whose weight (`wt`) is below 3000 lbs.
 The equivalent R code using `[]` is `mtcars[mtcars$wt < 3, c("mpg", "hp")]`.
 
 
@@ -172,10 +171,10 @@ The equivalent R code using `[]` is `mtcars[mtcars$wt < 3, c("mpg", "hp")]`.
 During data wrangling, not only are we interested in subsetting out rows and columns, but we might be interested in adding rows and columns.
 
 For example, let's imagine that the `mtcars` dataset did not include `wt`, but instead weight data was located in another dataset.
-I've simulated this situation for you by creating a new dataframe called `mtcars_no_wt`, which has all the original `mtcars` variables except for `wt`. 
+I've simulated this situation for you by creating a new data frame called `mtcars_no_wt`, which has all the original `mtcars` variables except for `wt`. 
 I've also created a new vector, `car_wt`, which has all the weights from `mtcars`.
 
-```{r mtcars_no_wt-setup}
+```{r mtcars_no_wt-setup, echo = FALSE}
 mtcars_no_wt <- subset(mtcars, select = -wt)
 car_wt <- mtcars$wt
 ```
@@ -187,16 +186,17 @@ Try it out below.
 
 ```{r mtcars_no_wt, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
-`cbind()` doesn't only have to be used for combining a vector with a dataframe, it can also be used to combine multiple dataframes or a matrix with a dataframe, as long as they all have the same number of rows.
+`cbind()` doesn't only have to be used for combining a vector with a data frame, it can also be used to combine multiple data frames or a matrix with a data frame, as long as they all have the same number of rows.
 Just for fun, try combining `mtcars` with itself using `cbind(mtcars, mtcars)` and see what happens.
 
-We can also add rows to a vector, matrix, or dataframe using `rbind()`, as long as they all have the same number of columns.
+`cbind()` is very flexible and can be used to combine (by column) vectors, matrices, or data frames.
+If one starts out with a data frame, however, one can use `$` to add a new variable/column (recall that `$` is used to subset out a variable in a data frame).
+For example, I can create a new column in my `mtcars_no_wt` data frame called `weight` with `mtcars_no_wt$weight <- car_wt`.
+Try this out above and then enter `mtcars_no_wt` and see what you get.
+
+We can also add rows to a vector, matrix, or data frame using `rbind()`, as long as they all have the same number of columns.
 For example, let's create a matrix with 3 rows and 4 columns: `XX <- matrix(1:12, nrow = 3, ncol = 4)`.
 Now take the vector `x <- 1:4` and add it as a new row to `XX`, using `rbind(XX,x)`.
 Try this out below.
@@ -209,10 +209,10 @@ Try this out below.
 
 We will work with the `iris` dataset this time.
 
-1. Create a new dataframe called `iris.sepal_setosa` wherein the variables include only `Sepal.Length` and `Sepal.Width` for the `setosa` species only.
-Next, sort the rows in `iris.sepal_setosa` by *decreasing* `Sepal.Length`, and save the result to a new dataframe called `iris.sepal_setosa_ordered`.
+1. Create a new data frame called `iris.sepal_setosa` wherein the variables include only `Sepal.Length` and `Sepal.Width` for the `setosa` species only.
+Next, sort the rows in `iris.sepal_setosa` by *decreasing* `Sepal.Length`, and save the result to a new data frame called `iris.sepal_setosa_ordered`.
 
-2. Let's create a new vector called `Sepal.Area`, which is equal to `Sepal.Length` times `Sepal.Width`, using data from our new `iris.sepal_setosa_ordered` dataframe. Add `Sepal.Area` as a new column to `iris.sepal_setosa_ordered`, and save this new dataframe as `iris.sepal_setosa_ordered1`.
+2. Let's create a new vector called `Sepal.Area`, which is equal to `Sepal.Length` times `Sepal.Width`, using data from our new `iris.sepal_setosa_ordered` data frame. Add `Sepal.Area` as a new column to `iris.sepal_setosa_ordered`, and save this new data frame as `iris.sepal_setosa_ordered1`.
 
 ```{r exer1, exercise = TRUE}
 # You can click the "Solution" button for the answers when you're done.
@@ -221,12 +221,18 @@ Next, sort the rows in `iris.sepal_setosa` by *decreasing* `Sepal.Length`, and s
 ```{r exer1-solution}
 # Question 1a. 
 iris.sepal_setosa <- subset(iris, Species == "setosa", c(Sepal.Length, Sepal.Width))
+# this also works
+iris.sepal_setosa <- iris[iris$Species == "setosa", c("Sepal.Length", "Sepal.Width")]
 # Question 1b. 
 iris.sepal_setosa_ordered <- iris.sepal_setosa[order(iris.sepal_setosa$Sepal.Length, decreasing = TRUE), ] 
 # Question 2a. 
 Sepal.Area <- iris.sepal_setosa_ordered$Sepal.Length * iris.sepal_setosa_ordered$Sepal.Width
 # Question 2b. 
 iris.sepal_setosa_ordered1 <- cbind(iris.sepal_setosa_ordered, Sepal.Area)
+# this also works
+iris.sepal_setosa_ordered1 <- iris.sepal_setosa_ordered
+iris.sepal_setosa_ordered1$Sepal.Area <- Sepal.Area
+
 ```
 
 
@@ -236,14 +242,13 @@ The first rule for data organization from the lecture is to "Make sure your name
 Inconsistent names can be a real headache in R, and we will see why shortly.
 But first, we have to learn how R represents and handles names.
 
-Names are also known as **categorial data** in statistics, which are defined as labels assigning each observation to a particular group (e.g., "juvenile" and "adult", assigning individuals to an age category).
+Names are also known as **categorical data** in statistics, which are defined as labels assigning each observation to a particular group (e.g., "juvenile" and "adult" when assigning individuals to an age category).
 We will learn more about categorical data next lecture when we cover data types.
 
 Categorical data are represented as **factors** in R.
-Factors can be numbers but are more commonly characters (e.g., `setosa`), and they have different **levels** (e.g., `juvenile` and `adult` are two different levels).
+Factors can be numbers but are more commonly characters (e.g., `iris$Species` is a factor), and each factor has different **levels** (e.g., `setosa` and `virginica` are two different levels).
 
-For example, the `Species` variable in the `iris` dataset is a factor.
-You can see this by using the `class()` function to see what kind of variable `Species` is: `class(iris$Species)`.
+You can check that `iris$Species` is a factor by using the `class()` function to see what kind of variable `Species` is: `class(iris$Species)`.
 Try this out below.
 For comparison, you can also see what kind of variable `Sepal.Length` is.
 
@@ -264,24 +269,23 @@ Again, the first rule in data organization is keep your names *consistent.*
 In R, *ANY* differences between names will be interpreted as different names entirely.
 
 For example, `zebra` is different than `Zebra`, which is different than `zebra ` (the last one has a space at the end, which is invisible in factor form).
-So if you wanted to subset a dataframe to include only those data associated with zebras, this can cause problems (you would have to do `species == "zebra" | species == "Zebra" | species == "zebra "`, which is a pain especially if zebra is mistyped in many other ways).
+So if you wanted to subset a data frame to include only those data associated with zebras, this can cause problems (you would have to do `species == "zebra" | species == "Zebra" | species == "zebra "`, which is a pain especially if zebra is mistyped in many other ways).
 
 Instead, you want to clean the data and standardize all "zebra" names to be the same.
 Let's go through how to do that.
 
 I have created for you a vector (`x`) with "zebra" and "elephant" as different factor levels. 
-
-```{r zebra-setup}
-x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep("elephant", 10)))
-```
-
 Enter `x` below.
 
+```{r zebra-setup, echo = FALSE}
+x <- factor(c(rep("zebra", 10), 
+              rep("Zebra", 6), 
+              rep("zebra ", 2), 
+              "zEbra", 
+              rep("elephant", 10)))
+```
+
 ```{r zebra, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -292,24 +296,24 @@ This is quite common in "dirty" data, as data are mistyped all the time during d
 
 We can use the `unique()` function to get out the unique elements in our vector (this function works for numbers too).
 Wrapping `sort()` around `unique()`, i.e., `sort(unique())`, will bring up the unique elements in alphabetical order.
-`table()` is another useful function which tabulates and counts unique elements.
-Try these functions out below.
+`table()` is another useful function that tabulates and counts unique elements.
+Try these functions out on `x` below.
 
 ```{r uniq-setup, echo = FALSE}
-x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep("elephant", 10)))
+x <- factor(c(rep("zebra", 10), 
+              rep("Zebra", 6), 
+              rep("zebra ", 2), 
+              "zEbra", 
+              rep("elephant", 10)))
 ```
 
 ```{r uniq, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
-A nice was of detecting pesky spaces is to transform your factor levels into characters.
+A nice way of detecting pesky spaces is to transform your factor levels into characters.
 Do this using `as.character()` (with long vectors, it's easier on the eye to look at unique elements only by wrapping `as.character()` around `unique()`, i.e., `as.character(unique())`).
-Try this out above.
+Try this out on `x` above.
 
 We can now see that there is a `"zebra"`, as well as a `"zebra "`, which R is interpreting as two different names.
 How do we standardize all these different iterations of "zebra"?
@@ -319,10 +323,11 @@ How do we standardize all these different iterations of "zebra"?
 Your best friends here are the `grep()` and `grepl()` functions.
 `grep()` returns the indexes of elements whose names match some specified pattern.
 `grepl()` does the same but returns a logical vector of `TRUE` and `FALSE`, where `TRUE` indicates matches to the specified pattern.
+That is, the output of `grep()` is the same as `which(grepl())`.
 
-Let's try this out below.
+Let's try `grep()` out below.
 We want to subset all the different iterations of "zebra" in `x`.
-Thus, we would enter `grep("zebra", x, ignore.case = TRUE)`, where the first argument is the pattern to be matched against, the second argument is the vector to be investigated, and `ignore.case` indicates whether pattern matching is case sensitive.
+Thus, we begin by figuring out which elements correspond to all iterations of "zebra" by entering `grep("zebra", x, ignore.case = TRUE)`, where the first argument is the pattern to be matched against, the second argument is the vector to be investigated, and `ignore.case` indicates whether pattern matching is case sensitive.
 
 ```{r grep-setup, echo = FALSE}
 x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep("elephant", 10)))
@@ -330,23 +335,19 @@ x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep(
 
 ```{r grep, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
 <div id = "grep-hint">
 `x[grep("zebra", x, ignore.case = TRUE)] <- "zebra"`
 </div>
 
-You can see that R automatically detected all the different iterations of "zebra"!
+You can see that R automatically detected by index all the different iterations of "zebra"!
 This is because our specified character string, `"zebra"`, was present in all iterations of "zebra", even when spaces were involved.
-That is `"zebra"` is a subset of `"zebra "`; you can also try the pattern `"zeb"` or `"ebra"`, and you will see it gives the same result.
-Setting the argument `ignore.case = TRUE` means we ignored capitalization so `Zebra` and `zEbra` were detected as well.
+That is `"zebra"` is a subset of `"zebra "`; you can also try the pattern `"zeb"` or `"ebra"`, and you will get the same result.
+Setting the argument `ignore.case = TRUE` means we ignored capitalization, so `Zebra` and `zEbra` were detected as well.
 Try out the same line of code but use `grepl()` instead.
 
-Now it is straightforward to replace all iterations of "zebra" in `x` with one name.
+Now it is straightforward to replace all iterations of "zebra" in `x` with one name: `"zebra"`.
 Can you come up with the proper code to do so (click the "Hint" button if you're stuck)?
 
 Look at how easy that was!
@@ -355,6 +356,11 @@ Way easier than fixing everything by hand in the original spreadsheet.
 
 However, you'll notice that if you enter `x` now, the other levels of mistyped "zebra" are still "in the system" (this is especially obvious if you enter `table(x)`). There is an easy fix: use the `droplevels()` function, so enter `x <- droplevels(x)`.
 
+**An alternative function**: a student from a previous semester preferred the function `replace()`.
+This function takes three arguments: the vector whose elements you want to replace, a vector of indexes or `TRUE`/`FALSE` indicating which elements to replace, and the value to replace said elements.
+So to replace all iterations of "zebra" with `"zebra"`, one would enter `x <- replace(x, grep("zebra", x, ignore.case = TRUE), "zebra")`.
+**Again, use whichever function works best for your brain!**
+
 ### Standardizing names to a new one
 
 What if we wanted to standardize our species names to be capitalized (i.e., `Zebra` and `Elephant`)?
@@ -362,43 +368,52 @@ This is straightforward for "zebra" because there is already a capitalized `Zebr
 This is where the factor class of `x` can be a bit annoying.
 
 Let's revisit our original `x` vector.
-Try to replace `elephant` with `Elephant`.
+Try to replace `elephant` with `Elephant`, using the code you learned above.
 What happens?
 
 ```{r new-setup, echo = FALSE}
-x <- factor(c(rep("zebra", 10), rep("Zebra", 6), rep("zebra ", 2), "zEbra", rep("elephant", 10)))
+x <- factor(c(rep("zebra", 10), 
+              rep("Zebra", 6), 
+              rep("zebra ", 2), 
+              "zEbra", 
+              rep("elephant", 10)))
 ```
 
 ```{r new, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
+<div id = "new-hint">
+`x1 <- as.character(x)`
+
+`x1[grep("elephant", x)] <- "Elephant"`
+The `ignore.case` argument in `grep()` isn't necessary here since all `"elephant"` are lower case.
+
+`x1 <- as.factor(x1)`
+</div>
+
 R returns a warning message, saying `invalid factor level, NA generated`.
-This warning is basically saying that `Elephant` as a factor level is invalid because no such level exists in `x`, so it replaced `elephant` with `NA`s.
+This warning is basically saying that `Elephant` as a factor level is invalid because no such level exists in `x`, so it replaced `elephant` with `NA`s (you can see this by entering `x` after your line of `grep()` code).
 Not good (this is also why it's a good idea to save modified vectors as new ones, e.g., `x1`, in case something goes wrong)!
 
-To create new factor levels, we have to first transform `x` into a vector of character strings (do you remember how to do that?).
+To create new factor levels, we have to first transform `x` into a vector of character strings (do you remember how to do that? The answer is in the "Hint" button).
 Now, we can replace `"elephant"` with `"Elephant"`.
 Try this out above.
 
-To transform `x` back into factors, we have to use `as.factor()`.
+To transform our vector back into a factor, we have to use `as.factor()`.
 
 
 ## Missing data
 
 Missing data in R is represented using `NA`s.
-If there are blank cells in your spreadsheet (actual blanks, not cells with a space!), R will automatically transform them into `NA`s when you import the dataset, unless the column is a character class.
+If there are blank cells in your spreadsheet (actual blanks, not cells with a space!), R will automatically transform them into `NA`s when you import the dataset.
 It's up to you whether you want to enter NA into your spreadsheet to indicate missing data (NA in a spreadsheet will be recognized as `NA` by R).
 I usually do so to distinguish missing data from empty cells where I forgot to enter data.
 
 ### Detecting `NA`s
 
 R is great at handling `NA`s.
-For example, below is a dataframe (`DF`) with two columns of numbers, some of which have `NA`s.
+For example, below is a data frame, called `DF`, with two columns of numbers, some of which have `NA`s.
 I have created `DF` for you.
 
 ```{r NAs-setup}
@@ -406,10 +421,6 @@ DF <- data.frame(x = c(1, NA, 3, 6, 10, NA, -2), y = c(NA, NA, 2, 5, 14, 3, 1))
 ```
 
 ```{r NAs, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -423,10 +434,10 @@ or
 `x_df[-which(is.na(x_df))]`
 </div>
 
-`is.na()` is a function that returns a logical vector, matrix, or dataframe (i.e., whatever object you're investigating), where elements are `TRUE` if they are `NA`.
+`is.na()` is a function that returns a logical vector, matrix, or data frame (i.e., the format of the object you're investigating), where elements are `TRUE` if they are `NA`.
 Try it out on `DF` above.
 
-Therefore, `sum(is.na(DF))` will tell you how many `NA`s are in the dataframe.
+Therefore, `sum(is.na(DF))` will tell you how many `NA`s are in the data frame.
 
 Now create a new vector called `x_df` that is the first column from `DF`.
 How many `NA`s are in this vector?
@@ -434,7 +445,7 @@ Can you figure out how to use `is.na()` to remove `NA`s from your vector.
 Click "Hint" if you're stuck. 
 
 `complete.cases()` is a useful function that returns a logical vector where `TRUE` indicates rows without `NA`s.
-Thus, to remove `NA`s from the dataframe `DF`, you would enter `DF[complete.cases(DF), ]`.
+Thus, to remove `NA`s from the data frame `DF`, you would enter `DF[complete.cases(DF), ]`.
 
 ### Functions
 
@@ -449,15 +460,12 @@ x_df <- DF[, 1]
 
 ```{r NA_mean, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
-This result is good because you always want to be in control of your data and analyses.
+This `NA` result is good because you always want to be in control of your data and analyses.
 That is, you don't want R using a function on data that has `NA`s you don't know about.
-It's better for R to return `NA` as the default, and make you actively ignore `NA`s by setting `na.rm = TRUE`. 
+It's better for R to return `NA` as the default, so you know there are `NA`s and can find out where they are and why they're there.
+Once you're satisfied with your knowledge of the `NA`s, you can then actively ignore them in functions by setting `na.rm = TRUE`. 
 
 
 ## Spaces & special characters in names
@@ -506,16 +514,18 @@ You'll see that it works just fine, so spaces or special characters in character
 
 ### Variable names
 
-Let's see what happens when you create a dataframe, wherein variable names have a space or special character in them.
+Let's see what happens when you create a data frame, wherein variable names have a space or special character in them.
 I've provided you the code on how to do so.
 Note that you have to use character strings (i.e., quotation marks) to define variable names with spaces or special characters.
 Try out different special characters to see what happens.
 
 ```{r variab, exercise = TRUE}
-DF <- data.frame("mass(kg)" = 1:10, "upper case" = LETTERS[1:10], lower_case = letters[1:10])
+DF <- data.frame("mass(kg)" = 1:10, 
+                 "upper case" = LETTERS[1:10], 
+                 lower_case = letters[1:10])
 ```
 
-Use `colnames()` to see what R does to spaces and special characters in variables names.
+Use `colnames(DF)` to see what R does to spaces and special characters in variables names.
 
 R has automatically transformed spaces and special characters into periods!
 This can cause headaches and confusion if you try to subset out a variable, which you know as `mass(kg)`, but is now represented as `mass.kg.`.
@@ -525,7 +535,7 @@ Note that the same transformation of spaces and special characters into periods 
 ### Summary
 
 Even though spaces and special characters work for character strings, they present problems for object and variable names.
-Because of this, **it's just easier to not use spaces or special characters in names at all (this includes file names)!**
+Because of this, **it's just easier to not use spaces or special characters in names at all!**
 
 
 ## Multiple data pieces in a cell
@@ -559,11 +569,11 @@ This is also poor data practice.
 
 ### How these violations affect R
 
-In R, each column within a dataframe can be a different class (e.g., numeric, character, factor), but all elements *within* a column must be the same class.
+In R, each column within a data frame can be a different class (e.g., numeric, character, factor), but all elements *within* a column must be the same class.
 Let's see what happens when we import the above spreadsheet, where this is *not* the case.
 
-The dataset is in a dataframe called `mult_data`.
-Use `head()` to look at the dataframe structure.
+The dataset is in a data frame called `mult_data`.
+Use `head()` to look at the data frame structure.
 
 ```{r multData-setup, message = FALSE, echo = FALSE}
 mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
@@ -572,10 +582,6 @@ mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -595,7 +601,7 @@ We can instead use the `substr()` and `nchar()` functions to extract substrings 
 What do I mean by this?
 
 Imagine we have a character called `"andrew"`, and we want to extract the first to penultimate letters.
-`nchar()` tells us how many letters are in `"andrew"`, so we would extract our desired letters by entering `substr("andrew", 1, nchar("andrew") - 1)`.
+`nchar()` tells us how many letters are in `"andrew"`, so we would extract our desired letters by entering `substr("andrew", 1, nchar("andrew") - 1)` (read the `substr()` help file to understand the arguments).
 Try it out below.
 
 ```{r multData1-setup, message = FALSE, echo = FALSE}
@@ -605,10 +611,6 @@ mult_data <- read.csv(text = mult_data_url)
 ```
 
 ```{r multData1, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -806,10 +808,6 @@ So, never start variable names with numbers!
 
 ```{r non_rect, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
 The second spreadsheet row includes variables names, but R interprets them as real data, which is a mix of character strings and `NA`s.
@@ -833,7 +831,7 @@ The data should have originally been entered in a rectangular format like so (Fi
 ![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/BromanWoo2018_Fig3.jpg?raw=true){width="80%"}
 
 Now it's simple to subset out those measurements for strain A with normal genotypes, across all replicates and minutes.
-Calling the dataframe `d`, the code would be `subset(d, strain == "A" & genotype == "normal", response)` or `d$response[d$strain == "A" & d$genotype == "normal"]`.
+Calling the data frame `d`, the code would be `subset(d, strain == "A" & genotype == "normal", response)` or `d$response[d$strain == "A" & d$genotype == "normal"]`.
 
 **Remember, always keep your spreadsheets rectangular!**
 
@@ -851,15 +849,11 @@ csv_url_abund <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH
 abund <- read.csv(text = csv_url_abund, row.names = 1)
 ```
 
-`iso` is a dataframe with stable carbon isotope measurements from fossil tooth enamel and ancient soil carbonates for geological members in eastern Africa.
-`abund` is a dataframe with abundances of taxa whose teeth were analyzed from these members.
+`iso` is a data frame with stable carbon isotope measurements from fossil tooth enamel and ancient soil carbonates for geological members in eastern Africa.
+`abund` is a data frame with abundances of taxa whose teeth were analyzed from these members.
 Use `head()` to see what these datasets are like.
 
 ```{r relate_data, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -880,10 +874,10 @@ FYI, this is what Aepycerotini (e.g., an impala) looks like:
 
 And this is what Hadar (where the Sidi Hakoma Member is) looks like:
 
-![](https://iho.asu.edu/sites/default/files/images_asunews/hadar_w_students_working.jpg){width="70%"}
+![](https://askananthropologist.asu.edu/sites/default/files/styles/aab-gallery-large/public/gallery-images/hadar_camp.jpg?itok=QpbV1OYI){width="70%"}
 
 Subset out the enamel isotope measurements (`d13C`) for Aepycerotini and Sidi Hakoma (`iso$data.type == "enamel"`, `iso$taxon == "Aepycerotini`, `iso$member == "SidiHakoma`).
-(I have kept the datasets loaded for you.)
+(I have kept the datasets loaded for you; click "Hint" if you're stuck)
 
 ```{r relate_data_example-setup, echo = FALSE, message = FALSE}
 csv_url_iso <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
@@ -895,17 +889,18 @@ abund <- read.csv(text = csv_url_abund, row.names = 1)
 
 ```{r relate_data_example, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
 <div id = "relate_data_example-hint">
 Because you want to subset out rows that meet *all* three criteria, you want to use `&` in your logical statement.
+`iso$d13C[iso$data.type == "enamel" & iso$taxon == "Aepycerotini" & iso$member == "SidiHakoma"]`
+
+`abund["Aepycerotini", "SidiHakoma"]`
+or
+`abund$SidiHakoma[rownames(abund) == "Aepycerotini"]`
 </div>
 
-Now subset out the abundance for this taxon in this member (subsetting data using row and column names is easy in R: `abund["Aepycerotini", "SidiHakoma"]`; you could also do `abund$SidiHakoma[rownames(abund) == "Aepycerotini"]`). 
+Now subset out the abundance for this taxon in this member (using the `abund` data frame).
 
 Now we can do whatever analyses we'd like with these two pieces of related data!
 
