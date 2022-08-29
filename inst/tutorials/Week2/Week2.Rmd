@@ -839,7 +839,7 @@ Calling the data frame `d`, the code would be `subset(d, strain == "A" & genotyp
 ## Relating different datasets
 
 In order to keep datasets rectangular, sometimes you have to divide them up into separate rectangles.
-For example, let's load two published datasets from Du et al. (2019).
+For example, I've loaded for you two published datasets from [Du et al. (2019)](https://www.sciencedirect.com/science/article/pii/S0034666718301234).
 
 ```{r relate_data-setup, message = FALSE, echo = FALSE}
 csv_url_iso <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Duetal2019_isotopes.csv")
@@ -860,13 +860,15 @@ Use `head()` to see what these datasets are like.
 You can see that these two datasets share two variables that link them together: `iso$member` is the column names for `abund`, and `iso$taxon` is the row names for `abund`.
 You can double-check this visually by comparing `sort(unique(iso$member))` with `sort(colnames(abund))` and `sort(unique(iso$taxon))` with `sort(rownames(abund))`.
 You can do a more rigorous check with the `identical()` function, which takes two R objects as separate arguments to see if they are *exactly* equal (e.g., `identical(sort(unique(iso$member)), sort(colnames(abund)))`).
+*Exactly* means the classes match up too, so if you compare two vectors that contain the same exact names but one is a factor and the other is a character, `identical()` will return `FALSE`.
+As a quick example, you can enter `identical(as.character("A"), as.factor("A"))` and see what happens.
 
-You can see how it would be difficult to combine these two datasets into one that is still rectangular.
+You can see how it would be difficult to combine `iso` and `abund` into one dataset that is still rectangular.
 To illustrate, each taxon from each member in `abund` has only one number associated with it: the taxon's abundance from that member.
 In `iso`, on the other hand, each taxon from each member is associated with multiple enamel isotope measurements. 
 These differences in data sizes for a given taxon and member make it difficult to combine these two datasets and still maintain a rectangular format.
 
-But because the datasets are linked by shared taxon and member names, it is straightforward to analyze them together.
+But because the datasets are linked by shared taxon and member names, it is straightforward to link and analyze them together.
 For example, we can look at the enamel isotope measurements and abundance for Aepycerotini from the Sidi Hakoma Member.
 FYI, this is what Aepycerotini (e.g., an impala) looks like:
 
@@ -902,7 +904,7 @@ or
 
 Now subset out the abundance for this taxon in this member (using the `abund` data frame).
 
-Now we can do whatever analyses we'd like with these two pieces of related data!
+Now we can do whatever analyses or visualization we'd like with these two pieces of related data!
 
 **Remember, always relate different datasets to each other with at least one shared variable (e.g.,** `member`**,** `taxon`**), whose names are *exactly* the same!**
 
