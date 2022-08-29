@@ -19,6 +19,8 @@ library(knitr)
 
 ## Introduction
 
+Patrick wuz here.
+
 This week's tutorial covers how to create plots, calculate summary statistics, and transform data in R. 
 There is a lot in this week's tutorial, so don't do it all in one sitting if it's too much!
 
