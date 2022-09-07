@@ -700,7 +700,7 @@ Do the mean and median match up?
 Why would that be?
 
 Here is a simple way to see how the arithmetic mean is influenced by extreme values.
-Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 1000)` if `x` is your object of 10,000 numbers).
+Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 10000)` if `x` is your object of 10,000 numbers).
 Now calculate the mean.
 We see it's not zero (the true value) anymore, even when the extreme value is swamped by the other 10,000 values!
 Now calculate the median.
@@ -745,7 +745,7 @@ For log base 10, the antilog is raising 10 to the power of our data (`10^` in R)
 For log base 2, the antilog is raising 2 to the power of our data (`2^` in R).
 Try log-transforming some numbers using different bases and transforming them back into their original values using these different antilogs.
 
-So, to transform the mean of our vector back into arithmetic space, we take the antilog of the calculated mean in logarithmic space.
+So, to transform the mean of our log-transformed vector back into arithmetic space, we take the antilog of the calculated mean.
 The result is the geometric mean.
 Hopefully, you can now see why the geometric mean is the natural location measure for the lognormal distribution.
 
@@ -759,13 +759,12 @@ The first way is faster, as it doesn't deal with large numbers resulting from mu
 ## Summary statistics (spread)
 
 Summary statistics describing the spread or variation of distributions tell us how variable your data are (i.e., how much each data point differs from the "typical" data point as defined by some location measure).
-As with location summary statistics, those describing spread will be different for different data types.
-So we will go over the various measures of spread according to data type.
+As with location summary statistics, those describing spread will be different for different data types, so we will go over the various measures of spread according to data type.
 
 
 ## Spread: categorical
 
-For these types of data, we use information measures, though researchers rarely calculate a summary statistic of spread for categorical data.
+For categorical data, we use information measures, though researchers rarely calculate a summary statistic of spread for these types of data.
 Perhaps the most straightforward way to see how much variation there is in categorical data is just to create a bar plot.
 Nevertheless, I will go over here how to calculate one famous information measure: Shannon's index.
 
@@ -790,9 +789,9 @@ Likewise, there is much more variation in the data.
 
 This is the general thinking behind using information measures to quantify spread in categorical data.
 
-The formula for Shannon's index is $-\sum{p_ilog(p_i)}$, where $\sum$ means you sum all the elements in your vector (i.e., with `sum()`), and $p_i$ is the proportion of the $i$th element.
+The formula for Shannon's index is $-\sum{p_i \textrm{log} (p_i)}$, where $\sum$ means you sum all the elements in your vector (i.e., with `sum()`), and $p_i$ is the proportion of the $i$th element.
 I have created an R function for you to calculate Shannon's index (`shannon()`), along with the two vectors used to create those two bar plots (`no_surprise`, `surprise`).
-The function takes one argument: a vector of factor levels, which here are numbers.
+The function takes one argument: a vector of numbers, each of which is a count of a factor level.
 Try out the function on the two vectors and compare their values.
 
 ```{r shan-setup}
@@ -808,10 +807,6 @@ surprise <- rep(20, 20)
 
 ```{r shan, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
 The index is difficult to interpret on its own and is most useful for comparing spread among categorical distributions.
@@ -821,7 +816,7 @@ The index is difficult to interpret on its own and is most useful for comparing 
 
 For these types of data, we calculate the interquartile range, which is the `IQR()` function in R.
 
-We are sticking with our ordered hair color example ,`hair.color_ordered`, which is a vector of factor levels (i.e., hair colors).
+We are sticking with our ordered hair color example, `hair.color_ordered`, which is a vector of factor levels (i.e., hair colors).
 As before, first convert the factor levels into numeric data.
 Then use `IQR()` on the vector.
 What do you get?
@@ -835,20 +830,20 @@ hair.color_ordered <- ordered(hair_color, levels = c("Blond", "Red", "Brown", "B
 ```
 
 ```{r iqr, exercise = TRUE}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
 ```
 
-We see the answer is `1`, meaning the center 50% of our ordered data encompasses one "step" in hair color.
+```{r iqr-solution}
+IQR(as.numeric(hair.color_ordered))
+```
+
+We see the answer is `1`, meaning the center 50% of our ordered data encompasses one "step" between hair colors.
 
 
 ## Spread: discrete/continuous
 
 As with central tendency measures, which one to use depends on whether the data are normally distributed or not.
-As before, let's start with the a normally distributed variable
+As before, let's start with a normally distributed variable.
 
 ### Normally distributed data
 
@@ -857,6 +852,14 @@ Because we prespecified the SD, we know what the SD should be, as well as the va
 Calculate the standard deviation (`sd()`) and variance (`var()`) and see if you get numbers close to 1.
 
 ```{r var, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r var-solution}
+x <- rnorm(10000)
+
+sd(x)
+var(x)
 ```
 
 You do, which means these summary statistics are doing their job correctly.
@@ -872,6 +875,14 @@ We will use the same lognormal distribution as before (`n = 1000`, `meanlog = 0`
 You can make a histogram of the vector to remind yourself what the distribution looks like.
 
 ```{r non_norm_var, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r non_norm_var-solution}
+x <- rlnorm(n = 1000, meanlog = 0, sdlog = 2)
+
+IQR(x)
+exp(sd(log(x))) # geometric SD
 ```
 
 As you see with lognormal distributions, there are many values that are small and a few that are large, which can influence the mean, standard deviation, and variance.
@@ -880,12 +891,12 @@ Therefore, the proper measure of spread on a distribution like this is the inter
 
 Try out `IQR()` on your vector of 1,000 lognormal numbers.
 You see that it's fairly small compared to the total range of numbers in your vector.
-This is because the middle 50% of your data only comprises a small range, located at the smaller numbers.
+This is because the middle 50% of your data comprises only a small range, located at the smaller numbers.
 So interquartile range is giving us a more accurate measure of spread than, say, SD (see what you get when you use `sd()`).
 
 Because we know the distribution is lognormal, we can use the geometric standard deviation.
-As with the geometric mean, the geometric SD takes the SD of log-transformed variables and then takes the antilog to bring it back to arithmetic space.
-Try it out and see what you get.
+Similar to the geometric mean, the geometric SD takes the SD of log-transformed variables and then takes the antilog to bring it back to arithmetic space.
+Try it out and see what you get (if you can't figure out the code, click the "Solution" button in the above console).
 
 We know this measure is correct because we set the SD in log space to be 2 (with the argument `sdlog = 2`).
 The calculated SD on the log-transformed numbers is indeed close to 2, so the antilog (i.e., geometric standard deviation) is itself also accurate.
@@ -904,8 +915,9 @@ Data transformation are monotonic in that the rank order of your data does not c
 ## Centering and scaling
 
 This involves transforming your data to have mean = 0 and SD = 1.
-This is important for standardizing variables on different scales (e.g., if two variables were measured in mass and feet, or one variable ranged from 0-5 cm while the other ranged from 500-600 cm); such a standardization transforms data to be in the same unit: standard deviation units.
-This will be important for principal components analysis and comparing different linear models.
+This is important for standardizing variables on different scales (e.g., if two variables were measured in mass and feet, or one variable ranged from 0-5 cm while the other ranged from 500-600 cm). 
+Such a standardization transforms data to be in the same unit: standard deviation units (e.g., 1 = one SD unit, 2 = two SD units).
+This will be important for principal components analysis and comparing different linear models (i.e., you won't really need to use this transformation until those topics).
 
 Centering and scaling is done by substracting the mean from your data (centering) and dividing your data by the SD (scaling).
 You can do one or the other or both.
@@ -917,6 +929,24 @@ Save to an object a vector of 10,000 normally distributed numbers with mean = 50
 Generate a histogram of the vector to get a feel for what the distribution looks like and where it is located.
 
 ```{r scale, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r scale-solution}
+x <- rnorm(n = 10000, mean = 500, sd = 20)
+hist(x)
+
+x.center <- scale(x, scale = FALSE) # center only
+hist(x.center)
+mean(x.center); sd(x.center)
+
+x.center.scale <- scale(x) # center AND scale
+hist(x.center.scale)
+mean(x.center.scale); sd(x.center.scale)
+
+x <- rlnorm(n = 1000, meanlog = 0, sdlog = 2)
+hist(x)
+hist(scale(x))
 ```
 
 Now center the data *only* and make a histogram of the results.
@@ -944,7 +974,7 @@ We have already covered the relevant functions for log-transforming your data (s
 In this section, we will go over when one log-transforms data and how it facilitates interpretation of data and results.
 
 Remember that log-transformations bring all mathematical functions "down one level": exponents become multiplication/division, and multiplication/division become addition/subtraction.
-For example, $log(x^2)$ becomes $2log(x)$ and $log(2x)$ becomes $log(2) + log(x)$.
+For example, $\textrm{log}(x^2)$ becomes $2\textrm{log}(x)$ and $\textrm{log}(2x)$ becomes $\textrm{log}(2) + \textrm{log}(x)$.
 You can see that these are equal below, using whichever number you'd like for $x$.
 
 ```{r log, exercise = TRUE}
@@ -971,17 +1001,19 @@ for(i in seq_along(pop_size)[-1]) pop_size[i] <- ceiling(pop_size[i - 1] * 1.1)
 ```
 
 ```{r pop, exercise = TRUE}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
+```
+
+```{r pop-solution}
+plot(1:50, log10(pop_size))
+
+plot(1:50, pop_size, log = "y")
 ```
 
 You can see that a 10% increase per year has resulted in exponential growth.
 
 Because we know population size increases multiplicatively, we can log-transform it and then make the scatter plot again.
-Do this above and see what happens.
+Do this above (using whichever log base you want) and see what happens.
 
 You can see that a log-transformation has transformed the multiplicative increases into linear/additive ones, such that the relationship is now linear!
 
@@ -1001,7 +1033,7 @@ This difference will be most apparent when your data range over multiple orders 
 
 ## Other transformations
 
-I also mentioned three other transformations in lecture that can be used to remove the dependence between the mean and variance of a variable (which is necessary for some statistical test).
+I also mentioned three other transformations in lecture that can be used to remove the dependence between the mean and variance of a variable (which is necessary for some statistical tests, but I won't delve into this point any further).
 Here, I will only provide the appropriate R code for executing these transformations.
 
 #### Square-root transformation
@@ -1024,7 +1056,7 @@ Calling a vector of proportions `p`, the code is `log(p / (1 - p))`.
 1. We will use the `uspop` dataset for this question.
 This dataset is a vector containing US population sizes (in millions) every 10 years from 1790 to 1970.
 
-    Plot how US population size changes over time (this vector is in time series class, so you don't need to specify the x-variable, i.e., `plot(uspop)` will work).
+    Plot how US population size changes over time (this vector is in a class called "time series", so you don't need to specify the x-variable, i.e., `plot(uspop)` will work).
 Should you transform the data?
 How would you estimate location and spread?
 
@@ -1048,22 +1080,20 @@ plot(uspop, log = "y") # log-transform population size
 exp(mean(log(uspop))) # geometric mean
 exp(sd(log(uspop))) # geometric standard deviation
 # median & IQR work too
-median(uspop)
-IQR(uspop)
+median(uspop); IQR(uspop)
 
 # Question 2a
-# I would treat this as ordinal. Even though distances have meaning, there are just too few categories.
+# I would treat this as ordinal. 
+# Even though distances have meaning, there are just too few categories.
 
 # Question 2b
-median(mtcars$carb)
-IQR(mtcars$carb)
+median(mtcars$carb); IQR(mtcars$carb)
 
 # Question 3a
-# The data are continuous and a histogram shows that they're normal enough to use the mean and SD
-mean(mtcars$wt)
-sd(mtcars$wt)
-mean(mtcars$mpg)
-sd(mtcars$mpg)
+# The data are continuous.
+# Histograms show that they're normal enough to use the mean and SD
+mean(mtcars$wt); sd(mtcars$wt)
+mean(mtcars$mpg); sd(mtcars$mpg)
 
 # Question 3b
 plot(scale(mtcars$wt), scale(mtcars$mpg))
@@ -1080,7 +1110,7 @@ We have covered a lot in this tutorial, including:
 
 Each one of these topics is an important step in the data analysis process, and it is therefore crucial that you learn how to do these in R.
 
-![](http://omgenomics.com/wp-content/uploads/2017/05/Pretty-R-plots.png){width="100%"}
+![](https://www.datanovia.com/en/wp-content/uploads/2020/04/beautiful-plot-in-r-with-summary-statistics-labels-boxplots-with-summary-statistics-1.png){width="100%"}
 
 As with all the tutorials thus far, I don't expect you to know and memorize everything after having gone through the tutorial once.
 As always, the best way to learn this material is to go through the tutorial many, many times; the more you go through it, the better you will be at coding these things in R.
@@ -1091,5 +1121,5 @@ It is therefore important that you become familiar with your data and understand
 Once you do this, it becomes obvious which kinds of plots, summary statistics, and data transformations you should use.
 Refer to the lecture slides for summary tables on which kinds of plots and summary statistics are associated with each data type.
 
-In sum, these are ultimately rules of thumb, and the most important determinant of which kind of plot, summary statistics, and data transformation you should use *depends on your research question and what you want to show*!
-Once you clearly define your question, everything flows from there!
+In sum, these are ultimately general rules, and the most important determinant of which kind of plot, summary statistic, and data transformation you should use *depends on your research question and what you want to show*!
+Once you clearly define your research question, everything flows from there!
