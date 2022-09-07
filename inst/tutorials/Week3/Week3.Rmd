@@ -20,7 +20,7 @@ library(knitr)
 ## Introduction
 
 This week's tutorial covers how to create plots, calculate summary statistics, and transform data in R. 
-There is a lot in this week's tutorial, so don't do it all in one sitting if it's too much!
+There is a lot in this week's tutorial, so feel free to do this one in batches if it's all too much.
 
 Plots are visual representations of data, and they are an essential part of the data analysis process.
 They are *the* best way for getting a feel for your data and are important for understanding calculated statistics and results.
@@ -31,17 +31,17 @@ In sum, *always* plot your data!
 
 Note that I will teach you how to plot data using R's base language.
 There is an R package `ggplot2` ([more information here](https://ggplot2.tidyverse.org)) that is also commonly used to generate plots.
-`ggplot2` works seamlessly with `dplyr`, the wrangling R package I mentioned in last week's tutorial.
-So if you learn `dply`, it is worth learning `ggplot2`, even though there is a learning curve involved.
+`ggplot2` works seamlessly with `dplyr`, the wrangling R package I mentioned in last week's tutorial (in fact, `ggplot2` and `dplyr` are part of the larger [`tidyverse` collection of packages](https://www.tidyverse.org)).
+So if you learn `dplyr`, it is worth learning `ggplot2`, even though there is a learning curve involved.
 There are also some plots that are just easier to create in `ggplot2`.
-I myself have only ever used base R, except for one time when it was easier to generate the complicated plot in `ggplot2`.
+I myself have only ever used base R, except for a few times when it was easier to generate the complicated plot in `ggplot2`.
 
 Summary statistics are an effective way to describe distributions with one number.
 They are great for getting a feel for your data and are commonly reported in publications.
 Important summary statistics include descriptions of location (central tendency) and spread (variation).
 There are others describing shapes of distributions (e.g., skewness, kurtosis), but I did not cover these in lecture and they will not be in the tutorial.
 
-![](https://isoconsultantpune.com/wp-content/uploads/2015/01/Location-Spread-Shape.png){width="50%"}
+![](https://www.varsitytutors.com/assets/vt-hotmath-legacy/hotmath_help/topics/normal-distribution-of-data/normal-distribution-1.gif){width="50%"}
 
 Transforming data is also an important part of the data analysis pipeline.
 It helps us understand and visualize our data and results.
@@ -67,12 +67,12 @@ Let's go over each data type and learn how to create the plots associated with t
 But first, note that you can add points, lines, etc. to a plot in R, but you can't edit what's already there.
 In other words, you can't click and drag to move things, and you can't delete points or lines.
 To do the latter, you have to re-run your code without the code for points and lines you want to exclude.
-But this is easy to do in R because you just re-run your already written lines of code!
+But this is easy to do in R because you just re-run your already-written lines of code!
 
 
 ## Plots: categorical data & plotting arguments
 
-These are unordered, qualitative data, where each data point is given a name assigning it to some group.
+Categorical data are unordered, qualitative data, where each data point is given a name assigning it to some group.
 These are interpreted as `factor` levels in R.
 
 Let's look at the dataset I analyzed in lecture: `HairEyeColor`.
@@ -89,10 +89,6 @@ hair_color <- as.factor(hair_color)
 
 ```{r hair, exercise = TRUE}
 #
-#
-#
-#
-#
 ```
 
 To portray a distribution of categorical variables, we use a bar plot, which visualizes the number of data points within each category.
@@ -107,11 +103,11 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r hair_bar, exercise = TRUE}
-#
-#
-#
-#
-#
+# Click "solution" button for bar plot of hair color
+```
+
+```{r hair_bar-solution}
+barplot(table(hair_color))
 ```
 
 For `hair_color`, we want a vector of the number of students in each hair color category.
@@ -165,7 +161,7 @@ kable(plot.arg)
 
 ## Plots: ordinal data
 
-These are *ordered*, qualitative data, where each data point is given a name assigning it to some group.
+Ordinal data are *ordered*, qualitative data, where each data point is given a name assigning it to some group.
 These are interpreted as *ordered* `factor` levels in R.
 
 Sticking with our hair color example, imagine we were interested in hair color such that it had a natural order (e.g., by darkness).
@@ -181,15 +177,16 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r hair_order, exercise = TRUE}
-# Click solution button for reordering factor levels
-#
-#
-#
-#
+# Click solution button for reordering factor levels & creating bar plot
 ```
 
 ```{r hair_order-solution}
-hair.color_ordered <- ordered(hair_color, levels = c("Blond", "Red", "Brown", "Black"))
+hair.color_ordered <- ordered(
+  hair_color, 
+  levels = c("Blond", "Red", "Brown", "Black")
+  )
+
+barplot(table(hair.color_ordered))
 ```
 
 You can see that the factor levels are in alphabetical order, which is the default in R.
@@ -215,16 +212,20 @@ hair.color_sex <- apply(HairEyeColor, c(1, 3), sum)
 
 ```{r two_var, exercise = TRUE}
 # Click solution button to see how to create a side-by-side bar plot with a legend & with variables flipped
-#
-#
-#
-#
 ```
 
 ```{r two_var-solution}
-barplot(hair.color_sex, beside = TRUE, legend.text = rownames(hair.color_sex))
+barplot(
+  hair.color_sex, 
+  beside = TRUE, 
+  legend.text = rownames(hair.color_sex)
+  )
 
-barplot(t(hair.color_sex), beside = TRUE, legend.text = colnames(hair.color_sex))
+barplot(
+  t(hair.color_sex), 
+  beside = TRUE, 
+  legend.text = colnames(hair.color_sex)
+  )
 ```
 
 Try creating a bar plot of `hair.color_sex` as is, i.e., `barplot(hair.color_sex)`.
@@ -250,12 +251,12 @@ Now we can create the bar plot we want: enter `barplot(t(hair.color_sex), beside
 
 ## Plots: discrete data
 
-These are defined as those data that are finite or countable values (e.g., integers).
+Discrete data are defined as those data that are finite or countable values (e.g., integers).
 
 Let's use the dataset I used in lecture: a vector of elements, each one corresponding to the number of *Paranthropus* specimens found at a fossil site.
-FYI, *Paranthropus* is a hominin genus that looks like this:
+FYI, *Paranthropus* is a hominin genus that looked like this:
 
-![](https://humanorigins.si.edu/sites/default/files/styles/full_width/public/images/square/boisei_JG_Recon_head_CC_3qtr1_lt_sq.jpg?itok=fMGwHzZf){width="50%"}
+![](https://humanorigins.si.edu/sites/default/files/styles/grid_thumbnail/public/images/landscape/boisei_JG_Recon_head_CC_3qtr1_lt_l.jpg.webp?itok=Tqa0Dzix){width="50%"}
 
 The vector is called `paran`.
 Get a feel for it in the console below.
@@ -265,10 +266,6 @@ paran <- c(rep(0, 33), rep(1, 4), 2:7, 10, 16, 17, 21, 33, 34, 120)
 ```
 
 ```{r discrete, exercise = TRUE}
-#
-#
-#
-#
 #
 ```
 
@@ -289,7 +286,7 @@ Try out `plot(density(paran))`.
 
 ## Plots: continuous data
 
-These are defined as values within a continuous interval (e.g., 2.4575).
+Continuous data are defined as values within a continuous interval (e.g., 2.4575).
 Basically, any data measured with high precision (i.e., multiple decimal points) can be considered continuous.
 
 The plots for this type of data are exactly the same as for discrete data, minus the line plot (can you guess why that is?).
@@ -307,7 +304,7 @@ Now create a density plot of the same variable.
 
 ## Plots: categorical vs. continuous variables & creating a legend
 
-This takes the form of box plots and violin plots, where each box and violin corresponds to a different category, and density plots, where each density curve corresponds to a different category.
+This takes the form of (1) box plots and violin plots, where each box and violin corresponds to a different category, and (2) density plots, where each density curve corresponds to a different category.
 Remember that ordinal variables are plotted the same way as categorical variables, just with ordered factor levels.
 
 We will use the `iris` dataset to create our plots.
@@ -320,7 +317,7 @@ Let's say we wanted to plot `Petal.Length` as a function of `Species`.
 
 ### Box plots
 
-To create a box plot, we use the `boxplot()` function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R).
+To create a box plot, we use the `boxplot()` function, but this function will only accept vectors as arguments in formula format (this is common when creating linear models in R, as we'll see in future lectures/tutorials).
 Think about it as plotting "variable Y" as a function of "variable X", which translates to `y ~ x` in R speak.
 Here, we want to plot `Petal.Length` as a function of `Species`, so we enter `boxplot(iris$Petal.Length ~ iris$Species)`.
 Try it out above.
@@ -353,26 +350,37 @@ The `horizontal = TRUE` argument works for this function as well.
 You have already learned how to plot one distribution of values using `density()`.
 Now, we will learn how to plot three.
 In R, you have to plot each curve separately.
-This gives you more control over how each curve is plotted (e.g., its line type, color, thickness).
+This gives you more control over how each curve is plotted (e.g., its line type, color, thickness, which curve is plotted on top of others).
 
 First, plot the density of `Petal.Length` for one species (pick whichever one you want! Do you remember how to subset out `Petal.Length` for one species only?).
 Enter in the subsetted `Petal.Length` into `plot(density())` below.
 
 ```{r dens_plot, exercise = TRUE}
+# Click "Solution" if you don't remember how to subset
+```
+
+```{r dens_plot-solution}
+setosa_PL <- iris$Petal.Length[iris$Species == "setosa"]
+# OR
+setosa_PL <- subset(
+  iris, 
+  subset = Species == "setosa", 
+  select = Petal.Length
+  )
 ```
 
 You can see that we're going to run into a problem: if `Petal.Length` for other species is very different, there's no room to plot them!
 Therefore, we need to change the range of values on our x-axis with the `xlim` argument (to change the range of values on the y-axis, you use `ylim`). 
 We want to set this equal to the minimum and maximum value of `Petal.Length` across all species.
-Sure, we can look at the `Petal.Length` vector and visually pick out the smallest and largest value, but we should automate everything now that we're R coders.
+Sure, we can look at the `Petal.Length` vector and visually pick out the smallest and largest value, but we should automate everything now that we're R coders (i.e., soft code!).
 The relevant functions for extracting the minimum and maximum values in a vector are `min()` and `max()`, or `range()` will give us both values simultaneously.
 Now we're ready to set `xlim` equal to a vector of two elements: the minimum and maximum values. 
-Can you figure out how to do this?
+Can you figure out how to do this (solution is in the console below)?
 
 Now we need to add the curves for the other two species.
 Whenever we want to add points or lines to a plot, we use the `points()` or `lines()` functions.
 Here we want to use `lines()` because we're plotting curves.
-Make sure to make the lines a different color (e.g., red, blue) or type (e.g., dotted, dashed) to differentiate the curves (using the `col` and `lty` arguments).
+Make sure to make the lines a different color (e.g., red, blue) or type (e.g., dotted, dashed) to differentiate the curves (using the `col` or `lty` arguments).
 So, we want to enter subsetted `Petal.Length` for the second species using `lines(density())`.
 Try using `col = "blue"` for a blue curve or `lty = 2` for a dashed line.
 Here's how different `lty` numbers correspond to different line types.
@@ -388,21 +396,62 @@ You can also use the `lwd` argument to change the line thickness (e.g., `lwd = 2
 ```
 
 ```{r dens3-solution}
-plot(density(iris$Petal.Length[iris$Species == "setosa"]), xlim = range(iris$Petal.Length), main = "", xlab = "Petal length (cm)") # using range for xlim
+# using range for xlim
+plot(
+  density(iris$Petal.Length[iris$Species == "setosa"]), 
+  xlim = range(iris$Petal.Length), 
+  main = "", 
+  xlab = "Petal length (cm)"
+  ) 
 
-# plot(density(iris$Petal.Length[iris$Species == "setosa"]), xlim = c(min(iris$Petal.Length), max(iris$Petal.Length)), main = "", xlab = "Petal length (cm)") # using min and max for xlim
+# using min and max for xlim
+plot(
+  density(iris$Petal.Length[iris$Species == "setosa"]), 
+  xlim = c(
+    min(iris$Petal.Length),
+    max(iris$Petal.Length)
+    ), 
+  main = "", 
+  xlab = "Petal length (cm)") 
 
-lines(density(iris$Petal.Length[iris$Species == "versicolor"]), col = "blue")
+# using blue curve for second species
+lines(
+  density(iris$Petal.Length[iris$Species == "versicolor"]), 
+  col = "blue"
+  )
 
-# lines(density(iris$Petal.Length[iris$Species == "versicolor"]), lty = 2) # using dashed lines
+# using dashed lines instead
+lines(
+  density(iris$Petal.Length[iris$Species == "versicolor"]), 
+  lty = 2
+  ) 
 
-lines(density(iris$Petal.Length[iris$Species == "virginica"]), col = "red")
+# using red curve for third species
+lines(
+  density(iris$Petal.Length[iris$Species == "virginica"]), 
+  col = "red"
+  )
 
-# lines(density(iris$Petal.Length[iris$Species == "virginica"]), lty = 3) # using dotted lines
+# using dotted lines instead
+lines(
+  density(iris$Petal.Length[iris$Species == "virginica"]), 
+  lty = 3
+  ) 
 
-legend("topright", legend = unique(iris$Species), lty = c(1, 1, 1), col = c("black", "blue", "red"))
+# creating a legend (colored curves)
+legend(
+  "topright", 
+  legend = unique(iris$Species), 
+  lty = c(1, 1, 1), 
+  col = c("black", "blue", "red")
+  )
 
-# legend("topright", legend = unique(iris$Species), lty = c(1, 2, 3)) # using lty
+# creating a legend (dotted/dashed curves)
+legend(
+  "topright", 
+  legend = unique(iris$Species), 
+  lty = c(1, 2, 3)
+  ) 
 ```
 
 ### Creating a legend
@@ -446,6 +495,9 @@ Try this out below (doesn't matter which variable is on the x- or y-axis).
 
 Simple!
 
+**NB:** `plot()` also accepts arguments using the `~` formula format we encountered before in `boxplot()`. 
+So, if I wanted to plot `Petal.Length` as a function of `Petal.Width`, I would enter `plot(iris$Petal.Length ~ iris$Petal.Width)`.
+
 We can also change the color of our points using the `col` argument.
 Use the `cex` argument to change the size of points (e.g., `cex = 2` will double the point size), and use the `pch` argument ("plot character") to change the type of points plotted.
 Here are the different `pch` numbers and the types of points they correspond to.
@@ -479,7 +531,7 @@ Go ahead and create that plot.
 
 3. Create a plot where `hp` is on the y-axis and `wt` is on the x-axis, and the points are color-coded according to `vs`. 
 What plot would this be? 
-Create a legend, so the audience know what the different colors are.
+Create a legend, so the reader knows what the different colors are.
 
 ```{r exer1, exercise = TRUE}
 # You can click the "Solution" button for the answers when you're done.
@@ -487,32 +539,64 @@ Create a legend, so the audience know what the different colors are.
 
 ```{r exer1-solution}
 # Question 1a. 
-# To me, I would treat this as ordinal. Even though the distances between 3, 4, & 5 have meaning, there are just so few unique values.
+# To me, I would treat mcars$gear as ordinal.
+# Even though the distances between 3, 4, & 5
+# have meaning, there are just so few unique values.
 
 # Question 1b. 
-barplot(table(mtcars$gear), ylab = "Number of car models", xlab = "Number of forward gears")
+barplot(
+  table(mtcars$gear), 
+  ylab = "Number of car models", 
+  xlab = "Number of forward gears"
+  )
 
 # Question 2a. 
-# I would make a boxplot. Violin or density plot works also.
+# I would make a boxplot. 
+# Violin or density plot works also.
 
 # Question 2b. 
-boxplot(mtcars$mpg ~ mtcars$cyl, ylab = "Miles per gallon", xlab = "Number of cylinders")
+boxplot(
+  mtcars$mpg ~ mtcars$cyl, 
+  ylab = "Miles per gallon", 
+  xlab = "Number of cylinders"
+  )
 
 # Question 3a.
 # scatter plot
 
 # Question 3b.
-plot(mtcars$wt[mtcars$vs == 0], mtcars$hp[mtcars$vs == 0], xlim = range(mtcars$wt), ylim = range(mtcars$hp), xlab = "Weight (1000 lbs.)", ylab = "Horsepower")
-points(mtcars$wt[mtcars$vs == 1], mtcars$hp[mtcars$vs == 1], col = "red")
-legend("topleft", legend = c("V-shaped engine", "Straight engine"), pch = c(1, 1), col = c("black", "red"))
+plot(
+  mtcars$wt[mtcars$vs == 0],
+  mtcars$hp[mtcars$vs == 0], 
+  xlim = range(mtcars$wt), 
+  ylim = range(mtcars$hp), 
+  xlab = "Weight (1000 lbs.)", 
+  ylab = "Horsepower"
+  )
+
+points(
+  mtcars$wt[mtcars$vs == 1],
+  mtcars$hp[mtcars$vs == 1], 
+  col = "red"
+  )
+
+legend(
+  "topleft", 
+  legend = c(
+    "V-shaped engine", 
+    "Straight engine"
+    ), 
+  pch = c(1, 1), 
+  col = c("black", "red")
+  )
 ```
 
+[Click this link for solution code if it's cut off above.](https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Code/Week3_exer1_solutions.txt)
 
 ## Summary statistics (location)
 
 Summary statistics describing the location or central tendency of distributions tell us where in measurement space our data are located (e.g., data are centered around 5 mm or 500 mm).
-Recall that different data types require different types of summary statistics.
-So let's go over each data type in this section and the corresponding summary statistic for describing location.
+Recall that different data types require different types of summary statistics, so let's go over each data type in this section and the corresponding summary statistic for describing location.
 
 ## Location: categorical
 
@@ -535,11 +619,11 @@ hair_color <- as.factor(hair_color)
 ```
 
 ```{r mode, exercise = TRUE}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
+```
+
+```{r mode-solution}
+which.max(table(hair_color))
 ```
 
 ## Location: ordinal
@@ -558,18 +642,22 @@ hair.color_ordered <- ordered(hair_color, levels = c("Blond", "Red", "Brown", "B
 ```
 
 ```{r median, exercise = TRUE}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
+```
+
+```{r median-solution}
+med.hair <- median(as.numeric(hair.color_ordered))
+
+# med.hair gives us the rank (i.e., index) of the median hair color.
+# Use it to get R to give us back the hair color
+levels(hair.color_ordered)[med.hair]
 ```
 
 To calculate the median, we need to convert hair color (which is a factor class) into a numeric class (do you remember how to do this?).
 You will see that the four levels are automatically converted into ranks corresponding to their order.
 Now you just use `median()` on the numeric vector of hair color.
 
-We see the answer is `3`, corresponding to `Brown` hair color.
+We see the answer is `3`, corresponding to `Brown` hair color (can you write soft code so that R returns `Brown` instead of `3`?).
 
 Remember that `median()` has an `na.rm` argument to remove `NA`s.
 
@@ -599,20 +687,20 @@ We'll learn more about this next week.
 
 Try out different arguments in `rnorm()` above and see what kinds of numbers you get.
 
-Save to an object a vector of 10,000 normally distributed values with `mean = 0` and `sd = 1` (the default `rnorm()` arguments). 
+Save to an object a vector of 10,000 normally distributed values with `mean = 0` and `sd = 1` (the default `rnorm()` arguments for `mean` and `sd`). 
 Create a histogram of the vector.
 Now calculate the mean using `mean()`. 
 
 Does it look like the calculated mean is capturing the central tendency of the distribution?
 In fact, we know what the actual mean is because we specified it beforehand (it's zero)!
-So we can see `mean()` is doing its job correctly.
+So we can see that `mean()` is doing its job correctly.
 
 Now calculate the median of that vector.
 Do the mean and median match up?
 Why would that be?
 
 Here is a simple way to see how the arithmetic mean is influenced by extreme values.
-Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 1)` if `x` is your object of 10,000 numbers).
+Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 1000)` if `x` is your object of 10,000 numbers).
 Now calculate the mean.
 We see it's not zero (the true value) anymore, even when the extreme value is swamped by the other 10,000 values!
 Now calculate the median.
@@ -633,7 +721,7 @@ Why or why not?
 Which one is the better measure of central tendency here?
 
 This is a case where the median is better, as it's not as heavily influenced by extreme values as the mean.
-**NB**: a good rule of thumb is to always use the median when describing the location of non-normal distributions!
+**NB**: a good general rule is to always use the median when describing the location of non-normal distributions!
 But because we know the distribution is lognormal (since we generated it as such), the geometric mean is the superior measure of central tendency.
 
 #### Geometric mean
