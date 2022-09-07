@@ -1,0 +1,51 @@
+# Question 1a. 
+# To me, I would treat mcars$gear as ordinal.
+# Even though the distances between 3, 4, & 5
+# have meaning, there are just so few unique values.
+
+# Question 1b. 
+barplot(
+  table(mtcars$gear), 
+  ylab = "Number of car models", 
+  xlab = "Number of forward gears"
+  )
+
+# Question 2a. 
+# I would make a boxplot. 
+# Violin or density plot works also.
+
+# Question 2b. 
+boxplot(
+  mtcars$mpg ~ mtcars$cyl, 
+  ylab = "Miles per gallon", 
+  xlab = "Number of cylinders"
+  )
+
+# Question 3a.
+# scatter plot
+
+# Question 3b.
+plot(
+  mtcars$wt[mtcars$vs == 0],
+  mtcars$hp[mtcars$vs == 0], 
+  xlim = range(mtcars$wt), 
+  ylim = range(mtcars$hp), 
+  xlab = "Weight (1000 lbs.)", 
+  ylab = "Horsepower"
+  )
+
+points(
+  mtcars$wt[mtcars$vs == 1],
+  mtcars$hp[mtcars$vs == 1], 
+  col = "red"
+  )
+
+legend(
+  "topleft", 
+  legend = c(
+    "V-shaped engine", 
+    "Straight engine"
+    ), 
+  pch = c(1, 1), 
+  col = c("black", "red")
+  )
