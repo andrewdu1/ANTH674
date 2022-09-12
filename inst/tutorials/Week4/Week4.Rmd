@@ -29,9 +29,9 @@ By far, the most common type of statistical inference is ***frequentist inferenc
 Frequentism starts with a, often abstract and unknowable, statistical population, from which one sample out of theoretically infinity is taken.
 For example, let's say I was interested in the mean stature of the *Homo erectus* species. FYI, this is what *H. erectus* looked like:
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/MNP_-_Turkanajunge_1.jpg/800px-MNP_-_Turkanajunge_1.jpg){width="50%"}
+![](http://humanorigins.si.edu/sites/default/files/styles/grid_thumbnail/public/images/landscape/erectus_JC_Recon_Head_CC_f_l.jpg.webp?itok=TYqVFFcz){width="50%"}
 
-There is certainly a statistical population of all *Homo erectus* individuals who have ever lived, but the fossil record only preserves some individuals, and we can estimate stature for only some of those individuals.
+There is certainly a statistical population of all *Homo erectus* individuals who have ever lived, but the fossil record preserves only some individuals, and we can estimate stature only for those individuals.
 These individuals provide a ***sample***, from which we make inferences about the unknown population.
 Let's imagine the history of Earth is rewound and replayed and through sheer happenstance another set of *H. erectus* individuals is preserved for us to analyze.
 This is another replicate sample from the population, and we can imagine a theoretically infinite number of rewindings and alternate dimensions, which provides us with theoretically infinite sample replicates from the *H. erectus* statistical population.
@@ -74,16 +74,24 @@ Let's learn more about this through simulating random data.
 ![](https://psmag.com/.image/c_limit%2Ccs_srgb%2Cq_auto:good%2Cw_380/MTMzNTIwNTUwOTIzMzg4OTM4/shutterstock_109028771jpg.webp){width="40%"}
 
 A coin flip can either come up heads or tails.
-With two outcomes, this is a binomial random variable.
+With two outcomes, this is a binomial random variable ("random" because we don't know with 100% certainty whether a given coin flip will come up heads or tails).
 So, let's use `rbinom()` to generate one trial of two coin flips.
 The first argument is the number of trials to conduct, the second argument is how many coin flips to do in one trial, and the third argument is the probability of getting heads (i.e., 0.5).
 So, enter `rbinom(1, 2, 0.5)` below.
 The answer you get is how many heads you flipped.
 
 ```{r coin, exercise=TRUE}
+# Click "Solution" if stuck
 ```
 
-You might have gotten 0, 1, or 2 because there is randomness (i.e., ***stochasticity***) involved in flipping coins.
+```{r coin-solution}
+# first argument is number of trials
+hist(rbinom(10, 2, 0.5))
+mean(rbinom(10, 2, 0.5))
+```
+
+You might have gotten a 0, 1, or 2 because there is randomness (i.e., ***stochasticity***) involved in flipping coins.
+You can rerun the code multiple times to see the three different outcomes.
 
 Now let's do the same but with 10 trials.
 Can you figure out which argument to modify?
@@ -94,7 +102,7 @@ Now we're starting to see the 0.5 probability (i.e., one head out of two flips) 
 Remember, we know the answer is 0.5 because we set it as such; 0.5 can be thought of as the population parameter (i.e., probability of flipping heads) that we're trying to estimate from the sample.
 
 Now let's go crazy and set the number of trials to 10,000.
-If you make a histogram of your results, this is the ***sampling distribution*** of number of heads flipped in two trials (more on sampling distributions in *Frequentism using measurements*).
+If you make a histogram of your results, this is the ***sampling distribution*** of number of heads obtained with two coin flips (more on sampling distributions in *Frequentism using measurements*).
 That is, this is a distribution of our statistic of interest (i.e., number of heads out of two flips), where each data point is a trial/replicate drawn from the statistical population.
 The mean of this sampling distribution will be extremely close to the true population mean (i.e., one head out of two flips: 0.5 probability), given the large number of trials.
 Go ahead and calculate the mean of the sampling distribution and see what you get.
@@ -115,7 +123,14 @@ for(i in 1:length(prop_heads)){
   prop_heads[i] <- rbinom(1, i, prob = 0.5)
 }
 
-plot(1:length(prop_heads), prop_heads / 1:length(prop_heads), type = "l", log = "x", xlab = "Number of coin flips", ylab = "Proportion that are heads")
+plot(
+  1:length(prop_heads), 
+  prop_heads / 1:length(prop_heads), 
+  type = "l", 
+  log = "x", 
+  xlab = "Number of coin flips", 
+  ylab = "Proportion that are heads"
+  )
 
 abline(h = 0.5, col = "red")
 ```
@@ -137,13 +152,30 @@ This can be done with the code below.
 
 ```{r norm_pdf}
 x <- seq(4, 7, length.out = 1000)
-plot(x, dnorm(x, mean = 5.5, sd = 0.3), type = "l", xlab = "Human height (feet)", ylab = "Density")
+
+plot(
+  x, 
+  dnorm(
+    x, 
+    mean = 5.5, 
+    sd = 0.3
+    ), 
+  type = "l", 
+  xlab = "Human height (feet)", 
+  ylab = "Density"
+  )
 ```
 
 ```{r norm, exercise = TRUE}
+# Click "Solution" if stuck
 ```
 
-Let's take a random sample of 10 individuals from this population, using `rnorm(10, 5.5, 0.3)`.
+```{r norm-solution}
+mean(rnorm(10, 5.5, 0.3))
+# run this code multiple times to see the stochasticity involved
+```
+
+Let's take a random sample of 10 individuals from this population, using `rnorm(n = 10, mean = 5.5, sd = 0.3)`.
 What is the mean of this sample's heights?
 Perhaps close to the true population mean of 5.5 but probably different.
 Try the same exact code again, and see how the mean differs due to variation in the underlying population and the stochasticity involved in sampling.
@@ -230,11 +262,15 @@ This is common practice in `for()` loops.
 We then iterate through numbers 1 through 10, each time flipping two coins, i.e., `rbinom(1, 2, 0.5)`, and then save the results to the $i$th element of the empty vector.
 
 ```{r eval = FALSE}
-rbinom10 <- array(dim = 10) # empty vector of length 10 called rbinom10
+# empty vector of length 10 called rbinom10
+rbinom10 <- array(dim = 10) 
 
-for(i in 1:10){ # iterating through 1 to 10, with each number assigned to i each time. Even better would be to type length(rbinom10) instead of 10
+# iterating through 1 to 10, with each number assigned to i each time. 
+# Even better to soft code and type length(rbinom10) instead of 10
+for(i in 1:10){ 
 
-  rbinom10[i] <- rbinom(1, 2, 0.5) # for each iteration where i = 1, 2, 3, ...10, generate number of heads from two coin flips and save the result to the ith empty element in rbinom10
+  # for each iteration where i = 1, 2, 3, ...10, generate number of heads from two coin flips and save the result to the ith empty element in rbinom10
+  rbinom10[i] <- rbinom(1, 2, 0.5) 
 }
 ```
 
@@ -296,11 +332,11 @@ for(i in 1:length(norm_samp_dist)) {
 ```
 
 Remember, the sampling distribution is defined as the distribution of a *statistic* (e.g., mean, median), obtained from a large number of samples drawn from the population.
-It is *NOT* a distribution of the number of observations in your sample.
+It is *NOT* a distribution of the observations in your sample.
 In a sampling distribution, each data point is a mean (or some other statistic), calculated from a sample obtained from the statistical population.
-Each data point in the distribution of observations from a sample is just that: an observation; to plot this, you would enter `hist(rnorm(100, mean = 5.5, sd = 0.3))` to get a sample of 100 observations from the statistical population.
+Each data point in a distribution of observations from a sample is just that: an observation; to plot this, you would enter `hist(rnorm(100, mean = 5.5, sd = 0.3))` to get a sample of 100 observations from the statistical population.
 Do this and compare it to the histogram of the sampling distribution of means.
-The latter has smaller spread because the data points are means, each of which is distilling their respective original distribution of observations into its central tendency.
+The latter has smaller spread because the data points are means, each of which is distilling its respective original distribution of observations into its central tendency.
 
 [Here is another interactive activity that illustrates what a sampling distribution is](https://seeing-theory.brown.edu/probability-distributions/index.html#section3).
 
@@ -314,7 +350,17 @@ I've done so for you using the code below:
 ```{r}
 x <- seq(0, 40, length.out = 1000)
 
-plot(x, dlnorm(x, meanlog = 1.5, sdlog = 0.5), xlab = "", ylab = "Density", type = "l")
+plot(
+  x, 
+  dlnorm(
+    x, 
+    meanlog = 1.5, 
+    sdlog = 0.5
+    ), 
+  xlab = "", 
+  ylab = "Density",
+  type = "l"
+  )
 ```
 
 You can see the population distribution is not normal.
@@ -328,7 +374,7 @@ What does the distribution look like?
 ```
 
 It's normal!
-This is the ***central limit theorem*** (CLT): no matter the shape of the underlying population distribution, the sampling distribution of means (or sums) will be normally distributed with a large enough sample size (in our case, 100).
+This is the ***central limit theorem*** (CLT): no matter the shape of the underlying population distribution, the sampling distribution of means (or sums) will be normally distributed with a large enough sample size (in our case, we used 100).
 The link above is a good illustration of the CLT, and you can test it out on all kinds of population distribution shapes.
 
 The CLT is incredibly important in statistics as many procedures require a normally distributed sampling distribution (e.g., confidence intervals, t-tests).
@@ -336,12 +382,12 @@ The CLT is incredibly important in statistics as many procedures require a norma
 
 ## Standard error
 
-The mean of a sampling distribution provide us with an estimate of a population parameter (e.g., population mean).
+The mean of a sampling distribution provides us with an estimate of a population parameter (e.g., population mean).
 To characterize the variability (i.e., uncertainty) surrounding our estimate, we calculate ***standard errors*** and ***confidence intervals***.
 
 If the mean of a sampling distribution provides us with an estimate of the population parameter, then a natural measure of variability surrounding that estimate might be the standard deviation of the sampling distribution.
 In fact, this is exactly what a standard error is: the standard deviation of the sampling distribution.
-Note that we can use the mean and SD because the CLT guarantees our sampling distribution of a mean or sum will be normal!
+Note that we can use the mean and SD because the CLT guarantees our sampling distribution of a mean or sum parameter will be normal!
 
 Let's look at the sampling distribution of means we created earlier (i.e., `norm_samp_dist`).
 Here is the code again:
@@ -379,6 +425,13 @@ Let's generate one random sample of 100 observations from our normally distribut
 Calculate the standard error using the equation above and compare it to the standard error value you calculated earlier (by calculating SD on the sampling distribution).
 
 ```{r eq, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r eq-solution}
+x <- rnorm(100, 5.5, 0.3)
+
+sd(x) / sqrt(length(x))
 ```
 
 
@@ -402,6 +455,19 @@ for(i in 1:length(norm_samp_dist)){
 ```
 
 ```{r ci, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r ci-solution}
+# get sample from population
+x <- rnorm(100, 5.5, 0.3)
+
+# calculate standard error
+se.x <- sd(x) / sqrt(length(x))
+
+# calculate 95% CI
+c(mean(x) - 1.96 * se.x, 
+  mean(x) + 1.96 * se.x)
 ```
 
 The middle 95% can be obtained using `quantile(norm_samp_dist, c(0.025, 0.975))`, which returns the 2.5% and 97.5% percentiles (can you reason out why we use these numbers?).
@@ -420,7 +486,7 @@ Why 1.96?
 Remember the 68-95-99.7 rule, where +/- two standard deviations equals the central 95% of a normal distribution.
 More precisely, it's 1.96, not 2.00.
 
-![](https://sophialearning.s3.amazonaws.com/markup_pictures/9562/68-95-99.7.png){width="40%"}
+![](https://sophialearning.s3.amazonaws.com/markup_pictures/9562/68-95-99.7.png){width="60%"}
 
 Try this out on a random sample of 100 observations from the population (`mean = 5.5, sd = 0.3`).
 Compare the resulting 95% CI with that obtained using the `quantile()` function on the sampling distribution.
@@ -429,7 +495,7 @@ Compare the resulting 95% CI with that obtained using the `quantile()` function 
 
 Recalling that confidence intervals are calculated for a parameter estimate (in this case, the population mean), we can use them to test hypotheses about the population parameter.
 For example, if we wanted to know if the population mean of our human heights is significantly different from 6 feet, we would see if 6 feet falls outside our calculated 95% CI.
-If so, 6 feet would be an unlikely value, given our sampling distribution (you can see how likely 6 feet is in the `norm_samp_dist` sampling distribution).
+If so, 6 feet would be an unlikely value, given our sampling distribution (you can see how likely 6 feet is in the `norm_samp_dist` sampling distribution by creating a histogram).
 Therefore, we conclude that our population mean is significantly different from 6 feet.
 
 If 6 feet falls within the 95% confidence interval, this *DOES NOT* mean that the population mean is 6 feet.
@@ -440,10 +506,10 @@ This will become clearer when we go over how sample size affects 95% confidence 
 
 These days with fast computing, we can use ***Monte Carlo methods*** to "brute force" create the sampling distribution of a statistic from the sample itself.
 
-Monte Carlo is a class of methods that use repeated random sampling to obtain numerical results.
+Monte Carlo is a class of methods that uses repeated random sampling to obtain numerical results.
 Monte Carlo is the name of the famous gambling resort city on the Riviera. 
 
-![](https://miro.medium.com/max/750/1*DfT4vHYNWrtxFAp7lendWg.png){width="40%"}
+![](https://miro.medium.com/max/750/1*DfT4vHYNWrtxFAp7lendWg.png){width="50%"}
 
 So how do we create a sampling distribution from the sample?
 We need to resample our observations *with replacement* using the `sample()` function.
@@ -476,30 +542,31 @@ Hopefully, you can now see how powerful and useful bootstrapping is!
 
 ### Bootstrapping in action
 
-Let's once again create a random sample of 100 observations from our population (`mean = 5.5, sd = 0.3`).
+Let's once again create a random sample of 100 normally distributed observations from our population (`mean = 5.5, sd = 0.3`).
 I will present each coding step involved in bootstrapping the sampling distribution for the population mean.
 
 1. Create an empty vector of length 1,000 since we will do 1,000 bootstrap iterations (feel free to do more if your computer is fast enough!).
-2. Initiate a `for()` loop, where `i` goes from `1` to length of the empty vector.
-3. Within the curly braces, resample with replacement the vector of 100 observations; you can save this to a new object.
+2. Initiate a `for()` loop, where `i` goes from `1` to the length of the empty vector.
+3. Within the curly braces, resample with replacement the vector of 100 normally distributed observations; you can save this to a new object.
 4. Calculate the mean of the object, and save the result to the $i$th element of your empty vector.
+Then close the curly braces.
 
 Try this out below.
 
 ```{r boot, exercise = TRUE}
-# Click "Solutions" button if you get stuck
+# Click "Solution" button if stuck
 ```
 
 ```{r boot-solution}
 x <- rnorm(100, 5.5, 0.3)
 
-boot_dist <- array(dim = 1000)
+boot_dist <- array(dim = 1000) # Step 1
 
-for(i in 1:length(boot_dist)){
+for(i in 1:length(boot_dist)){ # Step 2
   
-  x_boot <- sample(x, replace = TRUE)
+  x_boot <- sample(x, replace = TRUE) # Step 3
   
-  boot_dist[i] <- mean(x_boot)
+  boot_dist[i] <- mean(x_boot) # Step 4
 }
 ```
 
@@ -547,7 +614,10 @@ quantile(sepal_length_dist, c(0.025, 0.975))
 sepal.length_se <- sd(iris$Sepal.Length) / sqrt(length(iris$Sepal.Length))
 
 sepal.length_mean <- mean(iris$Sepal.Length)
-sepal.length_ci <- c(sepal.length_mean - 1.96 * sepal.length_se, sepal.length_mean + 1.96 * sepal.length_se)
+sepal.length_ci <- c(
+  sepal.length_mean - 1.96 * sepal.length_se, 
+  sepal.length_mean + 1.96 * sepal.length_se
+  )
 ```
 
 
@@ -555,7 +625,7 @@ sepal.length_ci <- c(sepal.length_mean - 1.96 * sepal.length_se, sepal.length_me
 
 It is often thought that a single 95% CI represents the range of values where there's a 95% chance the true parameter value is inside.
 This interpretation is *NOT* correct.
-In frequentist statistics, the parameter value is fixed, and the confidence intervals move around depending on the samples drawn from the population (in Bayesian inference, it's the complete opposite!).
+In frequentist statistics, the parameter value is fixed, and the confidence intervals move around due to the stochastic nature of drawing samples from the population (in Bayesian inference, it's the complete opposite: the sample is fixed and the parameter is treated as random!).
 Therefore, for each iteration of a CI, it either captures the true parameter value or misses it.
 Given the preset significance threshold of $\alpha = 0.05$, 5% of confidence intervals will miss the parameter value on average.
 
@@ -592,8 +662,21 @@ for(i in 1:nrow(ci.res)){
   ci.res[i, 2] <- mean(x) + 1.96 * se
 }
 
-plot(1, type = "n", xlim = c(1, nrow(ci.res)), ylim = range(ci.res), main = "50 replicates", xlab = "Replicate number", ylab = "Value")
-segments(1:nrow(ci.res), y0 = ci.res[, 1], y1=ci.res[, 2], lwd = 2)
+plot(
+  1, 
+  type = "n", 
+  xlim = c(1, nrow(ci.res)), 
+  ylim = range(ci.res), 
+  main = "50 replicates", 
+  xlab = "Replicate number",
+  ylab = "Value"
+  )
+segments(
+  1:nrow(ci.res), 
+  y0 = ci.res[, 1], 
+  y1=ci.res[, 2], 
+  lwd = 2
+  )
 abline(h = 0, col = "red")
 ```
 
@@ -642,8 +725,22 @@ for(i in 1:nrow(ci.n)){
   ci.n[i, 2] <- mean(x) + 1.96 * se
 }
 
-plot(1, type = "n", xlim = range(n), ylim = range(ci.n), main = "", xlab = "Sample size", ylab = "Value", log = "x")
-segments(n, y0 = ci.n[,1], y1 = ci.n[,2], lwd = 2)
+plot(
+  1, 
+  type = "n", 
+  xlim = range(n), 
+  ylim = range(ci.n), 
+  main = "", 
+  xlab = "Sample size", 
+  ylab = "Value", 
+  log = "x"
+  )
+segments(
+  n, 
+  y0 = ci.n[,1], 
+  y1 = ci.n[,2], 
+  lwd = 2
+  )
 abline(h = 0, col = "red")
 ```
 
@@ -662,7 +759,7 @@ P-values are defined as the probability of obtaining the observed data or more e
 The hypothesis in question is usually the null hypothesis (e.g., effect is 0, group difference is 0).
 This is because zero effects are easy to work with, since we know what the true parameter value is: zero.
 But, the null hypothesis is also often the least interesting hypothesis, as nothing is truly zero in biology or anthropology.
-This means we know the null hypothesis will be falsified even before we conduct the test.
+This means we know that the null hypothesis will be falsified even before we conduct the test; we just need a large enough sample size.
 We'll see how this works in *P-values and sample size*.
 
 ![](http://strata.uga.edu/8370/lecturenotes/images/explanationsCriticalValue.png){width="80%"}
@@ -701,14 +798,15 @@ You can see that the means are indeed different, but there is a lot of overlap b
 See what the sample size and mean height of each group is below.
 
 ```{r desc_group, exercise = TRUE, exercise.setup = "groups"}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
 ```
 
-Now, we will use bootstrapping to calculate a P-value, testing the null hypothesis that there is no difference between the means of both groups' populations.
+```{r desc_group-solution}
+length(x); length(y)
+mean(x); mean(y)
+```
+
+Now, we will use bootstrapping to calculate a P-value, testing the null hypothesis that there is no difference between the means of both groups' populations (as if both groups sample the same population).
 That is, the observed mean difference we see in our samples is simply due to chance sampling from a single population.
 Bootstrapping is perhaps the clearest way to really understand what a P-value is, as you have to code all the steps involved.
 
@@ -736,13 +834,10 @@ Recall that with bootstrapping, we use our sample as a proxy to represent the po
 So if both of our samples come from the same population (assuming the null hypothesis is true), what would the population proxy look like?
 Because `x` and `y` sample the same population, we just combine them into one vector, thus representing one population!
 You can create a histogram of `c(x, y)` to see what the new population distribution looks like.
+Also, save `c(x, y)` to an object, as you'll need to resample from this vector later.
 
 ```{r group_boot, exercise = TRUE, exercise.setup = "groups"}
 # Click the "Solution" button if stuck
-#
-#
-#
-#
 ```
 
 Now, we need to use a `for()` loop and `sample()` to iteratively resample from this "population" vector to create new bootstrapped samples of `x` and `y`.
@@ -781,27 +876,51 @@ Whether we calculate a two- or one-tailed P-value depends on our research questi
 Two-tailed tests are used if we're only concerned with whether the group means are different, not whether one group specifically has a larger mean than the other.
 A one-tailed test is used if we want to test whether the larger group (i.e., `x`) is significantly larger on average than the smaller group (i.e., `y`).
 
-![](https://www.cliffsnotes.com/assets/267184.png){width="40%"}
+![](https://s3-us-west-2.amazonaws.com/courses-images/wp-content/uploads/sites/1729/2017/04/15032458/m9_inference_two_proportion_topic_9_3_m9_hypo_test_diff_two_pop_prop_4_image4.png){width="60%"}
 
 For either test, we first calculate the observed test statistic (i.e., the mean difference: `mean(x) - mean(y)`).
 Save this to an object called `obs_diff`.
 
 For a two-tailed test, we want to count the number of null distribution values that are greater than or equal to `obs_diff` but also less than or equal to`-1 * obs_diff`.
 Why is this?
-This is because our bootstrapped iterations randomly assigned heights (with replacement) to new samples of `x` and `y`, such that sometimes `mean(x)` was larger and sometimes `mean(y)` was larger.
-Because we're not concerned with which group is larger, we need to consider the null distribution values in either side of the tail.
+This is because our bootstrapped iterations randomly assigned heights (with replacement) to new samples of `x` and `y`, such that sometimes `mean(x)` was larger and sometimes `mean(y)` was larger (thus, sometimes the mean difference was positive and sometimes it was negative).
+Because we're not concerned with which group is larger, we need to consider the null distribution values in either side of the tail (see image above).
 We then divide this number by the total number of iterations (i.e., 1,000) to get the proportion of null distribution values equal to or more extreme than the observed test statistic.
 
-Go ahead and calculate a two-tailed P-value.
+Go ahead and calculate a two-tailed P-value (`x` and `y` are loaded in the console below, but you'll have to rerun the bootstrap code).
 You can do this by using a logical statement to count the number of null distribution values that are greater than or equal to `obs_diff` or less than or equal to `-1 * obs_diff`.
 Divide this number by 1,000 (the number of iterations).
 
 ```{r p, exercise = TRUE, exercise.setup = "groups"}
-#
-#
-#
-#
-#
+# Click "Solution" if stuck
+```
+
+```{r p-solution}
+# Observed mean difference
+obs_diff <- mean(x) - mean(y)
+
+# Bootstrap code from above
+pop <- c(x, y)
+
+boot_diff <- array(dim = 1000)
+
+for(i in 1:length(boot_diff)){
+  
+  x1 <- sample(pop, length(x), replace = TRUE)
+  y1 <- sample(pop, length(y), replace = TRUE)
+  
+  boot_diff[i] <- mean(x1) - mean(y1)
+}
+
+# Two-tailed P-value
+sum(boot_diff >= obs_diff | boot_diff <= -obs_diff) / 1000
+# Using absolute values also works.
+# Can you figure out why?
+sum(abs(boot_diff) >= abs(obs_diff)) / 1000
+
+# One-tailed P-value
+sum(boot_diff >= obs_diff) / 1000
+
 ```
 
 To calculate a one-tailed P-value, we *are* concerned with the direction of difference: whether the larger group, `x`, is significantly larger than `y`.
@@ -834,7 +953,8 @@ Compare this P-value to the one obtained using a two-tailed t-test (`t.test()`).
 ```
 
 ```{r exer3-solution}
-obs_diff <- mean(sleep$extra[sleep$group == 1]) - mean(sleep$extra[sleep$group == 2]) # note that group 2's mean is larger
+# note that group 2's mean is larger
+obs_diff <- mean(sleep$extra[sleep$group == 1]) - mean(sleep$extra[sleep$group == 2]) 
 
 boot_diff <- array(dim = 1000)
 
@@ -843,12 +963,16 @@ for(i in 1:length(boot_diff)){
   # sleep$extra is already the two groups' data combined
   
   boot1 <- sample(sleep$extra, sum(sleep$group == 1), replace = TRUE)
+  
   boot2 <- sample(sleep$extra, sum(sleep$group == 2), replace = TRUE)
   
   boot_diff[i] <- mean(boot1) - mean(boot2)
 }
 
-sum(abs(boot_diff) >= abs(obs_diff)) / length(boot_diff) # using abs() is a nice way to get rid of negatives to calculate a two-tailed p-value
+sum(abs(boot_diff) >= abs(obs_diff)) / length(boot_diff)
+
+# using mean() works too. Can you figure out why?
+mean(abs(boot_diff) >= abs(obs_diff))
 
 t.test(sleep$extra[sleep$group == 1], sleep$extra[sleep$group == 2])
 ```
@@ -900,18 +1024,28 @@ To get the P-value, you need to use `$`, i.e., `t.test()$p.value`.
 ```
 
 ```{r type1-solution}
+# Step 1
 p_vals <- mean_diff <- array(dim = 1000)
 
+# Step 2
 for(i in 1:length(p_vals)){
   
+  # Step 3
   x <- rnorm(50)
+  # Step 4
   y <- rnorm(50)
   
+  # Step 5
   mean_diff[i] <- mean(x) - mean(y)
   
+  # Steps 6 & 7
   p_vals[i] <- t.test(x, y)$p.value
 }
 
+sum(p_vals <= 0.05) / length(p_vals)
+mean(p_vals <= 0.05) # works too
+
+hist(p_vals)
 
 hist(mean_diff)
 abline(v = mean_diff[p_vals <=0.05], col = "red")
@@ -926,7 +1060,7 @@ This result also emphasizes that the P-value is not the probability your null hy
 
 Now plot the distribution of your mean differences (this is the null sampling distribution).
 As a quick way to plot your significant mean differences, use `abline()` and set argument `v` equal to those mean differences associated with P-values less than 0.05 (make the lines red).
-You can see that these mean differences are unusually large, even though the true mean difference is zero.
+You can see that these mean differences are unusually large, even though the true mean difference is zero (as we stipulated).
 Again, given enough trials, we *will* sample the extreme tails of the distribution.
 FYI, the two-tailed critical values here (i.e., the values that need to be exceeded by the observed test statistic to get P < 0.05) are -0.397 and 0.397.
 
@@ -935,9 +1069,9 @@ FYI, the two-tailed critical values here (i.e., the values that need to be excee
 We don't know whether the null hypothesis is true or not (after all, this is why we conduct the statistical test!).
 If the null hypothesis is indeed true, we would (unknowingly) find a significant result 5% of the time.
 Conduct enough tests, and we will get a significant result (not good)!
-That's why my philosophy is to calculate as few P-values as possible (more on this next week).
+That's why my philosophy is to calculate as few P-values as possible (more on this in a future week).
 
-BUT, the null hypothesis is almost *never* true, and that leads us to our next topic.
+BUT, the null hypothesis is almost *never* true, and that leads us to our final topic.
 
 
 ## P-values and sample size
@@ -949,20 +1083,28 @@ Using the example of comparing the means of two groups, P-values will go down if
 2. Variation among observations in each sample decreases.
 3. Sample size of each group increases.
 
-Basically, these three things act to decrease the overlap between the distributions of two samples, such that their mean differences are more obvious.
+Basically, these three things act to decrease the overlap between the sampling distributions of these samples' means, such that their mean differences are more obvious.
 We are going to focus on sample size for this topic.
 
 As long as an effect is non-zero (even if it is minuscule), a large enough sample size will generate enough statistical power to return P < 0.05.
-This is due to the law of large numbers: a larger sample size ensures that sample means of groups are estimated so precisely that their differences will be clear, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the sampling distribution and be significant).
+This is due to the law of large numbers: a larger sample size ensures that the sample means of each group are estimated so precisely that the mean differences between groups will be very obvious, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the sampling distribution and be significant).
 
 You can see how this works by bootstrapping the mean difference sampling distribution, and seeing how it changes by varying sample size, while keeping the mean and SD of both groups fixed.
 But for now, we will just use simulations to see how P-values vary as a function of sample size.
 
 This involves writing a *nested* `for()` loop, so we can average multiple P-values for a given sample size to stabilize the P-value.
-I will write a function for you that does this (see if you can understand what I did).
+I will write a function for you that does this.
 
-```{r}
-pvals_n <- function(n, n.iter, mean1, sd1 = 1, mean2, sd2 = 1, PLOT = TRUE){
+```{r pvals_fxn}
+pvals_n <- function(
+    n, 
+    n.iter, 
+    mean1, 
+    sd1 = 1, 
+    mean2, 
+    sd2 = 1, 
+    PLOT = TRUE
+    ){
   
   p_res <- array(dim = c(n.iter, length(n)))
 
@@ -970,14 +1112,38 @@ pvals_n <- function(n, n.iter, mean1, sd1 = 1, mean2, sd2 = 1, PLOT = TRUE){
   
     for(j in 1:ncol(p_res)){ # go through each sample size
     
-      p_res[i, j] <- t.test(rnorm(n[j], mean = mean1, sd = sd1), rnorm(n[j], mean = mean2, sd = sd2))$p.value # calculate t-test and save p-value
+      p_res[i, j] <- t.test(
+        rnorm(
+          n[j], 
+          mean = mean1, 
+          sd = sd1
+          ), 
+        rnorm(
+          n[j], 
+          mean = mean2, 
+          sd = sd2
+          )
+        )$p.value # calculate t-test and save p-value
     }
   }
   p_plot <- colMeans(p_res) # means of P-values across n.iter iterations
   
   if(PLOT){
     
-    plot(n, p_plot, log = "x", type = "l", lwd = 3, xlab = "Sample size", ylab = paste("P-value averaged over", n.iter, "iterations"), ylim = c(0, max(p_plot)))
+    plot(
+      n, 
+      p_plot, 
+      log = "x", 
+      type = "l", 
+      lwd = 3, 
+      xlab = "Sample size", 
+      ylab = paste(
+        "P-value averaged over",
+        n.iter, 
+        "iterations"
+        ), 
+      ylim = c(0, max(p_plot))
+      )
   abline(h = 0.05, col = "red")
 
   } else return(p_plot)
@@ -997,7 +1163,7 @@ I did 1,000 but do whatever your computer can handle in a reasonable amount of t
 7. `PLOT`: if `TRUE` (default), will return a plot of P-values as a function of sample size.
 If `FALSE`, will return the vector of P-values associated with each sample size element in vector `n`.
 
-Copy and paste the function into the console below.
+I have loaded the function for you in the console below.
 Try `n <- c(seq(5, 50, 5), 100, 250, 500, 1000, 2500, 5000, 10000)` for your vector of sample sizes.
 Let's start with setting `mean1 = 0` and `mean2 = 0` (i.e., the null hypothesis is true), using the default for all other arguments.
 
@@ -1007,7 +1173,16 @@ However, let's now create a small difference in means: `mean1 = 5` and `mean2 = 
 You can see how even a small mean difference will be exploited as significant if sample size is large enough.
 Go ahead and play around with different sample sizes, means, and SDs to see how different combinations contribute to different P-values.
 
-```{r power, exercise = TRUE}
+```{r power, exercise = TRUE, exercise.setup = "pvals_fxn"}
+# Click "Solution" if stuck
+```
+
+```{r power-solution}
+n <- c(seq(5, 50, 5), 100, 250, 500, 1000, 2500, 5000, 10000)
+
+pvals_n(n, n.iter = 500, mean1 = 0, mean2 = 0)
+
+pvals_n(n, n.iter = 500, mean1 = 5, mean2 = 4.8)
 ```
 
 ### Summary
@@ -1038,7 +1213,7 @@ I first introduced the frequentist philosophy of statistics, by far the most com
 This involves the unknown (and often abstract and theoretical) statistical population, from which samples are taken.
 We often only have one sample, but it is one out of theoretically many.
 Calculating a statistic on these theoretically many samples forms the ***sampling distribution*** of a statistic, which lies at the core of all inferential statistical tests.
-We even learned how you can approximate the sampling distribution from just one sample (this was necessary before powerful computers and bootstrapping)!
+We even learned how you can mathematically approximate the sampling distribution from just one sample (this was necessary before powerful computers and bootstrapping)!
 
 ![](https://image.slidesharecdn.com/7-171220000907/95/sampling-distribution-1-638.jpg?cb=1513728698)
 
