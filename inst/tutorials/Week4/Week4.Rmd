@@ -773,7 +773,7 @@ Again, we will use an example from lecture.
 
 We have two groups of human adult heights.
 We want to test if their means are significantly different from each other.
-I have saved the two groups for you as two vectors: `x` and `y` and have plotted their densities curves below.
+I have saved the two groups for you as two vectors, `x` and `y`, and have plotted their densities curves below.
 
 ```{r groups}
 set.seed(100)
