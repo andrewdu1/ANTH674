@@ -20,7 +20,7 @@ library(knitr)
 
 ## Introduction
 
-Last week, we went over the foundation of inferential statistics in a frequentist framework.
+Last week, we went over the foundations of inferential statistics in a frequentist framework.
 This week, we will go over our first statistical method: **simple linear regression**.
 Linear regression is just one of many linear models that falls in the category, **general linear models** (GLM).
 GLMs include many tests (some of which may be familiar to you), including t-tests, ANOVAs, ANCOVAs, logistic regression, and more.
@@ -29,11 +29,11 @@ We will use linear regression as an introduction to the world of GLMs.
 Linear regression is a GLM where the **independent** and **dependent variables** are both continuous.
 An independent variable, or **predictor variable**, is one whose value and variation does not depend on another (hence the name "independent").
 A dependent variable, or **response variable**, is one whose value and variation depends on the independent variable.
-In statistics, we often say the dependent variable varies *as a function of* the independent variable.
+In statistics, we often say that the dependent variable varies *as a function of* the independent variable.
 The "simple" part of simple linear regression means that only one independent variable is considered.
 Because we're dealing with two continuous variables, simple linear regression is visually associated with scatter plots.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/1280px-Linear_regression.svg.png){width="50%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/1280px-Linear_regression.svg.png){width="60%"}
 
 We will cover what linear regression is used for, what it tells us, and how it's used in statistical inference.
 Everything you learn in this tutorial is *incredibly* important, as it forms the foundation of future lectures (e.g., multiple regression, GLMs, generalized linear models, mixed models, principal components analysis).
@@ -43,7 +43,7 @@ In sum, linear regression really does form the basis of most commonly used stati
 ## Goals for this tutorial
 
 #### 1) Continue the never-ending journey of familiarizing yourself with R.
-#### 2) Learn how to use the `lm()` function to fit a linear regression to data and how to interpret the outputs.
+#### 2) Learn how to use the `lm()` function to fit a linear regression model to data and how to interpret the outputs.
 #### 3) Learn how to predict dependent variables and test null hypotheses using linear regression.
 #### 4) Learn what the assumptions of linear regression are, how to assess whether they're violated, and what happens to results when they are violated.
 #### 5) Learn what correlation is and what it's used for.
@@ -53,7 +53,7 @@ In sum, linear regression really does form the basis of most commonly used stati
 
 As I covered in lecture, the inferential goals of linear regression can be divided into three general categories:
 
-1. **Exploration**: just want to know what the estimated intercept and slopes are
+1. **Exploration**: just want to know what the estimated intercept and slope are
 2. **Hypothesis tests**: e.g., are the estimated intercept and slope significantly different from zero?
 3. **Prediction**: predict the value of a dependent variable for an independent variable value not in your dataset
 
@@ -68,13 +68,13 @@ This serves two purposes:
 1. Because we simulated the data, we know what the "answers" are, so we can see how well our model does.
 2. Simulating data really forces us to understand all parts of a linear regression.
 
-First, recall that a simple linear regression model fitted to data consists of three parts:
+First, recall that a simple linear regression model fit to data consists of three parts:
 
 1. The **intercept** ($\beta_0$): the dependent variable value when the independent variable equals zero 
 2. The **slope** ($\beta_1$): how much the dependent variable changes as the independent variable increases by one
 3. The **error terms** or **residuals** ($\epsilon$): how much the observed dependent variable differs from the values predicted from the linear regression model.
 
-![](https://nextjournal.com/data/QmfPuPp4V74FyvTTojMj6ix9T8Skj1ji4GhX5Pr6zK8w4N?filename=linear-regression.png&content-type=image/png){width="60%"}
+![](https://nextjournal.com/data/QmfPuPp4V74FyvTTojMj6ix9T8Skj1ji4GhX5Pr6zK8w4N?filename=linear-regression.png&content-type=image/png){width="70%"}
 
 The formula showing how all three parts are related is:
 
@@ -84,16 +84,32 @@ The formula showing how all three parts are related is:
 
 So, let's simulate a dataset with a known intercept (= 2), slope (= 3), and error distribution (normally distributed with mean = 0 and SD = 1).
 Let's simulate 30 data points.
-Because the independent variable's values doesn't depend on another variable, we can just simulate whatever we want.
+Because the independent variable's values don't depend on another variable, we can just simulate whatever we want.
 Let's simulate 30 data points from a uniform distribution, whose minimum bound is zero and maximum bound is 10 (i.e., `x <- runif(30, min = 0, max = 10)`).
 The dependent variable is simulated following the equation above (i.e., `y <- 2 + 3 * x + rnorm(30)`).
 Enter these below and create a scatter plot showing how the two variables covary.
 
 ```{r lm, exercise = TRUE}
+# Click "Solution" if stuck
 ```
 
-We see we have a nice linear relationship because we simulated our data to be this way (following the above equation)!
-Now let's fit a linear regression to the data.
+```{r lm-solution}
+x <- runif(30, min = 0, max = 10)
+y <- 2 + 3 * x + rnorm(30)
+
+plot(x, y)
+
+lm(y ~ x)
+
+abline(lm(y ~ x))
+
+# Trying out different parameter values
+y <- 10 + 5 * x + rnorm(30, sd = 5) 
+y <- 1.5 + 0.5 * x # no error terms
+```
+
+We see that we have a nice linear relationship because we simulated our data to be this way (following the above equation)!
+Now let's fit a linear regression to the data, using **ordinary least squares**.
 This is done by entering `lm(y ~ x)`, where the `~` means "as a function of".
 Try entering this above.
 
@@ -103,7 +119,7 @@ Plotting the estimated regression line in R is easy: after your scatter plot has
 Try out different intercept and slope values.
 *Definitely* try out different parameters for the error terms.
 Here, mean must equal zero (an assumption of regression), but SD is allowed to vary.
-What do you think will happen if you increase SD?
+What do you think will happen if you increase SD (i.e., the `sd =` argument in `rnorm()`)?
 What if you had no error terms (i.e., delete ` + rnorm(30)`)?
 
 
@@ -113,38 +129,45 @@ Statisticians have mathematically proven that the coefficients of linear regress
 That is, they will estimate the true value on average.
 
 Instead of math, we can use a `for()` loop to iterate drawing a different `x` and `y` from their respective populations many, many times.
-We then fit the linear regression each time, saving the intercept and slopes.
-We finally average over all iterations, and the resulting mean intercept and slope should be very close to their true vales.
+We then fit the linear regression each time, saving the intercepts and slopes.
+We finally average over all iterations, and the resulting mean intercept and slope should be very close to their true values.
+(**NB:** Using `for()` loops in this way is a great way to assess how accurate and precise an estimator is!)
 
-Let's try this below, using the code above for simulating data (see if you can write the code without following my steps or clicking the "Solution" button).
+Let's try this below, using the code from before for simulating data (see if you can write the code yourself, using the "Solution" button as a "last resort").
 
 1. First create an empty array with 1,000 rows (number of iterations) and 2 columns (one each for intercept and slope).
-2. Initiate the `for()` loop with `for i in 1:nrow()`.
-3. Randomly sample the independent variable with `x <- runif(30, min = 0, max = 10)`.
-4. Randomly sample the dependent variable with `y <- 2 + 3 * x + rnorm(30)`.
+2. Initiate the `for()` loop with `for(i in 1:nrow())`.
+3. Randomly sample the independent variable from its population with `x <- runif(30, min = 0, max = 10)`.
+4. Randomly sample the dependent variable from its population with `y <- 2 + 3 * x + rnorm(30)`.
 5. Fit the linear regression with `lm(y ~ x)`, and save the results to `lm.res`.
-6. Call up the coefficients using `lm.res$coefficients`, and save the results to the $i$th row of your empty array.
+6. Call up the coefficients using `lm.res$coefficients`, and save them to the $i$th row of your empty array.
 
 ```{r unbias, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
 ```{r unbias-solution}
+# step 1
 unbias_coef <- array(dim = c(1000, 2))
 
+# step 2
 for(i in 1:nrow(unbias_coef)){
   
+  # step 3
   x <- runif(30, min = 0, max = 10)
+  # step 4
   y <- 2 + 3 * x + rnorm(30)
   
+  # step 5
   lm.res <- lm(y ~ x)
   
+  # step 6
   unbias_coef[i, ] <- lm.res$coefficients
 }
 ```
 
 We can get the mean of each column using `colMeans()` (can you guess what `rowMeans()` does?).
-We can now see that the intercept and slope are on average *extremely* close to their true values!
+We can now see that the intercept and slope are on average *extremely* close to their true values (i.e., 2 and 3, respectively)!
 If we increase our number of iterations, the estimates will be even closer.
 
 
@@ -158,6 +181,22 @@ x <- runif(30, min = 0, max = 10)
 y <- 2 + 3 * x + rnorm(30)
 ```
 
+```{r output-solution}
+lm.res <- lm(y ~ x)
+
+# brings up coefficients
+lm.res$coefficients
+
+# brings up fitted values
+lm.res$fitted.values
+# same as
+lm.res$coefficients["(Intercept)"] + lm.res$coefficients["x"] * x
+
+plot(x, y)
+abline(lm.res)
+points(x, lm.res$fitted.values, col = "red")
+```
+
 There is a *lot* of useful information in `lm.res`!
 First and foremost are the estimated coefficients (intercept and slope), which you can see by entering `lm.res`.
 You can also call up the coefficients using `lm.res$coefficients`, as you did earlier.
@@ -165,12 +204,12 @@ This gives us a two-element vector, where the first element is the intercept and
 
 ### Fitted values
 
-`lm.res$fitted.values` returns a vector of DV values predicted from the regression for each IV.
+`lm.res$fitted.values` returns a vector of DV values predicted from the regression for each IV value.
 You can get the same vector by entering `lm.res$coefficients["(Intercept)"] + lm.res$coefficients["x"] * x`.
 Can you say why this is?
 
 To further emphasize what these fitted/predicted values are, we can add them to our scatter plot with the estimated regression line (create this plot first).
-Then enter `points(x, lm.res$fitted.values, col = "blue")` (just use a color that's different from your other points and line).
+Then enter `points(x, lm.res$fitted.values, col = "red")` (just use a color that's different from your other points and line).
 You can see that `lm.res$fitted.values` gives us for each IV the corresponding predicted value according to the regression model (i.e., the value that falls on the line).
 
 ![](https://image.slidesharecdn.com/slidethylonglecture2-simpleregressionmodel-130528123523-phpapp01/95/simple-regression-model-14-638.jpg?cb=1369744625){width="75%"}
@@ -186,7 +225,7 @@ If you plot the IV and DV with the estimated regression line, you can see which 
 You can compare these points to the residuals from `lm.res$residuals`, keeping in mind that the residuals are in the same order as your IV and DV.
 
 We can further illustrate that the residuals are indeed the difference between each observed DV and the predicted values.
-What do you think you'll get if you enter `points(x, lm.res$fitted.values + lm.res$residuals, col = "red")`.
+What do you think you'll get if you enter `points(x, lm.res$fitted.values + lm.res$residuals, col = "blue")`.
 Try it out below (after you've created the plot).
 
 ```{r resid, exercise = TRUE}
@@ -194,6 +233,13 @@ x <- runif(30, min = 0, max = 10)
 y <- 2 + 3 * x + rnorm(30)
 
 lm.res <- lm(y ~ x)
+```
+
+```{r resid-solution}
+plot(x, y)
+abline(lm.res)
+
+points(x, lm.res$fitted.values + lm.res$residuals, col = "blue")
 ```
 
 [This website](https://shiney.zoology.ubc.ca/whitlock/Residuals/) is good for illustrating exactly what a residual is.
@@ -212,7 +258,7 @@ It is defined as:
 
 $SS_{res}$ is the **residual sum of squares**, which is the variation in the DV *not* explained by the model (i.e., the residual variation); it is calculated in R with `sum(lm.res$residuals ^ 2)`.
 $SS_{tot}$ is the **total sum of squares**, which is the total variation in the DV, and is calculated in R with `sum((y - mean(y)) ^ 2)`.
-(You square these numbers to get rid of negatives because you're only interested in the magnitude)
+(You square these numbers to get rid of negatives because you're interested in the magnitude only)
 
 So, the total variation in DV can be divided up into two categories: (1) DV variation explained by the model and (2) DV variation  *not* explained by the model.
 $SS_{res} / SS_{tot}$ is the proportion of DV variation *not* explained by the model, so one minus this number is the proportion of DV variation explained by the model.
@@ -226,11 +272,20 @@ y <- 2 + 3 * x + rnorm(30)
 lm.res <- lm(y ~ x)
 ```
 
+```{r r2-solution}
+rss <- sum(lm.res$residuals ^ 2)
+tss <- sum((y - mean(y)) ^ 2)
+
+1 - rss / tss
+
+summary(lm.res)$r.squared
+```
+
 You can also find $R^2$ at the bottom of the output of `summary(lm.res)` (use `Multiple R-squared`, not `Adjusted R-squared`).
 You can extract the $R^2$, using `summary(lm.res)$r.squared`.
 
 What do you think will happen to $R^2$ if you increase the SD of the error terms (i.e., you increase the magnitude of the residuals)?
-Try it out.
+Try it out by setting `sd =` in `rnorm()` to more than 1.
 
 
 ## Hypothesis tests
@@ -243,7 +298,7 @@ Stated more precisely in the frequentist inferential framework, we can test whet
 The output of `summary(lm.res)` provides us with the P-values associated with the intercept and slope.
 You can extract all information associated with regression hypothesis tests, using `summary(lm.res)$coefficients`.
 You can see the P-values are in the fourth column and are called using `summary(lm.res)$coefficients[, "Pr(>|t|)"]`.
-You have to use the variable name and not `$` because this is an array, not a dataframe.
+You have to use the variable name and not `$` because this is an array, not a data frame.
 
 ```{r null, exercise = TRUE}
 x <- runif(30, min = 0, max = 10)
@@ -272,7 +327,7 @@ But what if we wanted to get a predicted DV value for an IV value *not* in our d
 The IV value could either be in the range of of your dataset's IV values (i.e., **interpolation**) or it could be outside (i.e., **extrapolation**).
 
 To predict DV values in R, we use the `predict()` function.
-The first argument is your linear regression object (e.g., `lm.res`), the second argument is a dataframe with new values for your IV assigned to your IV object name, and the third argument is `interval = "predict"` if you want to create a 95% prediction interval for your estimates.
+The first argument is your linear regression object (e.g., `lm.res`), the second argument is a data frame with new values for your IV assigned to your IV object name, and the third argument is `interval = "predict"` if you want to create a 95% prediction interval for your estimates.
 So, you would enter `predict(lm.res, data.frame(x = c(0.5, 15)), interval = "predict")`.
 Try it out below for an interpolated and extrapolated IV value.
 
@@ -281,6 +336,10 @@ x <- runif(30, min = 0, max = 10)
 y <- 2 + 3 * x + rnorm(30)
 
 lm.res <- lm(y ~ x)
+```
+
+```{r predict-solution}
+predict(lm.res, data.frame(x = c(0.5, 15)), interval = "predict")
 ```
 
 **NB:** extrapolation can be dangerous if the linear regression form does not extend outside the range of your data.
@@ -343,9 +402,20 @@ Let's look at the example I used in lecture comparing `mtcars$mpg` as a function
 First plot the two variables and then get the intercept of this regression without any transformations.
 
 ```{r center, exercise = TRUE}
+# Click "Solution" if stuck
 ```
 
-You can see that this intercept is somewhat nonsensical: 37.3 mpg is far higher than any mpg in our dataset because no car is zero pounds (which itself is a ludicrous idea).
+```{r center-solution}
+plot(mpg ~ wt, data = mtcars)
+
+lm.res <- lm(mpg ~ wt, data = mtcars)
+lm.res$coefficients
+
+lm.res.center <- lm(mpg ~ scale(wt, scale = FALSE), data = mtcars)
+lm.res.center$coefficients
+```
+
+You can see that this intercept is somewhat nonsensical: 37.3 mpg is larger than any mpg in our dataset (max. = `r max(mtcars$mpg)`) because no car is zero pounds (which itself is a ludicrous idea).
 
 Now calculate the intercept after centering the IV (`scale(mtcars$wt, scale = FALSE)`).
 
@@ -363,16 +433,34 @@ Let's again use the `mtcars` example from lecture, where we want to know if hors
 Create the two plots (`qsec` as a function of `hp`, and `qsec` as a function of `wt`) and then get the slopes for these two regressions.
 
 ```{r scale, exercise = TRUE}
+# Click "Solution" if stuck
 ```
 
-We now see an issue: `hp` ranges from 50 to over 300, while `wt` ranges from 1.5 to over 5.
+```{r scale-solution}
+plot(qsec ~ hp, data = mtcars)
+plot(qsec ~ wt, data = mtcars)
+
+lm.hp <- lm(qsec ~ hp, data = mtcars)
+lm.wt <- lm(qsec ~ wt, data = mtcars)
+
+lm.hp$coefficients
+lm.wt$coefficients
+
+lm.hp.scale <- lm(qsec ~ scale(hp), data = mtcars)
+lm.wt.scale <- lm(qsec ~ scale(wt), data = mtcars)
+
+lm.hp.scale$coefficients
+lm.wt.scale$coefficients
+```
+
+We now see an issue: `hp` ranges from `r min(mtcars$hp)` to `r max(mtcars$hp)`, while `wt` ranges from `r min(mtcars$wt)` to `r max(mtcars$wt)`.
 Recalling that the slope is the change in DV for an increase in 1 in the IV, an increase by one in the IV will mean very different things for `hp` and `wt`.
 For example, the slope of `lm(qsec ~ hp, data = mtcars)` might be very small just because an increase of 1 in `hp` is miniscule, considering its range.
 Scaling the two IVs gets rid of this issue.
 
 Now get the regression slopes for these two regressions after centering and scaling the IVs (e.g., `scale(mtcars$hp)`).
 Which slope is larger (i.e., larger magnitude) now?
-The IV corresponding to the larger slope is the more important variable in determining speed (`qsec`).
+The IV corresponding to the larger slope is the one with the larger effect on determining speed (`qsec`).
 
 You can also scale the DV if comparing regressions with DVs measured in different units or orders of magnitude.
 
@@ -396,13 +484,21 @@ In lecture, I said that once the antilog of the slope is computed, it can be int
 Let's demonstrate this using R (one of the many wonderful things about R!).
 
 I've provided code to create an IV and DV for you in the console below, as well as the formula for getting the regression model with the DV log-transformed (using natural log).
-Note that these two variables exhibit a linear relationship and do not need any log-transformations; we are only doing so to illustrate how the slope should be interpreted with log-transformed variables.
+Note that these two variables exhibit a linear relationship and do not need any log-transformations; we are doing so only to illustrate how the slope should be interpreted with log-transformed variables.
 
 ```{r log_dv, exercise = TRUE}
 x <- runif(30, min = 0, max = 10)
 y <- 2 + 3 * x + rnorm(30)
 
 lm.res <- lm(log(y) ~ x)
+```
+
+```{r log_dv-solution}
+exp(lm.res$coefficients["x"])
+
+dv.pred <- exp(predict(lm.res, data.frame(x = 1:2)))
+
+dv.pred[2] / dv.pred[1]
 ```
 
 Now calculate the antilog of the slope, using `exp()`.
@@ -412,14 +508,14 @@ Let's see if this is actually the case.
 We can get the predicted values of DV as you go from IV = 1 to IV = 2 using `predict()`.
 The code for this is: `exp(predict(lm.res, data.frame(x = 1:2)))` (we need to exponentiate to bring the logged DV back into arithmetic space).
 Divide the second predicted DV value by the first.
-You'll see that the answer is exactly the antilog of the slope!
+You'll see that the answer is exactly the antilog of the slope (i.e., the proportional change in unlogged DV as IV increased by one)!
 
 #### Log-transforming the IV only
 
-In lecture, I said that a 1% increase in the unlogged IV translates to a change in the DV that is equal to the slope divided by 100.
+In lecture, I said that a 1% increase in the unlogged IV translates to a change in the DV that is equal to the slope divided by 100 (this applies only to natural log-transformed IVs).
 I will leave that for you to assess on your own.
 
-Let's instead look at the exact case where a Z% increase in unlogged IV translates to a change in the DV that is equal to the slope times log(1.Z).
+Let's instead look at the exact case where a Z% increase in unlogged IV translates to a change in the DV that is equal to the slope times log(1.Z) (applies to natural log only).
 For example, a 10% increase in unlogged IV means the DV increases by the slope times log(1.1).
 
 ```{r log_iv, exercise = TRUE}
@@ -427,6 +523,12 @@ x <- runif(30, min = 0, max = 10)
 y <- 2 + 3 * x + rnorm(30)
 
 lm.res <- lm(y ~ log(x))
+```
+
+```{r log_iv-solution}
+lm.res$coefficients["log(x)"] * log(1.1)
+
+diff(predict(lm.res, data.frame(x = c(1, 1.1))))
 ```
 
 Let's multiply the slope times `log(1.1)` to get the expected DV increase.
@@ -438,7 +540,7 @@ You can see that the change in the DV values does indeed match the amount obtain
 
 #### Log-transforming both IV and DV
 
-In lecture, I said that if both the IV and DV are log-transformed, the slope is interpreted as the approximate percentage change in DV as IV increases by 1%.
+In lecture, I said that if both the IV and DV are natural log-transformed, the slope is interpreted as the approximate percentage change in unlogged DV as unlogged IV increases by 1%.
 
 ```{r log_iv_dv, exercise = TRUE}
 x <- runif(30, min = 0, max = 10)
@@ -447,15 +549,25 @@ y <- 2 + 3 * x + rnorm(30)
 lm.res <- lm(log(y) ~ log(x))
 ```
 
-I got a slope of 0.86, which means the DV is expected to increase by 0.86% as IV increases by 1%.
-Let's actually increase the IV by 1% and see how much the corresponding DV values increase: `diff(predict(lm.res, data.frame(x = c(1, 1.01))))`.
+```{r log_iv_dv-solution}
+lm.res$coefficients["log(x)"]
+
+pred.dv <- exp(predict(lm.res, data.frame(x = c(1, 1.01))))
+
+pred.dv[2] / pred.dv[1]
+```
+
+I got a slope of 0.86, which means that the unlogged DV is expected to increase by 0.86% as unlogged IV increases by 1%.
+Let's actually increase the IV by 1% in arithmetic space and see how much the corresponding DV values increase: `predict(lm.res, data.frame(x = c(1, 1.01)))`.
+Take the antilog of the DV values with `exp()` and divide the second element by the first.
 I got 0.0086, which translates to 0.86%. 
 This increase and the slope aren't identical, but they are close.
 
 ### Exponential and power functions
 
 I will demonstrate how (1) log-transforming the DV and getting a linear relationship is equivalent to analyzing an exponential function and (2) log-transforming the DV *and* IV and getting a linear relationship is equivalent to analyzing a power function.
-I will do this using some simple algebra, but if that intimidates you, you can skim the equations and then proceed to the graphical demonstrations.
+I will do this using some simple algebra, but if that intimidates you, you can skim the equations and proceed to the graphical demonstrations.
+All this emphasizes how one can use transformations to linearize relationships between variables so that you can use linear methods (e.g., linear regression).
 
 #### Exponential
 
@@ -469,20 +581,20 @@ If we log-transform both sides, we get:
 
 \begin{equation}
 \begin{aligned}
-  log(Y) &= log(ab^X)
+  \text{log}(Y) &= \text{log}(ab^X)
   \\
-  log(Y) &= log(a) + log(b^X)
+  \text{log}(Y) &= \text{log}(a) + \text{log}(b^X)
   \\
-  log(Y) &= log(a) + log(b)X
+  \text{log}(Y) &= \text{log}(a) + \text{log}(b)X
 \end{aligned}
 \end{equation}
 
-This equation is now a linear function with a log-transformed DV, an intercept equal to $log(a)$, and a slope equal to $log(b)$.
+This equation is now a linear function with a log-transformed DV, and unlogged IV, an intercept equal to $\text{log}(a)$, and a slope equal to $\text{log}(b)$.
 So if you log-transform the DV only and get a linear relationship, you are essentially looking at the log-transformed version of an exponential function.
 
 We can also show this graphically by simulating an exponential relationship and seeing what happens when you create the plot using a log-transformed DV.
 
-First plot `x` and `y`, as I've entered it in the console, and then create another plot with `y` log-transformed (or log-transform the y-axis).
+First plot `x` and `y`, as I've entered it in the console, and then create another plot with `y` log-transformed (or log-transform the y-axis using the `log = "y"` argument in `plot()`).
 
 ```{r expon, exercise = TRUE}
 x <- runif(30, max = 10)
@@ -490,7 +602,7 @@ y <- 3 * 2 ^ x
 ```
 
 You can see that after a log-transformation, the relationship is linear (which it *must* be, as I've shown mathematically above).
-If you fit a regression to the now linear relationship, the estimated intercept and slope will be $log(a)$ and $log(b)$, respectively, in the equation above.
+If you fit a regression to the now linear relationship, the estimated intercept and slope will be $\text{log}(a)$ and $\text{log}(b)$, respectively, in the equation above.
 
 #### Power function
 
@@ -504,20 +616,20 @@ If we log-transform both sides, we get:
 
 \begin{equation}
 \begin{aligned}
-  log(Y) &= log(aX^b)
+  \text{log}(Y) &= \text{log}(aX^b)
   \\
-  log(Y) &= log(a) + log(X^b)
+  \text{log}(Y) &= \text{log}(a) + \text{log}(X^b)
   \\
-  log(Y) &= log(a) + blog(X)
+  \text{log}(Y) &= \text{log}(a) + b\text{log}(X)
 \end{aligned}
 \end{equation}
 
-This equation is now a linear function with a log-transformed DV *and* IV, an intercept equal to $log(a)$, and a slope equal to $b$.
+This equation is now a linear function with a log-transformed DV *and* IV, an intercept equal to $\text{log}(a)$, and a slope equal to $b$.
 So if you log-transform both the DV and IV and get a linear relationship, you are essentially looking at the log-transformed version of a power function.
 
 As before, we can show this graphically by simulating a power function and seeing what happens when we log-transform both the IV and DV.
 
-First plot `x` and `y`, as I've entered it in the console, and then create another plot with both `x` and `y` log-transformed (or log-transform both axes).
+First plot `x` and `y`, as I've entered it in the console, and then create another plot with both `x` and `y` log-transformed (or log-transform both axes using `log = "xy"` in `plot()`).
 
 ```{r power, exercise = TRUE}
 x <- runif(30)
@@ -525,7 +637,7 @@ y <- 2 * x ^ 5
 ```
 
 You can see after the log-transformations that the relationship is now linear (which it *must* be as I've shown mathematically above).
-If you fit a regression to the now linear relationship, the estimated intercept and slope will be $log(a)$ and $b$, respectively, in the equation above.
+If you fit a regression to the now linear relationship, the estimated intercept and slope will be $\text{log}(a)$ and $b$, respectively, in the equation above.
 Thus, the estimated slope will be the exponent in the original, untransformed equation.
 
 
@@ -570,7 +682,7 @@ This plot helps you detect outliers and influential data points in your regressi
 Because we simulated the IV and DV to be a linear relationship satisfying all model assumptions, these plots show how a "good" model looks.
 The residual plots show a "band" of points randomly distributed over all fitted values (R will label points that are extreme, i.e., large-magnitude residuals, using their index).
 The normal Q-Q plot shows that points, for the most part, fall on the expected "normality" line (again, numbered points are those that fall far off the line).
-The fourth plot shows that all points fall inside the dashed lines labeled "0.5", so there are no outlier points here, which would bias the estimated coefficients.
+The fourth plot shows that all points fall inside the dashed lines labeled "0.5" (though you might have randomly gotten one or two), so there are no outlier points here, which would bias the estimated coefficients.
 
 
 ### Non-linear relationship
@@ -613,7 +725,7 @@ That is, the error terms are not independent (i.e., the position of an error ter
 
 ## Violated assumptions
 
-While it is preferable to not have any model assumptions violated, this is rarely the case when working with real-life data.
+While it is preferable to not have any model assumptions violated, this is rarely the case when working with real-world data.
 However, violated assumptions do not affect all regression results equally, and some results are actually unaffected.
 We will work with simulated data to illustrate this point.
 
@@ -621,7 +733,7 @@ We will work with simulated data to illustrate this point.
 
 We will simulate the IV and DV, where the latter exhibits increasing variance as IV increases (i.e., heteroscedasticity).
 I have provided the code for this in the console below.
-The true slope is zero; we are using zero because we know that the expected percentage of P-values $\leq$ 0.05 should be 5%.
+The true slope is zero; we are using zero because we know that the expected percentage of P-values $\leq$ 0.05 should be 5% (i.e., Type I error rate is 5% when the null hypothesis is true).
 
 As with assessing any statistic, we need to look at its average behavior, so we need a `for()` loop.
 Let's "kill two birds with one stone" and look at the behavior of the slope and P-value with one set of iterations.
@@ -629,7 +741,7 @@ Let's "kill two birds with one stone" and look at the behavior of the slope and 
 1. Create two empty arrays, both of which have 1,000 elements.
 One array is for the slope, and the other is for the P-value.
 You can alternatively create an empty array with 1,000 rows and 2 columns.
-2. Initiate the `for()` loop with `for i in 1:length()`, where `length()` refers to the length of one of the empty arrays.
+2. Initiate the `for()` loop with `for(i in 1:length())`, where `length()` refers to the length of one of the empty arrays.
 3. Simulate the IV and DV using the code in the console.
 4. Fit a linear regression to the data, and save the results to `lm.res`.
 5. Extract the slope, and save it to the $i$th element of the empty slope array.
@@ -641,18 +753,27 @@ y <- rnorm(50) * 10 * x
 ```
 
 ```{r sked-solution}
+# Step 1
 slope <- p.vals <- array(dim = 1000)
 
+# Step 2
 for(i in 1:length(slope)){
   
+  # Step 3
   x <- runif(50)
   y <- rnorm(50) * 10 * x
   
+  # Step 4
   lm.res <- lm(y ~ x)
   
-  slope[i] <- lm.res$coefficients[2]
-  p.vals[i] <- summary(lm.res)$coefficients[2, 4]
+  # Step 5
+  slope[i] <- lm.res$coefficients["x"]
+  # Step 6
+  p.vals[i] <- summary(lm.res)$coefficients["x", "Pr(>|t|)"]
 }
+
+mean(slope)
+mean(p.vals <= 0.05)
 ```
 
 Now calculate the mean for your vector of slopes.
@@ -675,7 +796,7 @@ Again, we need a `for()` loop to look at the average behavior of these statistic
 1. Create two empty arrays, both of which have 1,000 elements.
 One array is for the slope, and the other is for the P-value.
 You can alternatively create an empty array with 1,000 rows and 2 columns.
-2. Initiate the `for()` loop with `for i in 1:length()`, where `length()` refers to the length of one of the empty arrays.
+2. Initiate the `for()` loop with `for(i in 1:length())`, where `length()` refers to the length of one of the empty arrays.
 3. Simulate the IV and DV using the code in the console.
 4. Fit a linear regression to the data, and save the results to `lm.res`.
 5. Extract the slope, and save it to the $i$th element of the empty slope array.
@@ -687,24 +808,33 @@ y <- cumsum(rnorm(30)) # instead of a sine function, I'm simulating a random wal
 ```
 
 ```{r nonind-solution}
+# Step 1
 slope <- p.vals <- array(dim = 1000)
 
+# Step 2
 for(i in 1:length(slope)){
   
+  # Step 3
   x <- 1:30
   y <- cumsum(rnorm(30))
   
+  # Step 4
   lm.res <- lm(y ~ x)
   
-  slope[i] <- lm.res$coefficients[2]
-  p.vals[i] <- summary(lm.res)$coefficients[2, 4]
+  # Step 5
+  slope[i] <- lm.res$coefficients["x"]
+  # Step 6
+  p.vals[i] <- summary(lm.res)$coefficients["x", "Pr(>|t|)"]
 }
+
+mean(slope)
+mean(p.vals <= 0.05)
 ```
 
-As before, we see the mean of the slope vector is close to zero, indicating that the slope is an unbiased estimate even if errors are non-independent.
+As before, we see the mean of the slope vector is close to zero, indicating that the slope is an unbiased estimate, even if errors are non-independent.
 
 This time, however, 77% of my simulated P-values are significant, far higher than the expected 5%!
-This is the expected result with non-independent errors: your test is more likely to falsify the null hypothesis, even if it's true (i.e., the Type I error rate is too high).
+This is the expected result with non-independent errors: your test is more likely to falsify the null hypothesis, even if the null is true (i.e., the Type I error rate is too high).
 Thought of another way, your calculated P-value will be too low.
 This is because the linear regression is treating your data points as independent even though they're not, meaning you have an artificially larger sample size in practice.
 And because your sample size is artificially higher, your P-value is artificially too low.
@@ -727,7 +857,7 @@ Whereas a linear regression slope is concerned with how the DV increases with th
 That is, correlation quantifies if the two variables increase or decrease together, and the more tightly the two variables covary, the larger the correlation coefficient.
 Because there is no asymmetry in inference as in regression, we don't need to invoke IV and DV here.
 
-All correlation coefficients range from -1 to 1, where -1 is a perfect negative linear relationship between the variables (we'll look at non-linear relationships in *Rank correlation coefficients*), 1 is a perfect positive linear relationship, and 0 is no relationship.
+All correlation coefficients range from -1 to 1, where -1 is a perfect negative linear relationship between the variables (we'll look at non-linear relationships in *Rank correlation coefficients*), 1 is a perfect positive linear relationship, and 0 is no relationship (where "perfect" is if all points fall on a single straight line).
 
 ![](https://www.onlinemathlearning.com/image-files/correlation-coefficient.png){width="70%"}
 
@@ -745,22 +875,33 @@ First, plot the two variables against each other and then enter `cor(x, y)` belo
 ```
 
 ```{r cor-solution}
+# Step 1
 cor.res <- array(dim = 1000)
 
+# Step 2
 for(i in 1:length(cor.res)){
   
+  # Step 3
   x <- runif(100)
   y <- runif(100)
   
+  # Step 4
   cor.res[i] <- cor(x, y)
 }
+
+
+x <- runif(30)
+y <- 2 + 2 * x + rnorm(30)
+
+plot(x, y)
+cor(x, y)
 ```
 
 You should get an $r$ that is close to zero, but you might have gotten a larger or smaller number just by chance.
 To see that $r$ is zero on average, you would need to conduct many iterations, just like we did in *Linear regression estimates are unbiased*.
 
 1. First create an empty array of length 1,000 (number of iterations).
-2. Initiate the `for()` loop with `for i in 1:length()`.
+2. Initiate the `for()` loop with `for(i in 1:length())`.
 3. Randomly sample the two variables `x <- runif(100)` and `y <- runif(100)`.
 4. Calculate the correlation with `cor(x, y)`, and save the result to the $i$th element of your empty array.
 
@@ -792,6 +933,14 @@ y <- 2 + 3 * x + rnorm(30)
 lm.res <- lm(y ~ x)
 ```
 
+```{r cor_r2-solution}
+summary(lm.res)$r.squared
+cor(x, y) ^ 2
+
+lm(scale(y) ~ scale(x))
+cor(x, y)
+```
+
 You'll see they're exactly the same!
 So a quick way to calculate $R^2$ is just to calculate the Pearson correlation coefficient squared.
 
@@ -804,7 +953,8 @@ We can calculate a P-value or confidence interval testing if the sample's correl
 This is easy to do in R: `cor.test(x, y)` will give you the P-value and 95% confidence interval for the correlation coefficient.
 To extract the P-value, enter `cor.test(x, y)$p.value`.
 To extract the 95% confidence interval, enter `cor.test(x, y)$conf.int`.
-Try this out above.
+You can extract the correlation coefficient with `cor.test(x, y)$estimate`, which is the same as `cor(x, y)`.
+Try these out above.
 
 
 ## Rank correlation coefficients
@@ -819,7 +969,7 @@ Just like with the Pearson correlation coefficient, these rank correlation coeff
 Let's first simulate two non-linearly correlated variables with no noise to really illustrate the difference between Pearson and the rank correlation coefficients.
 I have written the code to simulate an exponential relationship in the console below.
 
-Calculate the Pearson correlation coefficient first.
+Plot the data first and then calculate the Pearson correlation coefficient.
 
 ```{r rank, exercise = TRUE}
 x <- runif(30, max = 5)
@@ -829,15 +979,15 @@ y <- exp(x)
 You can see it's high, but we know it should be 1, given that these two variables always increase together (i.e., it's a **monotonic** relationship).
 
 Now let's calculate the two rank correlation coefficients.
-Within `cor()`, set the argument `method` to `spearman` and then `kendall`.
+Within `cor()`, set the argument `method` to `"spearman"` and then `"kendall"`.
 What do you get?
 
 You can see that unlike Pearson, the rank correlation coefficients correctly detect the perfect non-linear relationship between the two variables. 
 
 ### Hypothesis tests
 
-The relevant statistics for hypothesis tests are accessed in the same exact way as Pearson: use `cor.test()` but use the argument `method` to choose `spearman` or `kendall`.
-Try it on two variables that are less than perfectly correlated (doesn't matter if the relationship is linear, or you can add noise to the exponential relationship).
+The relevant statistics for hypothesis tests are accessed in the same exact way as Pearson: use `cor.test()` but use the argument `method` to choose `"spearman"` or `"kendall"`.
+Try it on two variables that are less than perfectly correlated (doesn't matter if the relationship is linear, or you can add noise to the exponential relationship in the above console with `y <- exp(x) + rnorm(30)`).
 
 ### How are Spearman and Kendall rank correlation coefficients calculated?
 
@@ -864,7 +1014,7 @@ Load the package with `library(ggplot2)`.
 Enter `?msleep` to see what this dataset is.
 
 1. First create a scatter plot where `brainwt` is the DV and `bodywt` is the IV.
-Then create a linear regression with `brainwt` as a function of `bodywt`.
+Then create a linear regression model, wherein `brainwt` is a function of `bodywt`.
 Use `plot()` to look at the regression diagnostic plots.
 Are model assumptions satisfied?
 
@@ -885,11 +1035,13 @@ What is the coefficient estimate, and what is the P-value?
 plot(brainwt ~ bodywt, data = msleep)
 lm.res <- lm(brainwt ~ bodywt, data = msleep)
 plot(lm.res)
+# Model assumptions are terribly violated
 
 #Q2 
 plot(log(brainwt) ~ log(bodywt), data = msleep)
 lm.res_log <- lm(log(brainwt) ~ log(bodywt), data = msleep)
 plot(lm.res_log)
+# Much better!
 
 # Q3
 # For all answers below, use cor.test()$estimate to get out the correlation estimate.
