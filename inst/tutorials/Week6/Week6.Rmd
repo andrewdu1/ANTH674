@@ -37,7 +37,7 @@ To review, there are three main modes of statistical inference:
 
 ![](https://1.bp.blogspot.com/-0-d8jb2KRK0/WlwCJk3xptI/AAAAAAAAAzA/NaHF_58FseUQIjeCFBL3tZ_-ADA4EM3yACLcBGAs/s1600/Difference%2BBetween%2BConfirmatory%2Band%2BExploratory%2BResearch.JPG){width="80%"}
 
-These three modes have mutually exclusive goals, and you should *never* do more than one on the same set of data.
+These three modes have mutually exclusive goals, and you should *never* do more than one for a given question on a given set of data.
 Knowing which mode is the right one for your research question creates a clear path for you, regarding which analyses you should do and how you should do them.
 This knowledge also ensures that you will not abuse statistics and find an effect where one doesn't exist in reality.
 All this is part of learning how to translate your research question into a statistical one, often the most difficult part of a research project!
@@ -91,6 +91,8 @@ n <- 20
 
 set.seed(100)
 x <- matrix(rnorm(n_var * n), ncol = n_var)
+
+pairs(x)
 ```
 
 To create a scatter plot matrix, we use the `pairs()` function.
@@ -112,7 +114,43 @@ In the `pairs()` help file in the *Examples* section, there are additional funct
 
 Copy and paste the `panel.cor()` and `panel.hist()` functions into your console (`panel.smooth()` seems to be built in).
 Now we can change the upper triangle to be correlation coefficients using the `pairs()` argument `upper.panel = panel.cor`, and we can make the diagonals histograms instead of variable names with the argument `diag.panel = panel.hist`.
-Give this a try above.
+Give this a try below.
+
+```{r panel, exercise = TRUE}
+# click the "Solution" button if stuck
+```
+
+```{r panel-solution}
+n_var <- 6
+n <- 20
+
+set.seed(100)
+x <- matrix(rnorm(n_var * n), ncol = n_var)
+
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+panel.hist <- function(x, ...)
+{
+    usr <- par("usr")
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+
+
+pairs(x, upper.panel = panel.cor, diag.panel = panel.hist)
+```
 
 
 ## Correlation matrix
@@ -130,28 +168,28 @@ set.seed(100)
 x <- matrix(rnorm(n_var * n), ncol = n_var)
 ```
 
-```{r echo = FALSE, message = FALSE, warning = FALSE}
-n_var <- 6
-n <- 20
+```{r cor_mat-solution}
+cor(x)
 
-set.seed(100)
-x <- matrix(rnorm(n_var * n), ncol = n_var)
+cor(x, method = "spearman") # Spearman rank correlation matrix
 
-cor.res <- cor(x)
-cor.res1 <- rcorr(x)
+library(Hmisc)
+cor.res <- rcorr(x)
+cor.res$r # Pearson correlation matrix
+cor.res$P # P-value matrix
 ```
 
-The correlation matrix is interpreted in exactly the same way as the scatter plot matrix, in terms of finding the correlation coefficient corresponding to two variables of interest (can you figure out what the diagonals are all ones?).
+The correlation matrix is interpreted in exactly the same way as the scatter plot matrix, in terms of finding the correlation coefficient corresponding to two variables of interest (can you figure out why the diagonals are all ones?).
 These are Pearson correlation coefficients by default; if you want rank correlation coefficients, use the argument `method = `.
 
-We can see that the Pearson coefficient for var 3 and var 4 is fairly high (`r round(max(cor.res[lower.tri(cor.res)]), 2)`).
+We can see that the Pearson coefficient for var 3 and var 4 is fairly high (0.56).
 To get the corresponding P-values for the correlation matrix, we are going to use the `rcorr()` function in the `Hmisc` package, so you need to install this package if you don't have it already (`install.packages("Hmisc", dep = TRUE)`).
 
 Load the package using `library(Hmisc)`, and then use the `rcorr()` function on the `x` matrix; save the results to object `cor.res`.
 
 `cor.res$r` brings up the correlation matrix, which you already calculated above.
 `cor.res$P` brings up the corresponding P-values.
-As you can see, there is only one significant P-value: that comparing var 3 and var 4 (P = `r round(min(cor.res1$P[lower.tri(cor.res1$P)]), 2)`).
+As you can see, there is only one significant P-value: that comparing var 3 and var 4 (P = 0.01).
 But, we know that this is a false positive, given that we simulated all these variables to be unrelated, random normal variables.
 
 ## EDA summary
@@ -167,7 +205,7 @@ So if you calculate 20 correlation coefficients and find 15 are very large, you'
 ## Saving a plot as a PDF
 
 It's nice to see plots in RStudio while you're playing around with data, but you need to learn how to save them as PDFs if you want to finalize plots for presentations, publications, etc.
-Plots within R look somewhat pixelated, but that gets smoothed out when they're saved as a PDF.
+Plots within R look pixelated, but that gets smoothed out when they're saved as a PDF.
 
 Saving a plot as a PDF is easy in R.
 Here are the steps involved:
@@ -208,7 +246,7 @@ This mode is used when you want to test an *a priori* hypothesis with confidence
 *A priori* means you specified the hypothesis *before* you saw the data.
 
 *A priori* hypotheses can come from intuition, theory, or previous exploratory analyses.
-For the latter, you need to test the hypothesis with a dataset that is independent from the one used to discover the hypothesis (accomplished via EDA).
+For the third, you need to test the hypothesis with a dataset that is independent from the one used to discover the hypothesis (accomplished via EDA).
 
 We have previously covered how to calculate P-values and confidence intervals, so the following topic will cover how we deal with multiple comparisons (i.e., when many tests are conducted).
 
@@ -227,7 +265,7 @@ This is the most common method, but it is also problematic for a number of reaso
 
 As I covered in lecture, Bonferroni corrections adjust the **family-wise error rate** (FWER), which is the probability of committing at least one Type I error within a set of tests.
 Specifically, Bonferroni corrects FWER to be 0.05, *assuming all null hypotheses are true*. 
-It creates a new significance level ($\alpha_{BC}$), defined as $\alpha_{BC} = \alpha / k$, where $\alpha$ is the traditional 0.05 significance level, $k$ is the number of tests conducted.
+It creates a new significance level ($\alpha_{BC}$), defined as $\alpha_{BC} = \alpha / k$, where $\alpha$ is the traditional 0.05 significance level and $k$ is the number of tests conducted.
 
 ![](http://alterealitygam.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/Type_I_and_Type_II_Error_Table.jpg){width="50%"}
 
@@ -244,7 +282,13 @@ set.seed(100)
 x <- matrix(rnorm(n_var * n), ncol = n_var)
 
 cor.res <- rcorr(x)
-p.vals <- cor.res$P[lower.tri(cor.res$P)] # lower.tri() is a function to get the lower triangle from a matrix. upper.tri() gets the upper triangle
+p.vals <- cor.res$P[lower.tri(cor.res$P)] 
+# lower.tri() is a function to get the lower triangle from a matrix. 
+# upper.tri() gets the upper triangle
+```
+
+```{r bonferroni-solution}
+p.adjust(p.vals, method = "bonferroni")
 ```
 
 You can see that none of the P-values are now significant, which is the correct result, given that these variables are simulated to be unrelated to each other.
@@ -252,11 +296,11 @@ You can see that none of the P-values are now significant, which is the correct 
 ### Issues with Bonferroni
 
 As taught in lecture, Bonferroni is overly conservative because it assumes the null hypothesis is true for *ALL* of your tests, which is likely to be false.
-This means all tests are considered to contribute to the FWER, and all need to be corrected (even if the null hypothesis is false in reality for some tests).
+This means that all tests are considered to contribute to the FWER, and all need to be corrected (even if the null hypothesis is false in reality for some tests).
 As a result, the probability of committing a Type I error has certainly decreased, but the probability of committing a Type II error (failing to reject the null if it's false) has increased.
 This is okay if your research question dictates that you should be very conservative about making statements about statistical significance, but a Type II error is still an error.
 
-Let's see how Bonferroni plays out when some pairwise correlations between variables are *NOT* zero.
+Let's see how Bonferroni plays out when some pairwise correlations between variables are *NOT* zero in reality.
 
 We are going to simulate a large dataset with 100 variables, each of which has 20 data points. 50 variables are going to be random, uncorrelated normal variables, and the other 50 are going to be correlated with each other.
 Therefore, we *know* that the null hypothesis is actually false for `r choose(50, 2)` tests.
@@ -283,6 +327,11 @@ x <- cbind(x1, x2)
 ```{r bc-solution}
 cor.res <- rcorr(x)
 p.vals <- cor.res$P[lower.tri(cor.res$P)]
+
+sum(p.vals <= 0.05)
+
+p.bon <- p.adjust(p.vals, method = "bonferroni")
+sum(p.bon <= 0.05)
 ```
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE}
@@ -309,7 +358,7 @@ Is this too high?
 Now apply the Bonferroni correction to the P-values and count the number of P-values that are less than 0.05.
 
 There are now `r sum(p.vals.bc < 0.05)` significant P-values, but we know that there should be `r choose(50, 2)` because we simulated our data that way.
-This shows that only `r round(sum(p.vals.bc < 0.05) / choose(50, 2) * 100)`% of tests are correctly identified as significant, which is very low (lots of Type II error)!
+This shows that only `r round(sum(p.vals.bc < 0.05) / choose(50, 2) * 100)`% of tests are correctly identified as significant, which is *very* low (lots of Type II error)!
 This illustrates the overly conservative nature of the Bonferroni correction.
 A less conservation correction is the Benjamini-Hochberg procedure, which is covered next.
 
@@ -345,6 +394,11 @@ cor.res <- rcorr(x)
 p.vals <- cor.res$P[lower.tri(cor.res$P)]
 ```
 
+```{r bh-solution}
+p.bh <- p.adjust(p.vals, method = "BH")
+sum(p.bh <= 0.05)
+```
+
 ```{r echo = FALSE}
 n_var <- 50
 n <- 20
@@ -370,7 +424,7 @@ Therefore, I recommend using Benjamini-Hochberg over Bonferroni when you need to
 The best solution of all, however, is to not calculate so many P-values in the first place.
 
 
-## Exercise 1: Scatterplot matrices & multiple comparisons
+## Exercise 1: Scatter plot matrices & multiple comparisons
 
 We are going to use our trusty `mtcars` dataset for this exercise.
 
@@ -378,10 +432,10 @@ We are going to use our trusty `mtcars` dataset for this exercise.
 
 2. Next, create a scatter plot matrix, where the lower triangle is scatter plots with a fitted lowess curve, the diagonals are histograms, and the upper triangle is Pearson correlation coefficients.
 
-3. Calculate a Pearson correlation matrix with corresponding P-values (you'll need to transform your dataframe into a matrix first). 
+3. Calculate a Pearson correlation matrix with corresponding P-values (you'll need to transform your data frame into a matrix first). 
 
-4. Count how many P-values are significant and then use a Bonferroni and then Benjamini-Hochberg correction on your P-values
-How many P-values are less than 0.05 after each correction?
+4. Count how many P-values are significant and then use a Bonferroni and then Benjamini-Hochberg correction on your P-values.
+How many P-values are less than or equal to 0.05 after each correction?
 
 ```{r exer1, exercise = TRUE}
 # Click "Solution" button when done
@@ -399,9 +453,9 @@ mtcars.cor <- rcorr(as.matrix(mtcars1))
 
 # Q4
 p.vals <- mtcars.cor$P[lower.tri(mtcars.cor$P)]
-sum(p.vals < 0.05) # 13
-sum(p.adjust(p.vals, method = "bonferroni") < 0.05) # 10
-sum(p.adjust(p.vals, method = "BH") < 0.05) # 13
+sum(p.vals <= 0.05) # 13
+sum(p.adjust(p.vals, method = "bonferroni") <= 0.05) # 10
+sum(p.adjust(p.vals, method = "BH") <= 0.05) # 13
 ```
 
 
@@ -419,9 +473,9 @@ This is known as **overfitting**.
 
 ![](https://www.educative.io/api/edpresso/shot/6668977167138816/image/5033807687188480){width="80%"}
 
-If the new dataset you want to predict on has a different noise structure than your training dataset (as is likely), then your model will perform poorly.
+If the new dataset you want to predict on has a different noise structure than your training dataset (as is likely), then an overfit model will perform poorly.
 This is why it is so important that your test dataset is as independent from your training dataset as possible; that is, your independent test dataset mimics the new (likely independent) dataset you want to predict on.
-Thus, a test dataset with known IVs and DVs will give an honest assessment of how well your trained model does on new data, which is the ultimate goal of prediction.
+If truly independent, a test dataset with known IVs and DVs will give an honest assessment of how well your trained model does on new data, which is the ultimate goal of prediction.
 
 
 ## Writing functions
@@ -435,8 +489,8 @@ Here are the steps for writing that function (click the "Solution" button if stu
 
 1. Figure out what you want to call your function; this becomes the "object" name (e.g., `times2 <-`).
 2. Assign to this name a function called `function()`, whose arguments will become the arguments that go into your function.
-In this case, we only have one argument: the vector whose elements we multiply by two (e.g., `times2 <- function(x)`).
-3. Type in an open curly brace (`{`) right after `function()`.
+In this case, we have only one argument: the vector whose elements we multiply by two (e.g., `times2 <- function(x)`).
+3. Type an open curly brace (`{`) right after `function()`.
 4. On the next line, code what you want done with your arguments (e.g., our vector `x`).
 In this case, we want to multiply each element by two (`x * 2`) and save this to an object.
 5. Now we need to bring our results object out of "function space"; we do so using the `return()` function, whose argument is the object we want to return.
@@ -509,6 +563,14 @@ R2 <- function(obs, pred){
   
   return(1 - rss / tss)
 }
+
+x <- runif(20)
+y <- 2 * x + rnorm(20)
+
+lm.res <- lm(y ~ x)
+
+R2(y, lm.res$fitted.values)
+summary(lm.res)$r.squared # it's the same
 ```
 
 Simulate two linearly related variables and use your function to calculate $R^2$ (you'll have to fit a linear model first to get the predicted DV).
@@ -538,7 +600,7 @@ You can click the "Solution" button if you're stuck.
 rmse <- function(obs, pred){
   
   sq.resid <- (obs - pred) ^ 2
-  mean.sq.resid <- mean(sq.resid)
+  mean.sq.resid <- sum(sq.resid) / length(sq.resid)
   
   return(sqrt(mean.sq.resid))
 }
@@ -550,7 +612,7 @@ rmse <- function(obs, pred){
 Two common methods used for cross-validation are the **holdout method** and ***k*-fold** cross-validation.
 *k*-fold cross-validation is basically the holdout method repeated *k* times (i.e., with a `for()` loop), so we will learn cross-validation using the simpler (but still effective) holdout method.
 
-To learn how to cross-validate, we're going to practice on the spatially autocorrelated raster I used in lecture.
+To learn how to cross-validate, we're going to practice on a spatially autocorrelated raster.
 The code for this is adapted [from this site](https://gwenantell.com/exploring-spatial-autocorrelation-in-r/) (you will need to install the `gstat` and `sp` packages first, using `install.packages()`).
 
 ```{r ac-setup}
@@ -630,24 +692,36 @@ This dataset is preloaded into your console below.
 
 Let's do a 75-25 holdout, where 75% of the dataset is used for training and 25% is used for testing.
 This is typically done by randomly sampling 75% of the data points from one's dataset (with the remaining 25% for testing), but we know from lecture that this strategy is fraught when the data are autocorrelated ([here is a good article illustrating the problem](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1600-0706.2012.00299.x?casa_token=Vy2V1WNu-vUAAAAA:sdMScTkcVfK_YVSuavhZcHSFl-QfeUCDzw_28rpWiMH31g8oyCAEQoZK3cwG5CfAofqRreDsgDUizkVc)).
-This is because the underlying autocorrelation structure of the training dataset will be present in the test dataset, thus rendering our model assessment using the test dataset overly optimistic (remember that any new dataset we want to predict on will likely have a different autocorrelation structure). 
+This is because the underlying autocorrelation structure of the training dataset will be present in the test dataset, such that these two datasets are not truly independent. 
+This means any assessment of the predictive abilities of our model will be overly optimistic: the test dataset is too similar to the training dataset, but any dataset we ultimately want to predict on will likely be very different from our training dataset (i.e., autocorrelation structure will be different).
 To address this issue with spatial autocorrelation, we want to designate a segregated corner of the map as the test dataset.
 
 1. Let's use the bottom-right corner of the dataset (i.e., `x >= 25` and `y <= 25`).
 Subset out these data for your test dataset, and the remainder will be the training dataset.
 2. Then fit a linear model to the IV and DV in the training dataset.
 3. Use the training linear model to predict the test DV, given its IV (*hint*: use the `predict()` function).
-4. Now use your created $R^2$ and RMSE functions to calculate these statistics, using observed test DV and predicted test DV (from the training model) as your two arguments.
+4. Now use your created $R^2$ and RMSE functions to calculate these statistics (I've included the code in the console below), using observed test DV and predicted test DV (from the training model) as your two arguments.
 5. That's it!
 You can also compare your calculated $R^2$ and RMSE to those calculated using the training dataset and model.
 Click the "Solution" button if stuck.
 
 ```{r ac, exercise = TRUE}
-# click "Solution" button if stuck
-#
-#
-#
-#
+R2 <- function(obs, pred){
+  
+  rss <- sum((obs - pred) ^ 2)
+  
+  tss <- sum((obs - mean(obs)) ^ 2)
+  
+  return(1 - rss / tss)
+}
+
+rmse <- function(obs, pred){
+  
+  sq.resid <- (obs - pred) ^ 2
+  mean.sq.resid <- sum(sq.resid) / length(sq.resid)
+  
+  return(sqrt(mean.sq.resid))
+}
 ```
 
 ```{r ac-solution}
@@ -664,11 +738,11 @@ test.pred_AC <- predict(lm.train_AC, data.frame(IV = test_AC$IV))
 
 # Calculate R2 and RMSE using observed test DV and predicted test DV from training model
 R2.test_AC <- R2(test_AC$DV, test.pred_AC)
-rmse_test_AC <- RMSE(test_AC$DV, test.pred_AC)
+rmse_test_AC <- rmse(test_AC$DV, test.pred_AC)
 
-# Calculate R2 and RMSE of training model and training data for comparison (though these aren't the right measures for assessing a model's predictive abilities)
+# Calculate R2 and RMSE of training model and training data for comparison
 summary(lm.train_AC)$r.squared
-rmse_train_AC <- RMSE(train_AC$DV, lm.train_AC$fitted.values)
+rmse_train_AC <- rmse(train_AC$DV, lm.train_AC$fitted.values)
 ```
 
 As you can see the $R^2$ using the observed and predicted test DV is horrible (in fact, it's negative which means mean DV explains more variation than the model!).
@@ -680,7 +754,7 @@ We need to work harder on building a better model or getting better data!
 ## Exercise 2: Cross-validation
 
 I have simulated an IV (`x`) and DV (`y`) with temporal autocorrelation in the latter; that is, you can think of these variables as time series, where data points are chronologically ordered.
-These two objects are already set up in the tutorial console and are found in a dataframe called `d`.
+These two objects are already loaded in the tutorial console and are found in a data frame called `d`.
 
 I want you to use $R^2$ and RMSE to assess how well your fitted model will predict DV in a new dataset.
 
@@ -690,34 +764,50 @@ I want you to use $R^2$ and RMSE to assess how well your fitted model will predi
 How should the dataset be divided up into training and test datasets?
 
 3. Fit a linear model to the training dataset and predict DV in the test dataset.
-Calculate $R^2$ and RMSE.
+Calculate $R^2$ and RMSE (these functions are already loaded in the console).
 You can compare these statistics to those calculated on the training dataset and training model.
 
 ```{r exer2, exercise = TRUE}
 # Click the "Solution" button when done
-#
-#
-#
-#
 ```
 
 ```{r exer2-setup}
+set.seed(2)
 x <- sort(runif(100, max = 10))
 
 set.seed(1)
 y <- x + cumsum(rnorm(length(x), sd = 20)) + rnorm(length(x), sd = 20)
 
 d <- data.frame(x, y)
+
+R2 <- function(obs, pred){
+  
+  rss <- sum((obs - pred) ^ 2)
+  
+  tss <- sum((obs - mean(obs)) ^ 2)
+  
+  return(1 - rss / tss)
+}
+
+rmse <- function(obs, pred){
+  
+  sq.resid <- (obs - pred) ^ 2
+  mean.sq.resid <- sum(sq.resid) / length(sq.resid)
+  
+  return(sqrt(mean.sq.resid))
+}
 ```
 
 ```{r exer2-solution}
 # Q1
-plot(x, y)
+plot(d$x, d$y)
+# or
+plot(d)
 
 # Q2
 # Can take the first or last 25% of data
-train.index <- 1:(.75 * length(x))
-test.index <- (.75 * length(x) + 1):length(x)
+train.index <- 1:(.75 * nrow(d))
+test.index <- (.75 * nrow(d) + 1):nrow(d)
 
 train.d <- d[train.index, ]
 test.d <- d[test.index, ]
@@ -726,18 +816,18 @@ test.d <- d[test.index, ]
 train.lm <- lm(y ~ x, data = train.d)
 pred.test.y <- predict(train.lm, data.frame(x = test.d$x))
 
-R2(test.d$y, pred.test.y) # 0.08
-rmse(test.d$y, pred.test.y) # 38.43
+R2(test.d$y, pred.test.y) # -0.19 but essentially zero
+rmse(test.d$y, pred.test.y) # 43.97
 
 # using training model and dataset
-summary(train.lm)$r.squared # 0.66
-rmse(train.d$y, train.lm$fitted.values) # 40.27.
+summary(train.lm)$r.squared # 0.72
+rmse(train.d$y, train.lm$fitted.values) # 36.55
 ```
 
 
 ## Conclusion
 
-In this tutorial, we have gone over the three main inferential goals in statistics: exploratory data analysis, confirmatory data analysis, and prediction.
+In this tutorial, we have gone over the three main inferential goals in statistics: exploratory data analysis, confirmatory data analysis (or hypothesis testing), and prediction.
 These three are mutually exclusive, and you only ever get to do *ONE* for a given research question and dataset.
 As you have seen in lecture and this tutorial, each one requires a different mindset and set of statistical techniques.
 As a result, knowing which statistical goal is right for your question effectively creates a road map for how you should conduct analyses and interpret, present, and write up results.
@@ -746,6 +836,6 @@ For what it's worth, I think 70% of my research has been exploratory, 20% confir
 Mastering these topics is part of the very important skill set of translating a research question into a statistical question.
 This is often the most difficult part of research, and as John Tukey said, "Finding the question is often more important than finding the answer."
 Most papers I read (in paleoanthropology) conflate statistical goals, the most common being masquerading exploratory as confirmatory analyses.
-This is not done consciously or maliciously but most likely due to the fact that they never learned what the distinct statistical goals are and how they're carried out.
+This is not done consciously or maliciously but is most likely due to the fact that researchers never learned what the distinct statistical goals are and how they're carried out.
 As a result though, I bet a lot of the findings in our field our false positives and not replicable.
 Be part of the positive change and clearly delineate these goals in your own research!
