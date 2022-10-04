@@ -118,6 +118,38 @@ lm(e_qsec.hp ~ e_drat.hp)
 ```
 
 
+## Coefficient of determination ($R^2$)
+
+Recall that $R^2$ in multiple regression is interpreted as the amount of variation in the DV explained by the IVs. 
+$R^2$ can be calculated using its standard equation: one minus residual sum of squares divided by total sum of squares.
+Or, one can just use R: `summary(lm())$r.squared`.
+
+$R^2$ can also be calculated, and thus interpreted, as the squared Pearson's correlation coefficient between the DV and the fitted (predicted) multiple regression values.
+Fit the multiple regression model `lm(qsec ~ hp + drat, data = mtcars)`, and look at its $R^2$.
+Compare this with the squared Pearson's correlation coefficient between `mtcars$qsec` and `lm.res$fitted.values`.
+They're the same! 
+This makes sense since this correlation squared is essentially asking how much of the variation in the DV is explained by the predicted DV values from the multiple regression (i.e., how much DV variation is explained by the model itself).
+
+```{r r2, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r r2-solution}
+lm.res <- lm(qsec ~ hp + drat, data = mtcars)
+summary(lm.res)$r.squared
+
+cor(mtcars$qsec, lm.res$fitted.values) ^ 2
+
+plot(mtcars$qsec ~ lm.res$fitted.values)
+abline(0, 1) # adds a 1:1 line. 
+# A multiple regression with R^2 = 1 will have all points falling on this line
+```
+
+Thus, a great way to visualize how well your model fits the DV data is by plotting the DV as a function of the model's predicted values.
+Try this out.
+This is a *very* common way to visualize a model's goodness of fit when there are two or more IVs (with just one IV, you can visualize goodness of fit with a simple bivariate plot: DV ~ IV).
+
+
 ## Adding more IVs to your model
 
 One might think that adding more IVs to your multiple regression model is a good thing, since you can account for more IVs when studying your IV(s) of interest, and the $R^2$ also increases.
