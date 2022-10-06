@@ -1,5 +1,5 @@
 ---
-title: "General linear models & generalized linear models"
+title: "General(ized) linear models"
 output: 
   learnr::tutorial:
     progresive: true
@@ -14,7 +14,7 @@ library(knitr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Week 8:** General linear models & generalized linear models
+# **Week 8:** General(ized) linear models
 
 #### ANTH 674: Research Design and Analysis in Anthropology
 #### Professor Andrew Du
@@ -23,11 +23,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Introduction
 
 In this week's lecture, we learned how some basic statistical tests (e.g., t-tests, ANOVAs) are simply **general linear models** with independent variables of different data types.
-General linear models (GLM) are a class of models, where a continuous dependent variable (DV) is modeled as a linear function of one or more independent variables (IV), which may be continuous and/or categorical.
+General linear models (GLM) are a class of models, where a continuous dependent variable (DV) is modeled as a linear function of one or more independent variables (IV), each of which may be continuous and/or categorical.
 GLMs assume errors are normally distributed, wherein coefficients are estimated using ordinary least squares. 
 
 To relax the assumption of normally distributed errors, we use **generalized linear models** (GLiM).
-Through GLiMs, we learned about a new class of models, where the DV can now be non-continuous (e.g., discrete, categorical).
+Using GLiMs, we learned about a new class of models, where the DV can now be non-continuous (e.g., discrete, categorical).
 GLiMs can have one or more IVs, which can be continuous and/or categorical, and its coefficients are estimated using maximum likelihood.
 In fact, GLMs are a special class of GLiMs, where the errors are normally distributed (the coefficient maximum likelihood estimates are actually the ordinary least squares estimates, even though the former was invented after the latter!).
 
@@ -52,7 +52,7 @@ By the end of this tutorial, you should know how to fit these models to your own
 
 ## General linear models
 
-Again, this is a class of models where the DV is continuous and the IV can be continuous or categorical, thus resulting in normally distributed errors.
+Again, this is a class of models where the DV is continuous and the IVs can be continuous or categorical, thus resulting in normally distributed errors.
 The coefficients are estimated using ordinary least squares.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/2560px-Linear_regression.svg.png){width="60%"}
@@ -93,7 +93,7 @@ t.test(mtcars$mpg[mtcars$am == 0], mtcars$mpg[mtcars$am == 1])
 ```
 
 As you can see from the output, mean `mpg` is significantly different between the automatic and manual car models.
-The outputs of interest are the P-value (which is significant), the 95% CI of the mean difference between the two groups, and the estimated means of the two groups (though you could have done that on your own with `mean()`).
+The outputs of interest are the P-value (which is significant), the 95% CI of the mean difference between the two groups (which excludes zero, hence P < 0.05), and the estimated means of the two groups (though you could have done that on your own with `mean()`).
 
 
 ## t-test using `lm()`
@@ -106,11 +106,22 @@ Note that here is where factors and factors levels in R become tangible: the IV 
 You can set your baseline factor level using the `relevel()` function if you don't like the default.
 
 ```{r t_test_lm, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r t_test_lm-solution}
+t.test(mtcars$mpg[mtcars$am == 0], mtcars$mpg[mtcars$am == 1], var.equal = TRUE)
+
+lm.res <- lm(mpg ~ am, data = mtcars)
+summary(lm.res)
+
+mean(mtcars$mpg[mtcars$am == 1]) - mean(mtcars$mpg[mtcars$am == 0])
 ```
 
 Use `summary()` to bring up more detailed information about the linear model output.
-As you can see, the P-value and t value of the slope matches those of the t-test *exactly* (the sign of the t value might be switched depending on the order in which you input the groups into `t.test()`).
-The slope estimate is just the mean difference in `mpg` between groups (i.e., how much the DV changes as you go from the first group to the second).
+As you can see, the P-value and t-value of the slope matches those of the t-test *exactly* (the sign of the t-value might be switched depending on the order in which you input the groups into `t.test()`).
+The standard error is the same too (this can be brought up for the t-test using `t.test()$stderr`).
+The `lm` slope estimate is just the mean difference in `mpg` between groups (i.e., how much the DV changes as you go from the first group to the second).
 Go ahead and calculate the mean difference using `mean()` to see this (make sure you subtract `am == 0` from `am == 1`, since R automatically made the former the baseline level).
 
 Now you can see how a t-test is a GLM where the IV is binomial (categorical with two levels)!
@@ -127,6 +138,11 @@ The arguments are the same as those in `t.test()`.
 Try it out below using the same `mpg` data.
 
 ```{r mann, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r mann-solution}
+wilcox.test(mtcars$mpg[mtcars$am == 0], mtcars$mpg[mtcars$am == 1])
 ```
 
 You will see the P-value has increased compared to that in the t-test.
@@ -136,7 +152,7 @@ You will see the P-value has increased compared to that in the t-test.
 
 An **ANOVA** ("analysis of variance") is an extension of the t-test, where there are now more than two groups.
 We will specifically look at a **one-way ANOVA**, which tests the null hypothesis that the means of groups are the same (i.e., all groups sample the same statistical population).
-As a result, ANOVA returns one P-value, which is calculated using the F statistic (i.e., the ratio of variance among groups to within groups).
+As a result, ANOVA returns one P-value, which is calculated using the F-statistic (i.e., the ratio of variance among groups to within groups).
 You can see from the figure below how the variance among groups increases as the groups' means grow further and further apart.
 
 ![](https://www.researchgate.net/profile/Gabriel_Liguori/publication/329788831/figure/fig2/AS:711397558206464@1546621803288/Graphical-representation-of-the-rationale-behind-the-analysis-of-variance-ANOVA-A_W640.jpg){width="85%"}
@@ -165,7 +181,7 @@ To get the more familiar ANOVA table you see in publications or your textbook, y
 Try this out above.
 
 Now you get your classic ANOVA table, which makes reporting its results in publications easy!
-As you can see, the P-value is extremely small, so mean `Petal.Length` is significantly different across `Species`.
+As you can see, the P-value is extremely small, so mean `Petal.Length` is significantly different across `Species` (as can be visually assessed in the box plot above).
 
 
 ## ANOVA using lm()
@@ -173,11 +189,26 @@ As you can see, the P-value is extremely small, so mean `Petal.Length` is signif
 Now let's fit a linear model, where the DV is `iris$Petal.Length` and the IV is `iris$Species`, and compare the results to those from the ANOVA.
 
 ```{r anova_lm, exercise = TRUE}
+# Click "Solution" if stuck
 ```
 
-Let's compare the F statistic first.
-You can get the F statistic from the linear model results by wrapping `anova()` around your linear model object.
-You can see that the F statistics are identical!
+```{r anova_lm-solution}
+aov.res <- aov(Petal.Length ~ Species, data = iris)
+anova(aov.res)
+
+lm.res <- lm(Petal.Length ~ Species, data = iris)
+anova(lm.res)
+
+anova(aov.res)$P
+anova(lm.res)$P
+
+aov.res$coefficients
+lm.res$coefficients
+```
+
+Let's compare the F-statistic first.
+You can get the F-statistic from the linear model results by wrapping `anova()` around your linear model object.
+You can see that the F-statistics, along with all other numbers, are identical!
 
 Now let's compare P-values.
 To get the exact P-value from the ANOVA, use `anova(aov())$P`. 
@@ -196,6 +227,23 @@ Again, confirm this by calculating the mean difference using `mean()`.
 And lastly, the coefficient estimate for `Speciesvirginica` is the mean difference in `Petal.Length` between `setosa` and `virginica`.
 Again, confirm this using `mean()`.
 
+```{r coef, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r coef-solution}
+lm.res <- lm(Petal.Length ~ Species, data = iris)
+
+(setosa.pl.mean <- mean(iris$Petal.Length[iris$Species == "setosa"]))
+lm.res$coefficients["(Intercept)"]
+
+mean(iris$Petal.Length[iris$Species == "versicolor"]) - setosa.pl.mean
+lm.res$coefficients["Speciesversicolor"]
+
+mean(iris$Petal.Length[iris$Species == "virginica"]) - setosa.pl.mean
+lm.res$coefficients["Speciesvirginica"]
+```
+
 
 ## Kruskal-Wallis test
 
@@ -205,6 +253,14 @@ The argument is exactly the same as in `aov()` (i.e., you can use the formula fo
 Try conducting a Kruskal-Wallis test on `iris$Petal.Length ~ iris$Species`.
 
 ```{r kruskal, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r kruskal-solution}
+kruskal.test(iris$Petal.Length ~ iris$Species)
+
+kruskal.test(iris$Petal.Length ~ iris$Species)$p.value
+anova(aov(iris$Petal.Length ~ iris$Species))
 ```
 
 Append `$p.value` to the end of the function to get the exact P-value.
@@ -232,6 +288,7 @@ So, lets fit a multiple regression model, using `lm()`, where `mtcars$qsec` is m
 
 ```{r ancova1-solution}
 ancova.res <- lm(qsec ~ am + hp, data = mtcars)
+summary(ancova.res)
 
 plot(mtcars$qsec ~ mtcars$hp, type = "n") # setting type = "n" suppresses plotting, so I can add on points later
 points(mtcars$qsec[mtcars$am == 0] ~ mtcars$hp[mtcars$am == 0], pch = 16, col = "red")
@@ -244,9 +301,9 @@ abline(ancova.res$coefficients["(Intercept)"] + ancova.res$coefficients["am"], a
 ```
 
 You can see that there are three estimated coefficients, all of which are significant.
-The intercept is the intercept of the regression of `mtcars$qsec ~ mtcars$hp` when `am == 0` (i.e., the baseline level).
-To illustrate this point, first plot `mtcars$qsec ~ mtcars$hp`, with the points color-coded by `am`.
-Now use `abline()` to fit a line with the prespecified intercept and a slope that is the `hp` coefficient (i.e., our continuous IV).
+The intercept is the intercept of the regression of `$qsec ~ hp` when `am == 0` (i.e., the baseline level).
+To illustrate this point, first plot `qsec ~ hp`, with the points color-coded by `am`.
+Now use `abline()` to fit a line with the aforementioned intercept and a slope that is the `hp` coefficient (i.e., our continuous IV).
 Thus far, you have used `abline()` with an `lm()` object, but you can also fit a line with `abline()`, where the first argument is the intercept and the second argument is the slope.
 
 As you can see, the line fits really nicely!
@@ -267,7 +324,7 @@ For this ANCOVA model, there *IS* an interaction between the IVs.
 The interaction term is what changes the slope as you go from the baseline level to the other level, and the estimated coefficient for the categorical IV is what changes the intercept as you change levels.
 You can fit an ANCOVA where only the slope changes (e.g., `lm(DV ~ IV1:IV2)`), but this is almost never done.
 
-So, lets fit an interaction multiple regression model, where the DV is `mtcars$mpg` and the IVs are `mtcars$am` and `mtcars$wt`.
+So, lets fit an interaction multiple regression model, where the DV is `mtcars$mpg` and the IVs are `mtcars$am` and `mtcars$wt` (i.e., `lm(mpg ~ am * wt)`).
 
 ```{r ancova2, exercise = TRUE}
 # Click "Solution" button if stuck
@@ -286,7 +343,7 @@ abline(ancova.res$coefficients["(Intercept)"], ancova.res$coefficients["wt"], co
 abline(ancova.res$coefficients["(Intercept)"] + ancova.res$coefficients["am"], ancova.res$coefficients["wt"] + ancova.res$coefficients["am:wt"], col = "blue")
 ```
 
-As you can see, there are now four estimated coefficients, one more than before (in real life, we need to be careful here, since we have only 32 data points, so we're likely overfitting our data somewhat).
+As you can see, there are now four estimated coefficients, one more than before (we'd need to be careful here if this was "real" research, since we have 32 data points only, so we're likely overfitting our data somewhat).
 As before, the intercept is the intercept of the `mpg ~ wt` regression when `am == 0` (the baseline level, which is "Automatic").
 The estimated `wt` coefficient (i.e., the continuous IV) is the corresponding slope for `am == 0`.
 Use `abline()` to add this line to the plot.
@@ -299,11 +356,11 @@ The interaction term, `am:wt`, is how much the slope changes as you go from `am 
 With this knowledge, add the line for points where `am == 1`.
 
 Again, it's a good fit.
-And you can see that the lines are not parallel, indicating different slopes, and you can see the intercepts are different.
+And you can see that the lines are not parallel, indicating different slopes, and that the intercepts are different.
 
 The `am` and `am:wt` coefficients are significant, telling us that the intercepts and slopes, respectively, are significantly different between `am == 0` and `am == 1`.
 And the coefficients tell us by how much the intercepts and slopes are changing (14.88 and -5.30, respectively).
-So in sum, ANCOVA is a really useful statistical method!
+So in sum, ANCOVA is a really useful statistical model!
 
 
 ## Exercise 1
@@ -312,7 +369,7 @@ So in sum, ANCOVA is a really useful statistical method!
 Enter `?sleep` for more information on the dataset.
 Use a t-test to see if mean `extra` differs between the two groups in `group`.
 
-2. Fit an ANOVA to see if mean `mtcars$mpg` differs across number of gears in `gear`.
+2. Fit an ANOVA to see if mean `mtcars$mpg` differs across number of gears in `mtcars$gear`.
 
 3. Fit an ANCOVA to `iris$Petal.Width` as a function of `iris$Sepal.Width` and `iris$Species` with an interaction between the two variables.
 Let's use significant coefficients as a way to determine which effects are worth interpreting.
@@ -345,7 +402,7 @@ summary(ancova.res)
 
 ## Generalized linear models
 
-This class of models relaxes the assumptions of normally distributed errors, so we can look at DVs that are not continuous (e.g., categorical).
+This class of models relaxes the assumption of normally distributed errors, so we can look at DVs that are not continuous (e.g., categorical).
 In contrast to GLMs, the coefficients are estimated using maximum likelihood.
 
 ![](https://miro.medium.com/max/1473/0*9XhxRne56Lhvmazv.png){width="70%"}
@@ -355,7 +412,7 @@ We will begin with the most popular GLiM, which is logistic regression.
 
 ## Logistic regression
 
-A **logistic regression** models a binomial DV as a linear function of one or more IVs, which can be continuous and/or categorical.
+A **logistic regression** models a binomial DV as a linear function of one or more IVs, each of which can be continuous and/or categorical.
 It is used to estimate the *probability* (specifically, the odds) of belonging to the non-baseline level as a function of the IVs.
 Thus, this probability is the DV being modeled by the logistic regression.
 
@@ -364,6 +421,15 @@ Plot `mtcars$am` as a function of `mtcars$wt`.
 Then, fit a linear model to the data, and plot the line.
 
 ```{r binom, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r binom-solution}
+plot(am ~ wt, data = mtcars)
+lm.res <- lm(am ~ wt, data = mtcars)
+abline(lm.res)
+
+hist(lm.res$residuals)
 ```
 
 As you can see, the fit is poor, as the relationship is not linear.
@@ -371,7 +437,7 @@ Furthermore, the linear model predicts probabilities that are greater than one w
 This is a big problem, as probabilities can only be between zero and one.
 
 Now plot a histogram of the linear model residuals.
-You can see the residuals are bimodal, reflecting the binomial nature of the DV, and thus one of the assumptions of linear regression is violated.
+You can see that the residuals are bimodal, reflecting the binomial nature of the DV, and thus one of the assumptions of linear regression (i.e., normally distributed errors) is violated.
 
 The data are better fit by a logistic function:
 
@@ -391,14 +457,14 @@ What logistic regression does is it uses a **logit transformation** to convert t
 The logit transformation is defined as:
 
 \begin{align}
-  log(\frac{p}{1-p}),
+  \textrm{log}(\frac{p}{1-p}),
 \end{align}
 
-where $p$ is the modeled DV probability.
+where $p$ is the modeled DV probability of belonging to the non-baseline category.
 The logistic regression model equation is then:
 
 \begin{align}
-  log(\frac{p}{1-p}) = \beta_0 + \beta_1 X_1 + \epsilon.
+  \textrm{log}(\frac{p}{1-p}) = \beta_0 + \beta_1 X_1 + \epsilon.
 \end{align}
 
 ### Fitting a logistic regression to data
@@ -414,14 +480,14 @@ The `family = binomial` argument indicates that the errors are binomially distri
 
 ```{r logist-solution}
 glm.binom <- glm(am ~ wt, data = mtcars, family = binomial)
+summary(glm.binom)
 
 confint(glm.binom)
 
 plot(am ~ wt, data = mtcars)
 
-inv.logit <- function(x) return(exp(x) / (1 + exp(x)))
-
-lines(seq(1, 6, length.out = 100), inv.logit(predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))))
+x <- seq(1, 6, length.out = 100)
+lines(x, predict(glm.binom, data.frame(wt = x), type = "response"))
 ```
 
 Use `summary()` to bring up the detailed output.
@@ -429,22 +495,13 @@ As you can see, a lot of things are the same as your standard `lm()` output, but
 Nevertheless, you still get estimated coefficients, their standard errors, their P-values, and you can use `confint()` on the `glm()` object to get the 95% CI of the coefficient estimates.
 
 To add the fitted logistic curve to your plot, we have to use the `predict()` function to get out predicted values.
-Calling the `glm()` object `glm.binom`, enter `predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))` (the `seq(1, 6, length.out = 100)` simply creates a vector of many values within the range of the IV, so a smooth curve can be plotted).
-However, you'll see that the values returned are not probabilities but logit-transformed probabilities.
-To transform them back into probabilities, we need to use an inverse logit transformation, which I've written a function for:
-
-```{r}
-inv.logit <- function(x) return(exp(x) / (1 + exp(x)))
-```
-
-Wrap this function around `predict()` to get out the predicted probability values.
-You can then add the fitted logistic curve, using `lines(seq(1, 6, length.out = 100), inv.logit(predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)))))`.
+Calling the `glm()` object `glm.binom`, enter `predict(glm.binom, data.frame(wt = seq(1, 6, length.out = 100)), type = "response)` (the `seq(1, 6, length.out = 100)` simply creates a vector of many values within the range of the IV, so a smooth curve can be plotted; `type = "response"` ensures that the predicted DV output is on the scale of the DV, i.e., response variable).
 
 ### Interpreting coefficients
 
 The estimated intercept and slope are significant and are 12.04 and -4.02, respectively.
 The intercept is the DV value when the IV is set to zero.
-So setting `wt` to zero, we get $log(\frac{p}{1-p}) = 12.04$ (see equation above).
+So setting `wt` to zero, we get $\textrm{log}(\frac{p}{1-p}) = 12.04$ (see equation above).
 We can exponentiate both sides of the equation to get $\frac{p}{1-p} = 169,396.9$.
 Recalling that $\frac{p}{1-p}$ is the odds, 169,396.9 is the odds that a car will be manual transmission (`am == 1`, i.e., the non-baseline level) when `wt = 0`. 
 This number is enormous because all car weights are far above zero (to get a more interpretable intercept estimate, we should center `wt` first).
@@ -465,11 +522,20 @@ However, knowing which variable is the DV vs. the IV is important for *interpret
 Because we're dealing with categorical variables only, the numbers we are dealing with are frequencies or counts.
 These are presented as a **contingency table** or **crosstab**, where the columns are the IV and the rows are the DV.
 
-We will be working with the built-in `HairEyeColor` dataset, which records the hair and eye color and sex of 592 students.
+We will be working with the built-in `HairEyeColor` dataset, which records the hair and eye color and sex of 592 statistics students.
 We will be looking at two variables only, so we will subset out hair and eye color for males only.
 Do this using `HairEyeColor[, , "Male"]`, and save the results to an object.
 
 ```{r cont, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r cont-solution}
+x <- HairEyeColor[, , "Male"]
+
+install.packages("vcd", dep = T)
+library(vcd)
+mosaic(x)
 ```
 
 This is what your contingency table should look like:
@@ -490,13 +556,24 @@ To conduct a chi-squared analysis in R, we use the `chisq.test()` function, wher
 Try this out below.
 
 ```{r chi, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r chi-solution}
+x <- HairEyeColor[, , "Male"]
+
+chi.res <- chisq.test(x)
+
+sum(((x - chi.res$expected) ^ 2)/chi.res$expected)
+
+mosaic(x, shade = TRUE, legend = TRUE)
 ```
 
 You can see that we get a calculated $\chi^2$ test statistic and a P-value.
 Recall that the $\chi^2$ statistic is calculated as:
 
 \begin{align}
-  \chi^2 = \sum_{all cells} \frac{(Observed - Expected) ^ 2}{Expected}.
+  \chi^2 = \sum_{\textrm{all cells}} \frac{(\textrm{Observed} - \textrm{Expected}) ^ 2}{\textrm{Expected}}.
 \end{align}
 
 So we carry out this calculation for each cell and then sum the results across all cells.
@@ -506,7 +583,7 @@ Thus, we can calculate the $\chi^2$ statistic ourselves with `sum(((x - chi.res$
 The significant P-value tells us that certain hair colors are associated with certain eye colors (i.e., some combinations are more common than random, while some are rarer).
 We can visualize which hair/eye color combinations are driving the results with a mosaic plot.
 This time, enter `mosaic(x, shade = TRUE, legend = TRUE)`.
-You can see that individuals with brown eyes are more likely to have black hair and less likely to have blond hair. 
+You can see that individuals with brown eyes are more likely to have black hair (large positive residuals) and less likely to have blond hair (large negative residuals). 
 And individuals with blue eyes are less likely to have black hair and more likely to have blond hair.
 If you want to get out the residuals so you can see the actual numbers, enter `chi.res$residuals`.
 
@@ -514,8 +591,8 @@ If you want to get out the residuals so you can see the actual numbers, enter `c
 ## Chi-squared tests as log-linear models
 
 **Log-linear models** are a class of GLiMs, where the DV is frequencies, so you can see how this applies to contingency table analyses and chi-squared tests.
-(In fact, the figure in the topic, *Generalized linear models*, is a log-linear model. You can see how the error distributions are not normal when the DV is close to zero because frequencies cannot be negative.)
-Specifically, we want to model the frequencies as a function of the categorical DV and IV with an interaction between the two.
+(In fact, the figure in the topic, *Generalized linear models*, is a log-linear model. You can see how the error distributions are not normal when the DV is close to zero because frequencies cannot be negative).
+Specifically, we want to model the frequencies as a function of the categorical DV and IV with an interaction between the two (as in a two-way ANOVA).
 The interaction term is what is tested in a chi-squared test.
 This makes sense as we're interested in whether the relationship between frequencies and hair color changes as a function of eye color (and whether the relationship between frequencies and eye color changes as a function of hair color).
 
@@ -524,14 +601,24 @@ I have included the code for this in the console below.
 Run the code to see what the dataset looks like.
 
 ```{r log_lin, exercise = TRUE}
+x <- HairEyeColor[, , "Male"]
+
 x1 <- data.frame(Freq = c(x), hair_color = rep(rownames(x), times = nrow(x)), eye_color = rep(colnames(x), each = ncol(x)))
 ```
 
-To run a log-linear GLiM, we use the `glm()` function with `family = poisson`, so the proper code here is `glm(Freq ~ hair_color * eye_color, data = x1, family=poisson)`.
+```{r log_lin-solution}
+glm.pois <- glm(Freq ~ hair_color * eye_color, data = x1, family = poisson)
+
+anova(glm.pois, test = "Rao")
+
+chisq.test(x)
+```
+
+To run a log-linear GLiM, we use the `glm()` function with `family = poisson`, so the proper code here is `glm(Freq ~ hair_color * eye_color, data = x1, family = poisson)`.
 Enter this code and save the results to an object.
 You'll see that a lot of coefficients have been estimated!
 
-Now enter `anova(glm.pois, test = "Rao")` (I called my `glm()` object `glm.pois`).
+Now enter `anova(glm.pois, test = "Rao")` (I called my `glm()` object `glm.pois`; `test = "Rao"` tells R to calculate the P-value using the Rao score test).
 Look at the statistics for the interaction term. 
 You can see that the $\chi^2$ statistic (under the column `Rao`) and the P-value are exactly the same as when using `chisq.test()`!
 
@@ -541,7 +628,7 @@ This once again illustrates that chi-squared tests, usually taught as a test sep
 ## Exercise 2
 
 1. Let's create a logistic regression model, where `iris$Species` is the DV and `iris$Petal.Length` is the IV.
-First subset out the `setosa` species, so we're left with only two species in `Species`.
+First delete the `setosa` species, so we're left with only two species in `Species`.
 Drop the unused `setosa` level in `Species` just in case, using `droplevels()`.
 Then, fit the logistic regression model.
 
@@ -573,8 +660,8 @@ That was our first foray into GLMs, which taught us the fundamentals (e.g., what
 We built upon that week with multiple regression, which extended simple linear regression to two or more IVs.
 Those two weeks culminated in this week's material where we still learned about GLMs, but this time we varied the data type of the IVs.
 We saw how this resulted in tests that many of us are familiar with (e.g., t-tests, ANOVAs).
-So instead of thinking about t-tests, ANOVAs, and ANCOVAs as separate tests (which is how they're commonly taught), think of them as different versions of GLMs.
-I find this approach much more intellectually satisfying, and there are less things you have to learn (e.g., instead of learning different sets of assumptions, we now know that they all have the same assumptions because they're all GLMs!).
+So instead of thinking about t-tests, ANOVAs, and ANCOVAs as separate tests (which is how they're commonly taught), think of them as different versions of GLMs (this is how I think).
+I find this approach much more intellectually satisfying, and there are less things you have to learn and memorize (e.g., instead of learning different sets of assumptions, we now know that they all have the same assumptions because they're all GLMs!).
 
 We then moved onto GLiMs, where the assumption of normally distributed errors is relaxed.
 This allowed us to explore even more linear models, this time with DVs that are not continuous.
