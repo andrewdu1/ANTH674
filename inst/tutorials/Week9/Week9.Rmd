@@ -201,13 +201,27 @@ Then plot the segmented regression object using `plot()` with argument `add = TR
 One can also add vertical lines using `abline()` and the `v()` argument to indicate the estimated breakpoint and its 95% CI.
 
 One can also fit a segmented regression where only the intecept changes and the slopes equal zero.
-For this, we will use the `strucchange` package (make sure it's installed) and the `Nile` dataset.
+For this, we will use the `strucchange` package (make sure it's installed) and the `Nile` dataset built into R.
+First, plot the time series dataset with `plot(Nile)`.
+Now, let's fit an intercept-only breakpoint model with `bp.nile <- breakpoints(Nile ~ 1)` (in general, one fits an intercept-only model with one to the right of the tilde, i.e., `~ 1`).
+Next, add the breakpoint to a linear model with `lm.bp <- lm(Nile ~ breakfactor(bp.nile, breaks = 1))`.
+You can add more breakpoints if you want by changing the `breaks` argument.
+To add the fitted segmented regression model to the data, enter `lines(ts(fitted(lm.bp), start = 1871), col = "red")`.
 
 ```{r struc, exercise = TRUE}
+# Click "Solution" button if stuck
 ```
 
 ```{r struc-solution}
 library(strucchange)
+
+plot(Nile)
+
+bp.nile <- breakpoints(Nile ~ 1)
+
+lm.bp <- lm(Nile ~ breakfactor(bp.nile, breaks = 1))
+
+lines(ts(fitted(lm.bp), start = 1871), col = "red")
 ```
 
 
@@ -328,3 +342,14 @@ We saw that a log-linear model with frequencies as a function of two categorical
 In sum, all of the popular, fundamental statistical tests are linear models (GLMs or GLiMs). 
 Thus, if you understand linear models, you understand all these tests!
 Between the lecture and this tutorial, you should now have the knowledge and skillset to apply these methods to your own datasets.
+
+
+## Conclusions
+
+This week's lecture and tutorial might have seemed a bit like a hodgepodge, but there are two things that unify these methods that I would like to emphasize.
+One is what I mentioned before: these are more recent regression models that relax at least one assumption from GLM.
+The other is that these are somewhat complicated models that go above and beyond the standard GLM toolkit taught in many stats classes and used by many researchers.
+Thus, you are starting to get a taste of the really complex analyses that you can do with R, which are required for complex datasets and/or complex research questions.
+As you can see, a lot of these more complex analyses can be done with R packages, requiring very few lines of code.
+This is both a good thing (anyone who knows R can run these analyses) and a bad thing (anyone can run the analyses without really understanding them). 
+Hopefully, this week's tutorial has shown you that complex analyses and models need not be intimidating once you have some mastery of R.
