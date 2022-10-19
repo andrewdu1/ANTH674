@@ -1,0 +1,176 @@
+---
+title: "Modern regression models"
+output: 
+  learnr::tutorial:
+    progresive: true
+    allow_skip: true
+runtime: shiny_prerendered
+---
+
+```{r setup, include = FALSE}
+library(learnr)
+library(knitr)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# **Week 9:** Modern regression models
+
+#### ANTH 674: Research Design and Analysis in Anthropology
+#### Professor Andrew Du
+
+
+## Introduction
+
+This week's short lecture went over **modern regression models**, a "grab bag" name I gave to more advanced models that relax the assumptions of general linear models (GLM).
+The two main assumptions that are relaxed for the models I covered are:
+
+1. The independent variable (IV) is measured without error
+2. The relationship between the dependent variable (DV) and IV is linear.
+
+For relaxing Assumption 1, we went over **Model 2 regression** methods.
+For relaxing Assumption 2, we learned **segmented regression**, **non-linear least squares**, and **locally estimated scatterplot smoothing**.
+You will learn how to run all these models in R, and in doing so, you will learn more about how these methods work.
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Loess_curve.svg/1200px-Loess_curve.svg.png){width="70%"}
+
+
+## Goals for this tutorial
+
+#### 1) Continue the never-ending journey of familiarizing yourself with R.
+#### 2) Learn how & when to use:
+
+##### a. Model 2 regression
+##### b. Segmented regression
+##### c. Non-linear least squares
+##### d. Locally estimated scatterplot smoothing
+
+
+## Model 2 regression
+
+
+
+
+## Segmented regression
+
+## Exercise 1
+
+## Non-linear least squares
+
+GLMs assume that coefficients are entered into the model linearly/additively.
+There are many times, however, when we would want to fit a function where this isn't the case.
+This usually happens if a body of theory dictates a specific function for a DV and IV(s) (e.g., power function, Michaelis-Menten function).
+This is when we turn to **non-linear least squares (NLS)**.
+
+Using the example from lecture, let's analyze the `aegean2` dataset from the `sars` package to study the species-area relationship (install this package first if you don't have it on your computer).
+The `aegean2` data frame has two columns: `a` is island area, and `s` is the corresponding number of plant species (enter `?aegean2` if you'd like more details).
+One hypothesized function for the species-area relationship is the power function: $S = cA^z$, where $S$ is number of species, $A$ is area, and $c$ and $z$ are estimated coefficients.
+Let's fit this power function to the data using NLS.
+
+We will use the `nls()` function (save the results to an object, e.g., `nls.res`).
+The first argument is the model formula, telling R how the variables and coefficients are related. 
+When we fit a quadratic regression weeks ago, recall how we had to use the `I()` function to tell R that `^` should be treated "as is", i.e., a raised-to-the-power operator in the formula.
+We need to do the same here for the `z` coefficient: `s ~ c * I(a ^ z)`.
+Additionally, because `nls()` estimates coefficients algorithmically using least squares, we have to tell R which values to start its search at for each coefficient (this has to be done using the `list()` function).
+We want to use our best guess here, so we will guess values that are presumably close to the true `c` and `z` values.
+Otherwise, if the function is complicated enough, `nls()` may return poor estimates if our initial guesses are far off
+I used `start = list(c = 100, z = 0.5)`.
+
+```{r NLS-setup}
+data(aegean2, package = "sars")
+```
+
+```{r NLS, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r NLS-solution}
+nls.res <- nls(
+  s ~ c * I(a ^ z), 
+  data = aegean2, 
+  start = list(c = 100, z = 0.5))
+
+plot(aegean2, ylim = c(0, 2000))
+
+a <- seq(0, 8000)
+s.pred <- predict(nls.res, data.frame(a = a))
+
+lines(a, s.pred, col = "red", lwd = 2)
+```
+
+Now we can plot the data and add the fitted NLS line. 
+To add the line, we have to use the `predict()` function as with some R models previously (remember, we have to create a new data frame with `data.frame()` for the `newdata` argument).
+
+We can also use `nls()` to compute confidence intervals (CIs) and P-values for our estimated coefficients (i.e., hypothesis testing).
+As with `lm()`, use `summary()` to get coefficient estimates, standard errors, and P-values. 
+Use `confint()` on your NLS results object to get 95% CIs for the coefficient estimates. 
+
+
+## Locally estimated scatterplot smoothing
+
+**Locally estimated scatterplot smoothing**, or **LOESS regression**, is used when there is no *a priori* function to explore or test for one's dataset.
+One uses it to draw the audience's eye to the average trend in the data, using a smoothed curve.
+As you can imagine, LOESS is typically associated with exploratory data analysis, though one can use it for prediction if careful (it's not really used for hypothesis testing).
+
+Let's fit a LOESS curve to the same dataset I used in class.
+This is the `economics` dataset from the `ggplot2` package (make sure you've installed this package first).
+I've subsetted out the first 80 rows and called this new data frame `econ`. 
+
+First, let's use `econ` to plot `uempmed` as a function of `index`.
+Now, let's fit a LOESS regression model, using the `loess.smooth()` function.
+The first two arguments are the IV and DV, respectively. 
+Using the `span` argument, the moving window size is set as the proportion of all data points.
+If `degree = 1`, a simple linear regression is fit to data within a given window.
+If `degree = 2`, a quadratic regression is fit instead. 
+Save your `loess.smooth()` results to a new object (e.g., `loess.res`), and a line can be added to the scatter plot using `lines(loess.res$x, loess.res$y)`.
+
+Try playing around with different `span` and `degree` arguments to see how they influence the resulting LOESS curve.
+
+```{r loess-setup}
+data(economics, package="ggplot2")
+
+econ <- economics[1:80, ]
+econ$index <- seq_len(nrow(econ))
+```
+
+```{r loess, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r loess-solution}
+plot(econ$index, econ$uempmed)
+
+loess.res <- loess.smooth(
+  econ$index, 
+  econ$uempmed, 
+  span = 0.5, 
+  degree = 2)
+
+lines(loess.res$x, loess.res$y)
+```
+
+When it comes to my own data analysis, I mostly use `degree = 2`, and I play around with `span` until I get a curve that illustrates what I want to illustrate (i.e., not too smooth but not too squiggly/overfit)!
+
+
+## Exercise 2
+
+
+## Conclusion
+
+This week's lecture and tutorial really started with the simple linear regression lecture. 
+That was our first foray into GLMs, which taught us the fundamentals (e.g., what a DV and IV are, how to interpret coefficients, what the assumptions are).
+We built upon that week with multiple regression, which extended simple linear regression to two or more IVs.
+Those two weeks culminated in this week's material where we still learned about GLMs, but this time we varied the data type of the IVs.
+We saw how this resulted in tests that many of us are familiar with (e.g., t-tests, ANOVAs).
+So instead of thinking about t-tests, ANOVAs, and ANCOVAs as separate tests (which is how they're commonly taught), think of them as different versions of GLMs (this is how I think).
+I find this approach much more intellectually satisfying, and there are less things you have to learn and memorize (e.g., instead of learning different sets of assumptions, we now know that they all have the same assumptions because they're all GLMs!).
+
+We then moved onto GLiMs, where the assumption of normally distributed errors is relaxed.
+This allowed us to explore even more linear models, this time with DVs that are not continuous.
+By far, the most popular GLiM is logistic regression where the DV is binomial (and thus the errors are binomially distributed).
+Another common GLiM is the log-linear model, or **Poisson regression**, where the DV is frequencies.
+We saw that a log-linear model with frequencies as a function of two categorical variables with an interaction between them is just a chi-squared test.
+
+In sum, all of the popular, fundamental statistical tests are linear models (GLMs or GLiMs). 
+Thus, if you understand linear models, you understand all these tests!
+Between the lecture and this tutorial, you should now have the knowledge and skillset to apply these methods to your own datasets.
