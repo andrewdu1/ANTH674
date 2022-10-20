@@ -55,24 +55,24 @@ Moreover, it is sometimes not clear which of your two variables should be the IV
 This knowledge is necessary for specifying your GLM model and for interpreting the slope(s).
 
 In these scenarios, one can turn to **Model II regression** methods.
-Whereas Model I regressions estimate coefficients by minimizing the errors in the DV (e.g., least squares), Model II regressions minimize errors in *both* the IV and DV. 
+Whereas Model I regressions estimate coefficients by minimizing the errors in the DV only (e.g., least squares), Model II regressions minimize errors in *both* the IV and DV. 
 We will cover two Model II regressions here: **major axis regression (MA)** and **standard major axis regression (SMA)**.
-SMA is also often called **reduced major axis regression RMA)**, not to be confused with ranged major axis regression which is also abbreviated RMA (aren't statisticians the worst?).
+SMA is also often called **reduced major axis regression (RMA)**, not to be confused with ranged major axis regression which is also abbreviated RMA (aren't statisticians the worst?).
 I will use reduced major axis regression and RMA to refer to SMA because this is the name commonly used in biological anthropology.
 
 ![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Model%20I%20&%20II%20regression.png?raw=true){width="100%"}
 
 ### Major axis regression (MA)
 
-MA estimates by coefficients by minimizing the errors perpendicular to the line of best fit (see above figure).
+MA estimates coefficients by minimizing the errors perpendicular to the line of best fit (see above figure).
 This is exactly how principal components analysis fits the first component through the axis of greatest variation in the data, i.e., the major axis, hence the name for MA.
 One of the assumptions of MA is that the IV and DV are measured in the same units or are both dimensionless.
 This is a pretty major assumption, and if it is not met, one should use RMA.
 
 ### Reduced major axis regression (RMA)
 
-RMA estimates coefficients by minimizing the geometric mean distance between the data and best fit line, and this is the same as minimizing the area of all triangles in the figure above. 
-RMA can be done on IV and DV in different units because it is really MA done on standardized variables, hence the name standard major axis regression (though we will stick with using "RMA"!).
+RMA estimates coefficients by minimizing the geometric mean distance between the data and best-fit line, and this is the same as minimizing the area of all triangles in the figure above. 
+RMA can be done on IV and DV in different units because it is really MA done on standardized variables, hence the name standard major axis regression (though we will stick with using "RMA").
 
 ### Fitting Model II regressions in R
 
@@ -140,7 +140,7 @@ If you plan on using Model II regressions for your research, [this is a great re
 
 One uses **segmented regression** when the relationship between the DV and IV isn't a simple linear one and is instead composed of at least two linear segments. 
 This might happen if there is some threshold effect and the relationship between the DV and IV changes once some IV value is reached.
-Or, one might see this in time series data, where the relationship between the DV and IV changes after a certain time period due to some external event (e.g., see figure below).
+Or, one might see this in time series data, where the rate of change in the DV changes after a certain time period due to some external event (e.g., see figure below).
 I've seen segmented regression also referred to as **piecewise regression**, **breakpoint regression**, and **change point regression**.
 I'm sure there are more names out there for this model.
 
@@ -148,17 +148,19 @@ I'm sure there are more names out there for this model.
 
 Linear segments are separated by an estimated **breakpoint**.
 Thus, a segmented regression with one breakpoint would have two linear regression segments, each one needing an estimated intercept and slope.
-But, if the segments are joined together end-to-end (see above figure), as they will be in the R package we use, the intercept of the second linear segment can be computed from the first's intercept, slope, and the estimated breakpoint (you can see in the figure above that the second linear segment's intecept is just where the first segment meets the breakpoint).
-Thus, we do not need a second estimated intercept.
+But, if the segments are joined together end-to-end (see above figure), as they are assumed to be in the R package we will use, the intercept of the second linear segment can be computed from the first segment's intercept, slope, and the estimated breakpoint (you can see in the figure above that the second linear segment's intecept is just where the first segment meets the breakpoint).
+Thus, we do not need to separately estimate an intercept for the second segment.
 Calling the number of estimated breakpoints $n$, the total number of estimated coefficients for a segmented regression is $2n + 2$. 
 These coefficients are estimated algorithmically using maximum likelihood estimation.
+
+### Fitting a segmented regression with different intercepts and slopes
 
 Let's fit a segmented regression using the `segmented` function in the `segmented` package (make sure this package is installed). 
 We will analyze the `Mammals` dataset from the `quantreg` package.
 I've loaded the data frame for you in the console below. 
 We will analyze `speed` as a function of `weight`, but feel free to look at the `?Mammals` help file for more details. 
 
-First, let's create a new column, wherein `weight` is log10-transformed: `Mammals$logWeight=log10(Mammals$weight)`.
+First, let's create a new column, wherein `weight` is log10-transformed: `Mammals$logWeight <- log10(Mammals$weight)`.
 The `segmented()` function requires that we first fit a linear model to the data using `lm()`.
 If we are estimating one breakpoint only, the `segmented()` function requires only one argument: the `lm()` object.
 If more breakpoints are required, one can specify how many using the `npsi` argument.
@@ -166,7 +168,8 @@ Now you are ready to fit a segmented regression with one breakpoint to `speed ~ 
 Do this below.
 
 ```{r seg-setup}
-data(Mammals, package = "quantreg")
+library(quantreg)
+data(Mammals)
 ```
 
 ```{r seg, exercise = TRUE}
@@ -194,18 +197,39 @@ abline(v = ci.seg[,c("CI(95%).low", "CI(95%).up")], col = "blue", lty = 4, lwd =
 
 If you print out the results, you can see the estimated coefficients: `(Intercept)` and `logWeight` are the intercept and slope for the first segment, `U1.logWeight` is the difference in slopes between the first and second segment, and `psi1.logWeight` is the estimated breakpoint. 
 Use `summary()` on the segmented regression object to also get standard errors and P-values. 
+One can also use the `slope()` function to get the slope estimate for each segment, along with standard errors and P-values.
+Use the `intercept()` function to get the intercept estimate for each segment.
 Use `confint()` to get 95% CI for the estimated breakpoint. 
 
 To plot the segmented regression results, first create a scatter plot of the DV and IV.
 Then plot the segmented regression object using `plot()` with argument `add = TRUE`. 
-One can also add vertical lines using `abline()` and the `v()` argument to indicate the estimated breakpoint and its 95% CI.
+One can also add vertical lines using `abline()` and the `v` argument to indicate the estimated breakpoint and its 95% CI.
 
-One can also fit a segmented regression where only the intecept changes and the slopes equal zero.
-For this, we will use the `strucchange` package (make sure it's installed) and the `Nile` dataset built into R.
+### Fitting a segmented regression with different intercepts only
+
+One can also fit a segmented regression where only the intercept changes and the slopes equal zero.
+The number of estimated coefficients here is $2n + 1$, where $n$ is the number of estimated breakpoints.
+
+```{r echo = FALSE}
+set.seed(20)
+
+y <- c(rnorm(50), rnorm(50, mean = 5))
+x <- seq_along(y)
+
+plot(x, y, pch = 16)
+abline(v = 50.5, col = "red", lty = 2, lwd = 2)
+segments(y0 = 0, x0 = 0, x1 = 50, lwd = 2)
+segments(y0 = 5, x0 = 51, x1 = 100, lwd = 2)
+```
+
+To fit this model, we will use the `strucchange` package (make sure it's installed) and the `Nile` dataset built into R.
 First, plot the time series dataset with `plot(Nile)`.
 Now, let's fit an intercept-only breakpoint model with `bp.nile <- breakpoints(Nile ~ 1)` (in general, one fits an intercept-only model with one to the right of the tilde, i.e., `~ 1`).
+Enter `bp.nile` to get the location of the breakpoint, and use `confint(bp.nile)` to get the corresponding 95% CI.
 Next, add the breakpoint to a linear model with `lm.bp <- lm(Nile ~ breakfactor(bp.nile, breaks = 1))`.
 You can add more breakpoints if you want by changing the `breaks` argument.
+Enter `summary(lm.bp)` to get the intercept estimate for the first segment and the change in intercept from the first to second segment, along with the estimates' corresponding standard errors and P-values.
+`confint(lm.bp)` will give you 95% CI for the intercept estimates.
 To add the fitted segmented regression model to the data, enter `lines(ts(fitted(lm.bp), start = 1871), col = "red")`.
 
 ```{r struc, exercise = TRUE}
@@ -220,6 +244,8 @@ plot(Nile)
 bp.nile <- breakpoints(Nile ~ 1)
 
 lm.bp <- lm(Nile ~ breakfactor(bp.nile, breaks = 1))
+summary(lm.bp)
+confint(lm.bp)
 
 lines(ts(fitted(lm.bp), start = 1871), col = "red")
 ```
@@ -247,7 +273,8 @@ Otherwise, if the function is complicated enough, `nls()` may return poor estima
 I used `start = list(c = 100, z = 0.5)`.
 
 ```{r NLS-setup}
-data(aegean2, package = "sars")
+library(sars)
+data(aegean2)
 ```
 
 ```{r NLS, exercise = TRUE}
@@ -271,7 +298,7 @@ lines(a, s.pred, col = "red", lwd = 2)
 Now we can plot the data and add the fitted NLS line. 
 To add the line, we have to use the `predict()` function, just as we had to do with some R models previously (remember, for the `newdata` argument, we have to create a new data frame with `data.frame()` and use the same IV variable name as in `aegean2`, i.e., `a`).
 
-We can also use `nls()` to compute CIs and P-values for our estimated coefficients (i.e., hypothesis testing).
+We can also compute CIs and P-values for our estimated NLS coefficients (i.e., hypothesis testing).
 As with `lm()`, use `summary()` to get coefficient estimates, standard errors, and P-values. 
 Use `confint()` on your NLS results object to get 95% CIs for the coefficient estimates. 
 
@@ -290,7 +317,7 @@ I've subsetted out the first 80 rows and called this new data frame `econ`.
 First, let's use `econ` to plot `uempmed` as a function of `index`.
 Now, let's fit a LOESS regression model, using the `loess.smooth()` function.
 The first two arguments are the IV and DV, in that order. 
-Using the `span` argument, the moving window size is set as the proportion of all data points.
+The `span` argument sets the moving window size as the proportion of all data points (i.e., it goes from 0 to 1).
 If `degree = 1`, a simple linear regression is fit to data within a given window.
 If `degree = 2`, a quadratic regression is fit instead. 
 Save your `loess.smooth()` results to a new object (e.g., `loess.res`), and a line can be added to the scatter plot using `lines(loess.res$x, loess.res$y)`.
@@ -298,7 +325,8 @@ Save your `loess.smooth()` results to a new object (e.g., `loess.res`), and a li
 Try playing around with different `span` and `degree` arguments to see how they influence the resulting LOESS curve.
 
 ```{r loess-setup}
-data(economics, package = "ggplot2")
+library(ggplot2)
+data(economics)
 
 econ <- economics[1:80, ]
 econ$index <- seq_len(nrow(econ))
@@ -324,27 +352,6 @@ When it comes to my own data analysis, I mostly use `degree = 2`, and I play aro
 
 
 ## Conclusion
-
-This week's lecture and tutorial really started with the simple linear regression lecture. 
-That was our first foray into GLMs, which taught us the fundamentals (e.g., what a DV and IV are, how to interpret coefficients, what the assumptions are).
-We built upon that week with multiple regression, which extended simple linear regression to two or more IVs.
-Those two weeks culminated in this week's material where we still learned about GLMs, but this time we varied the data type of the IVs.
-We saw how this resulted in tests that many of us are familiar with (e.g., t-tests, ANOVAs).
-So instead of thinking about t-tests, ANOVAs, and ANCOVAs as separate tests (which is how they're commonly taught), think of them as different versions of GLMs (this is how I think).
-I find this approach much more intellectually satisfying, and there are less things you have to learn and memorize (e.g., instead of learning different sets of assumptions, we now know that they all have the same assumptions because they're all GLMs!).
-
-We then moved onto GLiMs, where the assumption of normally distributed errors is relaxed.
-This allowed us to explore even more linear models, this time with DVs that are not continuous.
-By far, the most popular GLiM is logistic regression where the DV is binomial (and thus the errors are binomially distributed).
-Another common GLiM is the log-linear model, or **Poisson regression**, where the DV is frequencies.
-We saw that a log-linear model with frequencies as a function of two categorical variables with an interaction between them is just a chi-squared test.
-
-In sum, all of the popular, fundamental statistical tests are linear models (GLMs or GLiMs). 
-Thus, if you understand linear models, you understand all these tests!
-Between the lecture and this tutorial, you should now have the knowledge and skillset to apply these methods to your own datasets.
-
-
-## Conclusions
 
 This week's lecture and tutorial might have seemed a bit like a hodgepodge, but there are two things that unify these methods that I would like to emphasize.
 One is what I mentioned before: these are more recent regression models that relax at least one assumption from GLM.

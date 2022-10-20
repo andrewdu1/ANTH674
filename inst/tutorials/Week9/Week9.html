@@ -186,37 +186,38 @@ DV. This knowledge is necessary for specifying your GLM model and for
 interpreting the slope(s).</p>
 <p>In these scenarios, one can turn to <strong>Model II
 regression</strong> methods. Whereas Model I regressions estimate
-coefficients by minimizing the errors in the DV (e.g., least squares),
-Model II regressions minimize errors in <em>both</em> the IV and DV. We
-will cover two Model II regressions here: <strong>major axis regression
-(MA)</strong> and <strong>standard major axis regression (SMA)</strong>.
-SMA is also often called <strong>reduced major axis regression
-RMA)</strong>, not to be confused with ranged major axis regression
-which is also abbreviated RMA (aren’t statisticians the worst?). I will
-use reduced major axis regression and RMA to refer to SMA because this
-is the name commonly used in biological anthropology.</p>
+coefficients by minimizing the errors in the DV only (e.g., least
+squares), Model II regressions minimize errors in <em>both</em> the IV
+and DV. We will cover two Model II regressions here: <strong>major axis
+regression (MA)</strong> and <strong>standard major axis regression
+(SMA)</strong>. SMA is also often called <strong>reduced major axis
+regression (RMA)</strong>, not to be confused with ranged major axis
+regression which is also abbreviated RMA (aren’t statisticians the
+worst?). I will use reduced major axis regression and RMA to refer to
+SMA because this is the name commonly used in biological
+anthropology.</p>
 <p><img
 src="https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Model%20I%20&amp;%20II%20regression.png?raw=true"
 style="width:100.0%" /></p>
 <div id="section-major-axis-regression-ma" class="section level3">
 <h3>Major axis regression (MA)</h3>
-<p>MA estimates by coefficients by minimizing the errors perpendicular
-to the line of best fit (see above figure). This is exactly how
-principal components analysis fits the first component through the axis
-of greatest variation in the data, i.e., the major axis, hence the name
-for MA. One of the assumptions of MA is that the IV and DV are measured
-in the same units or are both dimensionless. This is a pretty major
+<p>MA estimates coefficients by minimizing the errors perpendicular to
+the line of best fit (see above figure). This is exactly how principal
+components analysis fits the first component through the axis of
+greatest variation in the data, i.e., the major axis, hence the name for
+MA. One of the assumptions of MA is that the IV and DV are measured in
+the same units or are both dimensionless. This is a pretty major
 assumption, and if it is not met, one should use RMA.</p>
 </div>
 <div id="section-reduced-major-axis-regression-rma"
 class="section level3">
 <h3>Reduced major axis regression (RMA)</h3>
 <p>RMA estimates coefficients by minimizing the geometric mean distance
-between the data and best fit line, and this is the same as minimizing
+between the data and best-fit line, and this is the same as minimizing
 the area of all triangles in the figure above. RMA can be done on IV and
 DV in different units because it is really MA done on standardized
 variables, hence the name standard major axis regression (though we will
-stick with using “RMA”!).</p>
+stick with using “RMA”).</p>
 </div>
 <div id="section-fitting-model-ii-regressions-in-r"
 class="section level3">
@@ -303,12 +304,12 @@ between the DV and IV isn’t a simple linear one and is instead composed
 of at least two linear segments. This might happen if there is some
 threshold effect and the relationship between the DV and IV changes once
 some IV value is reached. Or, one might see this in time series data,
-where the relationship between the DV and IV changes after a certain
-time period due to some external event (e.g., see figure below). I’ve
-seen segmented regression also referred to as <strong>piecewise
-regression</strong>, <strong>breakpoint regression</strong>, and
-<strong>change point regression</strong>. I’m sure there are more names
-out there for this model.</p>
+where the rate of change in the DV changes after a certain time period
+due to some external event (e.g., see figure below). I’ve seen segmented
+regression also referred to as <strong>piecewise regression</strong>,
+<strong>breakpoint regression</strong>, and <strong>change point
+regression</strong>. I’m sure there are more names out there for this
+model.</p>
 <p><img
 src="https://blogs.sas.com/content/iml/files/2017/04/PLSplines2.png"
 style="width:90.0%" /></p>
@@ -316,16 +317,22 @@ style="width:90.0%" /></p>
 <strong>breakpoint</strong>. Thus, a segmented regression with one
 breakpoint would have two linear regression segments, each one needing
 an estimated intercept and slope. But, if the segments are joined
-together end-to-end (see above figure), as they will be in the R package
-we use, the intercept of the second linear segment can be computed from
-the first’s intercept, slope, and the estimated breakpoint (you can see
-in the figure above that the second linear segment’s intecept is just
-where the first segment meets the breakpoint). Thus, we do not need a
-second estimated intercept. Calling the number of estimated breakpoints
+together end-to-end (see above figure), as they are assumed to be in the
+R package we will use, the intercept of the second linear segment can be
+computed from the first segment’s intercept, slope, and the estimated
+breakpoint (you can see in the figure above that the second linear
+segment’s intecept is just where the first segment meets the
+breakpoint). Thus, we do not need to separately estimate an intercept
+for the second segment. Calling the number of estimated breakpoints
 <span class="math inline">\(n\)</span>, the total number of estimated
 coefficients for a segmented regression is <span
 class="math inline">\(2n + 2\)</span>. These coefficients are estimated
 algorithmically using maximum likelihood estimation.</p>
+<div
+id="section-fitting-a-segmented-regression-with-different-intercepts-and-slopes"
+class="section level3">
+<h3>Fitting a segmented regression with different intercepts and
+slopes</h3>
 <p>Let’s fit a segmented regression using the <code>segmented</code>
 function in the <code>segmented</code> package (make sure this package
 is installed). We will analyze the <code>Mammals</code> dataset from the
@@ -334,18 +341,20 @@ console below. We will analyze <code>speed</code> as a function of
 <code>weight</code>, but feel free to look at the <code>?Mammals</code>
 help file for more details.</p>
 <p>First, let’s create a new column, wherein <code>weight</code> is
-log10-transformed: <code>Mammals$logWeight=log10(Mammals$weight)</code>.
-The <code>segmented()</code> function requires that we first fit a
-linear model to the data using <code>lm()</code>. If we are estimating
-one breakpoint only, the <code>segmented()</code> function requires only
-one argument: the <code>lm()</code> object. If more breakpoints are
+log10-transformed:
+<code>Mammals$logWeight &lt;- log10(Mammals$weight)</code>. The
+<code>segmented()</code> function requires that we first fit a linear
+model to the data using <code>lm()</code>. If we are estimating one
+breakpoint only, the <code>segmented()</code> function requires only one
+argument: the <code>lm()</code> object. If more breakpoints are
 required, one can specify how many using the <code>npsi</code> argument.
 Now you are ready to fit a segmented regression with one breakpoint to
 <code>speed ~ logWeight</code>. Do this below.</p>
 <div class="tutorial-exercise-support" data-label="seg-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>data(Mammals, package = &quot;quantreg&quot;)</code></pre>
+<pre class="text"><code>library(quantreg)
+data(Mammals)</code></pre>
 </div>
 <div class="tutorial-exercise" data-label="seg" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
@@ -379,26 +388,44 @@ and slope for the first segment, <code>U1.logWeight</code> is the
 difference in slopes between the first and second segment, and
 <code>psi1.logWeight</code> is the estimated breakpoint. Use
 <code>summary()</code> on the segmented regression object to also get
-standard errors and P-values. Use <code>confint()</code> to get 95% CI
-for the estimated breakpoint.</p>
+standard errors and P-values. One can also use the <code>slope()</code>
+function to get the slope estimate for each segment, along with standard
+errors and P-values. Use the <code>intercept()</code> function to get
+the intercept estimate for each segment. Use <code>confint()</code> to
+get 95% CI for the estimated breakpoint.</p>
 <p>To plot the segmented regression results, first create a scatter plot
 of the DV and IV. Then plot the segmented regression object using
 <code>plot()</code> with argument <code>add = TRUE</code>. One can also
-add vertical lines using <code>abline()</code> and the <code>v()</code>
+add vertical lines using <code>abline()</code> and the <code>v</code>
 argument to indicate the estimated breakpoint and its 95% CI.</p>
-<p>One can also fit a segmented regression where only the intecept
-changes and the slopes equal zero. For this, we will use the
-<code>strucchange</code> package (make sure it’s installed) and the
-<code>Nile</code> dataset built into R. First, plot the time series
-dataset with <code>plot(Nile)</code>. Now, let’s fit an intercept-only
-breakpoint model with <code>bp.nile &lt;- breakpoints(Nile ~ 1)</code>
-(in general, one fits an intercept-only model with one to the right of
-the tilde, i.e., <code>~ 1</code>). Next, add the breakpoint to a linear
-model with
+</div>
+<div
+id="section-fitting-a-segmented-regression-with-different-intercepts-only"
+class="section level3">
+<h3>Fitting a segmented regression with different intercepts only</h3>
+<p>One can also fit a segmented regression where only the intercept
+changes and the slopes equal zero. The number of estimated coefficients
+here is <span class="math inline">\(2n + 1\)</span>, where <span
+class="math inline">\(n\)</span> is the number of estimated
+breakpoints.</p>
+<p><img src="Week9_files/figure-html/unnamed-chunk-1-1.png" width="624" /></p>
+<p>To fit this model, we will use the <code>strucchange</code> package
+(make sure it’s installed) and the <code>Nile</code> dataset built into
+R. First, plot the time series dataset with <code>plot(Nile)</code>.
+Now, let’s fit an intercept-only breakpoint model with
+<code>bp.nile &lt;- breakpoints(Nile ~ 1)</code> (in general, one fits
+an intercept-only model with one to the right of the tilde, i.e.,
+<code>~ 1</code>). Enter <code>bp.nile</code> to get the location of the
+breakpoint, and use <code>confint(bp.nile)</code> to get the
+corresponding 95% CI. Next, add the breakpoint to a linear model with
 <code>lm.bp &lt;- lm(Nile ~ breakfactor(bp.nile, breaks = 1))</code>.
 You can add more breakpoints if you want by changing the
-<code>breaks</code> argument. To add the fitted segmented regression
-model to the data, enter
+<code>breaks</code> argument. Enter <code>summary(lm.bp)</code> to get
+the intercept estimate for the first segment and the change in intercept
+from the first to second segment, along with the estimates’
+corresponding standard errors and P-values. <code>confint(lm.bp)</code>
+will give you 95% CI for the intercept estimates. To add the fitted
+segmented regression model to the data, enter
 <code>lines(ts(fitted(lm.bp), start = 1871), col = "red")</code>.</p>
 <div class="tutorial-exercise" data-label="struc" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
@@ -416,8 +443,11 @@ plot(Nile)
 bp.nile &lt;- breakpoints(Nile ~ 1)
 
 lm.bp &lt;- lm(Nile ~ breakfactor(bp.nile, breaks = 1))
+summary(lm.bp)
+confint(lm.bp)
 
 lines(ts(fitted(lm.bp), start = 1871), col = &quot;red&quot;)</code></pre>
+</div>
 </div>
 </div>
 <div id="section-non-linear-least-squares" class="section level2">
@@ -460,7 +490,8 @@ estimates if our initial guesses are far off. I used
 <div class="tutorial-exercise-support" data-label="NLS-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>data(aegean2, package = &quot;sars&quot;)</code></pre>
+<pre class="text"><code>library(sars)
+data(aegean2)</code></pre>
 </div>
 <div class="tutorial-exercise" data-label="NLS" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
@@ -489,12 +520,11 @@ to do with some R models previously (remember, for the
 <code>newdata</code> argument, we have to create a new data frame with
 <code>data.frame()</code> and use the same IV variable name as in
 <code>aegean2</code>, i.e., <code>a</code>).</p>
-<p>We can also use <code>nls()</code> to compute CIs and P-values for
-our estimated coefficients (i.e., hypothesis testing). As with
-<code>lm()</code>, use <code>summary()</code> to get coefficient
-estimates, standard errors, and P-values. Use <code>confint()</code> on
-your NLS results object to get 95% CIs for the coefficient
-estimates.</p>
+<p>We can also compute CIs and P-values for our estimated NLS
+coefficients (i.e., hypothesis testing). As with <code>lm()</code>, use
+<code>summary()</code> to get coefficient estimates, standard errors,
+and P-values. Use <code>confint()</code> on your NLS results object to
+get 95% CIs for the coefficient estimates.</p>
 </div>
 <div id="section-locally-estimated-scatterplot-smoothing"
 class="section level2">
@@ -515,21 +545,22 @@ first 80 rows and called this new data frame <code>econ</code>.</p>
 <p>First, let’s use <code>econ</code> to plot <code>uempmed</code> as a
 function of <code>index</code>. Now, let’s fit a LOESS regression model,
 using the <code>loess.smooth()</code> function. The first two arguments
-are the IV and DV, in that order. Using the <code>span</code> argument,
-the moving window size is set as the proportion of all data points. If
-<code>degree = 1</code>, a simple linear regression is fit to data
-within a given window. If <code>degree = 2</code>, a quadratic
-regression is fit instead. Save your <code>loess.smooth()</code> results
-to a new object (e.g., <code>loess.res</code>), and a line can be added
-to the scatter plot using
-<code>lines(loess.res$x, loess.res$y)</code>.</p>
+are the IV and DV, in that order. The <code>span</code> argument sets
+the moving window size as the proportion of all data points (i.e., it
+goes from 0 to 1). If <code>degree = 1</code>, a simple linear
+regression is fit to data within a given window. If
+<code>degree = 2</code>, a quadratic regression is fit instead. Save
+your <code>loess.smooth()</code> results to a new object (e.g.,
+<code>loess.res</code>), and a line can be added to the scatter plot
+using <code>lines(loess.res$x, loess.res$y)</code>.</p>
 <p>Try playing around with different <code>span</code> and
 <code>degree</code> arguments to see how they influence the resulting
 LOESS curve.</p>
 <div class="tutorial-exercise-support" data-label="loess-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>data(economics, package = &quot;ggplot2&quot;)
+<pre class="text"><code>library(ggplot2)
+data(economics)
 
 econ &lt;- economics[1:80, ]
 econ$index &lt;- seq_len(nrow(econ))</code></pre>
@@ -560,38 +591,6 @@ smooth but not too squiggly/overfit for my research question)!</p>
 </div>
 <div id="section-conclusion" class="section level2">
 <h2>Conclusion</h2>
-<p>This week’s lecture and tutorial really started with the simple
-linear regression lecture. That was our first foray into GLMs, which
-taught us the fundamentals (e.g., what a DV and IV are, how to interpret
-coefficients, what the assumptions are). We built upon that week with
-multiple regression, which extended simple linear regression to two or
-more IVs. Those two weeks culminated in this week’s material where we
-still learned about GLMs, but this time we varied the data type of the
-IVs. We saw how this resulted in tests that many of us are familiar with
-(e.g., t-tests, ANOVAs). So instead of thinking about t-tests, ANOVAs,
-and ANCOVAs as separate tests (which is how they’re commonly taught),
-think of them as different versions of GLMs (this is how I think). I
-find this approach much more intellectually satisfying, and there are
-less things you have to learn and memorize (e.g., instead of learning
-different sets of assumptions, we now know that they all have the same
-assumptions because they’re all GLMs!).</p>
-<p>We then moved onto GLiMs, where the assumption of normally
-distributed errors is relaxed. This allowed us to explore even more
-linear models, this time with DVs that are not continuous. By far, the
-most popular GLiM is logistic regression where the DV is binomial (and
-thus the errors are binomially distributed). Another common GLiM is the
-log-linear model, or <strong>Poisson regression</strong>, where the DV
-is frequencies. We saw that a log-linear model with frequencies as a
-function of two categorical variables with an interaction between them
-is just a chi-squared test.</p>
-<p>In sum, all of the popular, fundamental statistical tests are linear
-models (GLMs or GLiMs). Thus, if you understand linear models, you
-understand all these tests! Between the lecture and this tutorial, you
-should now have the knowledge and skillset to apply these methods to
-your own datasets.</p>
-</div>
-<div id="section-conclusions" class="section level2">
-<h2>Conclusions</h2>
 <p>This week’s lecture and tutorial might have seemed a bit like a
 hodgepodge, but there are two things that unify these methods that I
 would like to emphasize. One is what I mentioned before: these are more
@@ -677,7 +676,7 @@ output$`tutorial-exercise-loess-output` <- renderUI({
 <!--/html_preserve-->
 <!--html_preserve-->
 <script type="application/shiny-prerendered" data-context="execution_dependencies">
-{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43]}},"value":[{"type":"character","attributes":{},"value":["base","bslib","cachem","cli","compiler","datasets","digest","ellipsis","evaluate","fastmap","graphics","grDevices","htmltools","htmlwidgets","httpuv","jquerylib","jsonlite","knitr","later","learnr","lifecycle","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","rstudioapi","sass","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["4.2.1","0.4.0","1.0.6","3.3.0","4.2.1","4.2.1","0.6.29","0.3.2","0.16","1.1.0","4.2.1","4.2.1","0.5.3","1.5.4","1.6.5","0.1.4","1.8.0","1.40","1.3.0","0.10.1","1.0.1","2.0.3","1.1","4.2.1","0.12","1.2.0.1","2.5.1","1.0.9","1.0.4","2.16","2.0.3","0.14","0.4.2","1.7.2","4.2.1","1.7.8","1.4.1","4.2.1","4.2.1","2.5.0","0.32","1.8-4","2.3.5"]}]}]}
+{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["packages","version"]},"class":{"type":"character","attributes":{},"value":["data.frame"]},"row.names":{"type":"integer","attributes":{},"value":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44]}},"value":[{"type":"character","attributes":{},"value":["base","bslib","cachem","cli","compiler","datasets","digest","ellipsis","evaluate","fastmap","graphics","grDevices","highr","htmltools","htmlwidgets","httpuv","jquerylib","jsonlite","knitr","later","learnr","lifecycle","magrittr","markdown","methods","mime","promises","R6","Rcpp","rlang","rmarkdown","rprojroot","rstudioapi","sass","shiny","stats","stringi","stringr","tools","utils","withr","xfun","xtable","yaml"]},{"type":"character","attributes":{},"value":["4.2.1","0.4.0","1.0.6","3.3.0","4.2.1","4.2.1","0.6.29","0.3.2","0.16","1.1.0","4.2.1","4.2.1","0.9","0.5.3","1.5.4","1.6.5","0.1.4","1.8.0","1.40","1.3.0","0.10.1","1.0.1","2.0.3","1.1","4.2.1","0.12","1.2.0.1","2.5.1","1.0.9","1.0.4","2.16","2.0.3","0.14","0.4.2","1.7.2","4.2.1","1.7.8","1.4.1","4.2.1","4.2.1","2.5.0","0.32","1.8-4","2.3.5"]}]}]}
 </script>
 <!--/html_preserve-->
 </div>
