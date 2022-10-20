@@ -197,7 +197,7 @@ abline(v = ci.seg[,c("CI(95%).low", "CI(95%).up")], col = "blue", lty = 4, lwd =
 
 If you print out the results, you can see the estimated coefficients: `(Intercept)` and `logWeight` are the intercept and slope for the first segment, `U1.logWeight` is the difference in slopes between the first and second segment, and `psi1.logWeight` is the estimated breakpoint. 
 Use `summary()` on the segmented regression object to also get standard errors and P-values. 
-One can also use the `slope()` function to get the slope estimate for each segment, along with standard errors and P-values.
+One can also use the `slope()` function to get the slope estimate for each segment, along with standard errors and 95% CIs.
 Use the `intercept()` function to get the intercept estimate for each segment.
 Use `confint()` to get 95% CI for the estimated breakpoint. 
 
