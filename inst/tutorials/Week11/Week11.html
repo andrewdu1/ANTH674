@@ -129,25 +129,25 @@ class="section level4">
 </div>
 <div id="section-introduction" class="section level2">
 <h2>Introduction</h2>
-<p>This week, we covered two different but somewhat related topics:
-linear mixed models and autocorrelation. <strong>Linear mixed
-models</strong> (LMMs) model a (continuous or categorical) DV as a
-linear function of <strong>fixed</strong> and <strong>random
-factors</strong> (also known as fixed and random effects). <strong>Fixed
-factors</strong> are categorical variables whose levels are the only
-ones of interest. Therefore, we estimate coefficients for the different
-levels because we are interested in how the intercept and/or slope of
-the DV against another IV changes with each level in our fixed factor.
-<strong>Random factors</strong> are categorical variables whose levels
-are a random, representative sample of some larger population of levels.
-Therefore, we are not interested in estimating coefficients for each
-level but instead want to infer something about the population of
-intercepts/slopes from which our levels are sampled. A utilitarian
-perspective can help with determining whether your factor is fixed or
-random: do you want to estimate coefficients for each level or do you
-want to estimate the SD of the population of intercepts/slopes from
-which your levels are sampled? As always, the distinction depends on
-your research question!</p>
+<p>This week, we covered two different but related topics: linear mixed
+models and autocorrelation. <strong>Linear mixed models</strong> (LMMs)
+model a DV as a linear function of <strong>fixed</strong> and
+<strong>random factors</strong> (sometimes also called fixed and random
+effects, respectively). <strong>Fixed factors</strong> are categorical
+variables whose levels are the only ones of interest. Therefore, we
+estimate coefficients for the different levels because we are interested
+in how the intercept and/or slope of the DV against another IV changes
+with each level in our fixed factor. <strong>Random factors</strong> are
+categorical variables whose levels are a random, representative sample
+of some larger population of levels. Therefore, we are not interested in
+estimating coefficients for each level but instead want to infer
+something about the population of intercepts/slopes from which our
+levels are sampled. A utilitarian perspective can help with determining
+whether your factor is fixed or random: do you want to estimate
+coefficients for each level (along with P-values and confidence
+intervals) or do you want to estimate the SD of the population of
+intercepts/slopes from which your levels are sampled? As always, the
+distinction depends on your research question!</p>
 <p><img
 src="https://hlplab.files.wordpress.com/2011/05/simpsons-paradox.png?w=1410"
 style="width:75.0%" /></p>
@@ -156,7 +156,7 @@ autocorrelation in your analyses. As a reminder,
 <strong>autocorrelation</strong> is simply non-independence in your
 data, where data points closer in space/time/phylogeny are more similar.
 Autocorrelation is somewhat related to LMMs because one can specify
-blocking factors as random effects to account for autocorrelation in
+blocking factors as random factors to account for autocorrelation in
 LMMs. What we specifically covered was how to isolate the autocorrelated
 noise component in one’s data through detrending. We also covered how to
 measure autocorrelation in the data using correlograms. Lastly, we went
@@ -205,8 +205,9 @@ least squares in R.</h4>
 </div>
 <div id="section-random-factors" class="section level2">
 <h2>Random factors</h2>
-<p>I briefly defined random factors in the <em>Introduction</em>, but I
-find the best way to learn what a random factor is is through
+<p>I briefly defined random factors in the <em>Introduction</em>, and I
+taught when to use them and how they’re used in lecture. In this
+tutorial, we will learn about random factors via another avenue:
 simulations.</p>
 <div id="section-random-intercept-model" class="section level3">
 <h3>Random intercept model</h3>
@@ -226,11 +227,11 @@ that is normally distributed with mean zero and SD equal to <span
 class="math inline">\(\tau\)</span>. So each level within a random
 factor is associated with a number drawn from this normal distribution
 that tells us by how much that level’s intercept deviates from the main
-estimated intercept (a fixed effect). This SD (<span
-class="math inline">\(\tau\)</span>) is the parameter estimated in a
-LMM, and hopefully you can now see why levels from a random factor are
-associated with some population, whose SD (<span
-class="math inline">\(\tau\)</span>) we want to estimate.</p>
+estimated intercept (<span class="math inline">\(\beta_0\)</span>, a
+fixed effect). This SD (<span class="math inline">\(\tau\)</span>) is
+the parameter estimated in a LMM, and hopefully you can now see why
+levels from a random factor are associated with some population, whose
+SD (<span class="math inline">\(\tau\)</span>) we want to estimate.</p>
 <p>Below is the code to simulate the data, with comments on what each
 line is doing (code adapted from <a
 href="https://m-clark.github.io/mixed-models-with-R/random_intercepts.html">here</a>).
@@ -249,11 +250,26 @@ e &lt;- rnorm(N, sd = e_SD) # simulate error terms
 x &lt;- runif(N) # simulate IV
 y &lt;- 2 + .5 * x + a[Levels] + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random factor, and add error terms
 
-d = data.frame(x, y, Levels) # combine everything into one dataframe</code></pre>
+d &lt;- data.frame(x, y, Levels) # combine everything into one data frame</code></pre>
 <div class="tutorial-exercise" data-label="intercept"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="intercept-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>lmm.res &lt;- lme(y ~ x, random = ~1|Levels, data = d)
+
+summary(lmm.res)
+
+ranef(lmm.res)
+
+hist(ranef(lmm.res)[, 1])
+
+mean(ranef(lmm.res)[, 1])
+sd(ranef(lmm.res)[, 1])</code></pre>
 </div>
 <p>Now fit a LMM to the data. This is done using <code>lme()</code> from
 the <code>nlme</code> package. The proper line of code is
@@ -265,21 +281,22 @@ of intercepts (<code>~1</code>) across levels within the factor
 results. First you’ll see that the estimated SD for the intercept is
 0.5, precisely what we set the population SD to be. The Residual SD is
 0.24, close to the 0.25 we specified. The intercept and slope are 1.9
-and 0.53, close to the values we picked. And lastly, you can see the
-fixed effects (intercept and slope) are significant; we can get P-values
-for simple LMMs like this one but not for more complicated LMMs (which
-can’t be run using <code>lme()</code>).</p>
+and 0.53, close to the values we picked. And lastly, you can see that
+the fixed effects (intercept and slope) are significant; we can get
+P-values for simple LMMs like this one but not for more complicated LMMs
+(which can’t be run using <code>lme()</code>).</p>
 <p><strong>NB:</strong> A P-value can be vanishingly small but can never
-be zero. Zero in this case is synonymous with P &lt; 0.0001 (you can see
-this if you enter <code>anova(lmm.res)</code>).</p>
+be zero. Zero in this case is synonymous with a very, very, very small
+number.</p>
 <p>We can also get out the deviations (from the main intercept) for each
-level sampled from the population. This is done with
-<code>ranef(lmm.res)</code>, which returns the result as a dataframe
-(this is also how you plot each level’s lines on a scatter plot). Enter
-<code>hist(ranef(lmm.res)[, 1])</code> to see the distribution sampled
-from the population. Because we have 100 levels, a sizable sample size,
-the mean and SD of <code>ranef(lmm.res)[, 1]</code> should be very close
-to the population mean and SD (0 and 0.5, respectively).</p>
+observed level sampled from the population. This is done with
+<code>ranef(lmm.res)</code>, which returns the result as a data frame
+(this is also how you plot each level’s fitted lines on a scatter plot).
+Enter <code>hist(ranef(lmm.res)[, 1])</code> to see the distribution
+sampled from the population. Because we have 100 levels, a sizable
+sample size, the mean and SD of <code>ranef(lmm.res)[, 1]</code> should
+be very close to the population mean and SD (0 and 0.5,
+respectively).</p>
 </div>
 <div id="section-random-intercept-and-slope-model"
 class="section level3">
@@ -300,7 +317,8 @@ class="math inline">\(\alpha_1\)</span> is a random factor that is
 normally distributed with mean zero and SD equal to <span
 class="math inline">\(\tau_1\)</span>. <span
 class="math inline">\(\alpha_1\)</span> is the population of each
-level’s deviation from the fixed slope effect.</p>
+level’s deviation from the fixed slope effect, <span
+class="math inline">\(\beta_1\)</span>.</p>
 <p>Below is the proper code with comments. Review it and then copy and
 paste it into the console below.</p>
 <pre class="r"><code>intercept_SD &lt;- 0.75 # setting SD of population of intercept deviations
@@ -318,15 +336,23 @@ e &lt;- rnorm(N, sd = e_SD) # simulate error terms
 x &lt;- runif(N) # simulate IV
 y &lt;- (2 + a_0[Levels]) + (.5 + a_1[Levels]) * x + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random factors, and add error terms
 
-d = data.frame(x, y, Levels) # combine everything into one dataframe</code></pre>
+d &lt;- data.frame(x, y, Levels) # combine everything into one data frame</code></pre>
 <div class="tutorial-exercise" data-label="slope" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="slope-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>lmm.res1 &lt;- lme(y ~ x, random = ~x | Levels, data = d)
+
+ranef(lmm.res1)</code></pre>
 </div>
 <p>Fit the LMM with
 <code>lmm.res1 &lt;- lme(y ~ x, random = ~x | Levels, data = d)</code>.
-The <code>random = ~x | Levels</code> tells R that we want the estimate
+The <code>random = ~x | Levels</code> tells R that we want to estimate
 the SD of deviations for the slope across the factor <code>Levels</code>
 (the intercept is implied, just like it is when you use
 <code>lm()</code>).</p>
@@ -363,12 +389,15 @@ data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
 <pre class="text"><code>ancova.res &lt;- lm(Reaction ~ Days * Subject, data = sleepstudy)
 
+# number of estimated coefficients
+length(ancova.res$coefficients) 
+
 lmm.res &lt;- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)</code></pre>
 </div>
 <p>As you can see, a total of 36 coefficients were estimated, two for
 each subject (intercept and slope)! This would be fine if the subjects
 were of interest for whatever reason, and we wanted to know what their
-estimated intercepts and slopes were. But, we only have 180 data points,
+estimated intercepts and slopes were. But, we have 180 data points only,
 which means we have 5 data points per estimated coefficient (we are
 definitely overfitting the data!).</p>
 <p>A LMM, on the other hand, would estimate only two fixed effects
@@ -378,45 +407,74 @@ LMM.</p>
 <div id="section-shrinkageregularization" class="section level3">
 <h3>Shrinkage/regularization</h3>
 <p>At this point, feel free to compare the estimated slope and intercept
-for each level for an ANCOVA vs. a LMM. Remember that each level’s
-intercept in an ANCOVA is obtained by adding the baseline intercept to
-that level’s main effect (e.g., to get the intercept for
-<code>Subject309</code> add <code>244.193</code> with
+for each level for an ANCOVA vs. a LMM (you can do this for a few
+subjects; I present code for doing this for all subjects in “Solution”).
+Remember that each level’s intercept in an ANCOVA is obtained by adding
+the baseline intercept to that level’s main effect (e.g., to get the
+intercept for <code>Subject309</code>, add the main intercept,
+<code>244.193</code>, with the coefficient <code>Subject309</code>,
 <code>-39.138</code>). To get the level’s slope, add the baseline slope
 to that subject’s interaction term (e.g., to get the slope for
 <code>Subject309</code>, add <code>21.765</code> with
 <code>-19.503</code>). To get a level’s intercept and slope from a LMM,
 you just add the deviation to its respective fixed effect
-(<code>Subject309</code>’s intercept is <code>251.405</code> plus
+(<code>Subject309</code>’s intercept is the fixed intercept effect,
+<code>251.405</code>, plus the intercept deviation,
 <code>-40.398</code>). Recall that you extract the deviations using
-<code>ranef(lmm.res)</code>.</p>
+<code>ranef(lmm.res)</code> (though I present another way of extracting
+deviations in “Solution”).</p>
 <div class="tutorial-exercise" data-label="shrink" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="shrink-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code># ANCOVA
+ancova.res &lt;- lm(Reaction ~ Days * Subject, data = sleepstudy)
+ancova.coef &lt;- ancova.res$coefficients
+
+# intercepts
+c(ancova.coef[&quot;(Intercept)&quot;], ancova.coef[&quot;(Intercept)&quot;] + ancova.coef[grep(&quot;Days&quot;, names(ancova.coef), invert = TRUE)[-1]])
+
+# slopes
+c(ancova.coef[&quot;Days&quot;], ancova.coef[&quot;Days&quot;] + ancova.coef[grep(&quot;Days&quot;, names(ancova.coef))[-1]])
+
+
+# LMM
+lmm.res &lt;- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)
+
+# intercepts
+lmm.res$coefficients$fixed[&quot;(Intercept)&quot;] + lmm.res$coefficients$random$Subject[, &quot;(Intercept)&quot;]
+
+# slopes
+lmm.res$coefficients$fixed[&quot;Days&quot;] + lmm.res$coefficients$random$Subject[, &quot;Days&quot;]</code></pre>
 </div>
 <p>As you’ll see, the LMM’s intercept and slope will be closer to their
 fixed counterparts (i.e., their averages) than those from ANCOVA; recall
-that the LMM’s fixed effects are the same as the intercept and slope if
-a linear model was fit without including <code>Subject</code>. This
-phenomenon is know as <strong>shrinkage</strong> or
-<strong>regularization</strong>. Because each level’s intercept
-deviation, for example, is sampled from a population with mean 0,
-levels’ intercepts are expected to be close to zero on average.
-Therefore, each level’s deviation will be pulled towards zero (i.e.,
-each level’s intercept will be pulled towards the fixed intercept
-effect). If a level has few observations, its deviations will be pulled
-more towards zero (i.e., with little data, the best guess we can make is
-the average). Because of this shrinkage property, some researchers argue
-that one should <em>always</em> use a LMM as opposed to an ANCOVA, but
-this debate is beyond my pay grade.</p>
+that the LMM’s fixed effects are the same as the intercept and slope for
+a linear model fit without <code>Subject</code> as a random factor. This
+phenomenon is know as <strong>shrinkage</strong>,
+<strong>regularization</strong>, or <strong>partial pooling</strong>.
+Because each level’s intercept deviation, for example, is sampled from a
+population with mean 0, levels’ intercepts are expected to be close to
+zero on average. Therefore, each level’s deviation will be pulled
+towards zero (i.e., each level’s intercept will be pulled towards the
+fixed intercept effect). If a level has few observations, its deviations
+will be pulled more towards zero (i.e., with little data, the best guess
+we can make is the average). Because of this shrinkage property, some
+researchers argue that one should <em>always</em> use a LMM as opposed
+to an ANCOVA, but this debate is beyond my pay grade.</p>
 <div class="figure">
 <img
 src="https://www.tjmahr.com/figs//2017-06-22-plotting-partial-pooling-in-mixed-effects-models/shrinkage-plot-1.png"
 style="width:75.0%" alt="" />
 <p class="caption">“No pooling” is the ANCOVA estimates, “Partial
 pooling” is the LMM estimates, and “Partial pooling (average)” is the
-fixed effect estimates.</p>
+fixed effect estimates. Model fit on <code>sleepstudy</code>
+dataset.</p>
 </div>
 </div>
 <div id="section-a-note-on-blocking" class="section level3">
@@ -428,7 +486,8 @@ each subject’s measurements are not independent. By including
 used this variable as a blocking factor. This accounts for the
 non-independent data for each subject. Fitting an ANCOVA does the same
 thing, but that’s inappropriate here because we don’t have a large
-enough sample size.</p>
+enough sample size to match the large number of estimated
+coefficients.</p>
 </div>
 </div>
 <div id="section-variance-partitioning" class="section level2">
@@ -436,7 +495,7 @@ enough sample size.</p>
 <p>When one has multiple random factors within a LMM, one can do
 <strong>variance partitioning</strong> and see how much DV variation
 (not accounted for by the fixed effects) is attributable to each random
-factor. More interestingly, one can fit an intercept-only LMM and see
+factor. Perhaps more commonly, one can fit an intercept-only LMM and see
 how the DV variation is partitioned among the random factors.</p>
 <div id="section-crossed-random-factors" class="section level3">
 <h3>Crossed random factors</h3>
@@ -447,14 +506,37 @@ from the <code>Penicillin</code> dataset from the package
 <code>lme4</code> for this section.</p>
 <p>Enter <code>?Penicillin</code> to get an idea of what the dataset and
 variables are.</p>
+<p>I entered the following code to make the summary plot from lecture
+(<code>dotplot()</code> is from the package <code>lattice</code>):</p>
+<pre class="r"><code>dotplot(
+  reorder(plate, diameter) ~ diameter, 
+  Penicillin, 
+  groups = sample, 
+  ylab = &quot;Plate&quot;, 
+  xlab = &quot;Diameter of growth inhibition zone (mm)&quot;, 
+  type = c(&quot;p&quot;, &quot;a&quot;), 
+  auto.key = list(
+    columns = 3, 
+    lines = TRUE, 
+    title = &quot;Penicillin sample&quot;
+    ), 
+  cex = 1.5
+  )</code></pre>
 <div class="tutorial-exercise" data-label="cross" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
-<p>I entered the following code to make the summary plot from lecture
-(<code>dotplot()</code> is from the package <code>lattice</code>):</p>
-<pre class="r"><code>dotplot(reorder(plate, diameter) ~ diameter, Penicillin, groups = sample, ylab = &quot;Plate&quot;, xlab = &quot;Diameter of growth inhibition zone (mm)&quot;, type = c(&quot;p&quot;, &quot;a&quot;), auto.key = list(columns = 3, lines = TRUE, title = &quot;Penicillin sample&quot;), cex = 1.5)</code></pre>
+<div class="tutorial-exercise-support" data-label="cross-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>lmm.res &lt;- lmer(diameter ~ 1 + (1 | plate) + (1 | sample), data = Penicillin)
+
+lmm.var &lt;- as.data.frame(VarCorr(lmm.res))$vcov
+
+lmm.var / sum(lmm.var)</code></pre>
+</div>
 <p>One can see that <code>diameter</code> varies a decent amount across
 plates (<code>plate</code>), but most of the variation is across
 penicillin samples (<code>sample</code>). Let’s fit an intercept-only
@@ -472,7 +554,8 @@ our intercept to vary across <code>plate</code> levels and
 <code>sample</code> levels.</p>
 <p>The main difference using <code>lmer()</code> is that no P-values are
 returned. This is not an accident, as P-values cannot be estimated
-accurately with complex LMMs.</p>
+accurately with complex LMMs (i.e., it is not clear how many degrees of
+freedom there are).</p>
 <p>We now need to get out the variances. This is done using
 <code>VarCorr()</code>, but the output is a bit annoying to work with. I
 find it’s easier to transform the output using
@@ -517,7 +600,7 @@ crossed factors:
 This emphasizes how random factors’ variances are calculated in the same
 exact way, regardless of whether the factors are crossed or nested. You
 can also do nested random factors using <code>lme()</code>:
-<code>lme(strength ~ 1, random = ~1 | batch / sample, data=Pastes)</code>.
+<code>lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)</code>.
 The <code>/</code> indicates that <code>sample</code> is nested within
 <code>batch</code> (this symbol also works for <code>lmer()</code>,
 e.g.,
@@ -525,7 +608,22 @@ e.g.,
 <div class="tutorial-exercise" data-label="nest" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="nest-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>lmm.res &lt;- lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)
+# or
+lmm.res &lt;- lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)
+
+as.data.frame(VarCorr(lmm.res))$vcov
+
+
+lmm.res1 &lt;- lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)
+
+varcomp(lmm.res1, scale = TRUE)</code></pre>
 </div>
 <p>The variance components are pulled out in the same exact way as
 before when using <code>lmer()</code>. Variance components can be
@@ -546,21 +644,17 @@ pre-loaded for you. I want to know the SD of the intercept and slope of
 GPA (<code>gpa</code>) as a function of semester (<code>occasion</code>)
 across levels within <code>student</code>. Fit the appropriate
 LMM.</p></li>
-<li><p>We’re going to use the <code>nurses</code> dataset, which I’ve
-pre-loaded for you. I want to know how the variance in nurses’ stress
-(<code>stress</code>) is partitioned among <code>wardid</code>, which is
-nested within <code>hospital</code>. Get out the variance components to
-see if variation in stress is mostly explained by variation between
-hospitals, between wards, or within wards.</p></li>
+<li><p>We’re going to analyze the <code>nurses</code> dataset, which
+I’ve pre-loaded for you. I want to know how the variance in nurses’
+stress (<code>stress</code>) is partitioned among <code>wardid</code>,
+which is nested within <code>hospital</code>. Get out the variance
+components to see if variation in stress is mostly explained by
+variation between hospitals, between wards, or within wards.</p></li>
 </ol>
 <div class="tutorial-exercise" data-label="exer1" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
-<pre class="text"><code># Click &quot;Solution&quot; button when done
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button when done</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="exer1-setup"
@@ -583,20 +677,21 @@ gpa_lmm1 &lt;-  lme(gpa ~ occasion, random = ~occasion | student, data = gpa)
 # Q2
 nurses_nest &lt;- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)
 
-var.comp &lt;-as.data.frame(VarCorr(nurses_nest))$vcov
+var.comp &lt;- as.data.frame(VarCorr(nurses_nest))$vcov
 var.comp / sum(var.comp)
 # or
 nurses_nest1 &lt;- lmer(stress ~ 1 + (1 | hospital / wardid), data = nurses)
 # use same VarCorr code as above
 # or 
 nurses_nest2 &lt;- lme(stress ~ 1, random = ~ 1 | hospital / wardid, data = nurses)
-varcomp(nurses_nest2, scale = TRUE)</code></pre>
+varcomp(nurses_nest2, scale = TRUE)
+# most variation between wards</code></pre>
 </div>
 </div>
 <div id="section-decomposing-a-time-series" class="section level2">
 <h2>Decomposing a time series</h2>
-<p>A **time series* is simply a vector of data points that are serially
-ordered in time.</p>
+<p>A <strong>time series</strong> is simply a vector of data points that
+are serially ordered in time.</p>
 <p><img
 src="https://www.influxdata.com/wp-content/uploads/autocorrelation-in-time-series-data-figure-5.png"
 style="width:75.0%" /></p>
@@ -614,10 +709,10 @@ from a normal distribution with <code>mean = 0</code> and
 to do this. We will simulate autocorrelated noise (i.e., <strong>red
 noise</strong>) with <code>arima.sim(list(ar1 = 0.8), n = 100)</code>,
 where 0.8 is the strength of autocorrelation when lag = 1 (pick
-whichever number you want). And lastly, the trend is just a linear model
-with no noise with some intercept and slope value (the independent
-variable is <code>1:n</code>). You can plot each component with
-<code>plot(1:100, time_series_objectm type = "l")</code>. To combine the
+whichever numbers you want). And lastly, the trend is just a linear
+model with no noise with some intercept and slope values (the
+independent variable is <code>1:n</code>). You can plot each component
+with <code>plot(time_series_object, type = "l")</code>. To combine the
 components for the full time series, just add the three components
 together!</p>
 <div class="tutorial-exercise" data-label="ts" data-caption="Code"
@@ -634,7 +729,7 @@ data-startover="1" data-lines="0">
 set.seed(100)
 independ_noise &lt;- rnorm(100) # can pick whichever SD you want, but mean must equal 0
 autocorr_noise &lt;- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
-trend &lt;- 2 + 0.5 * 1:n # my intercept is 2 and slope is 0.5 (pick whichever coefficients you want)
+trend &lt;- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
 
 ts_comb &lt;- independ_noise + autocorr_noise + trend # combine the three components
 plot(ts_comb, type = &quot;l&quot;) # plot with one variable just plots the data w/in that variable in order, which is fine in this case since the order is time </code></pre>
@@ -648,11 +743,12 @@ data here.</p>
 class="section level2">
 <h2>Detrending a time series &amp; correlograms</h2>
 <p>We will analyze your simulated, combined time series from the
-previous topic (copy and paste your code below!). This time series is
-strongly trended because we simulated it to have a trend. Let’s remove
-the trend (i.e., <strong>detrend</strong> the time series), so we’re
-only left with autocorrelated noise and independent noise (the sum of
-which should still have autocorrelation).</p>
+previous topic (copy and paste your code below! Or you can just use my
+code, which I’ve put in the console). This time series is strongly
+trended because we simulated it to have a trend. Let’s remove the trend
+(i.e., <strong>detrend</strong> the time series), so we’re left with
+only autocorrelated and independent noise (the sum of which should still
+have autocorrelation).</p>
 <p>There are two ways to detrend a time series: (1) first differencing
 and (2) fitting a trend and taking the residuals. <strong>First
 differencing</strong> is done easily using <code>diff()</code>, though
@@ -660,24 +756,35 @@ it should be noted that this method removes both trend and also some
 autocorrelation (we’ll see this below). The second method is done by
 fitting a trend to the time series and taking residuals (e.g.,
 <code>lm(ts_comb ~ c(1:100))$residuals)</code>. If the trend is more
-complicated (e.g., non-linear), we can fit a lowess curve (using
-<code>lowess()</code>) and then take residuals.</p>
+complicated (e.g., non-linear), we can fit a loess curve (using
+<code>loess.smooth()</code>) and then take residuals.</p>
 <p>Try out both methods of detrending on your simulated time series
 below.</p>
 <div class="tutorial-exercise" data-label="detrend" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
-<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
+<pre class="text"><code>n &lt;- 100
+
+set.seed(100)
+independ_noise &lt;- rnorm(100) # can pick whichever SD you want, but mean must equal 0
+autocorr_noise &lt;- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
+trend &lt;- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
+
+ts_comb &lt;- independ_noise + autocorr_noise + trend # combine the three components</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="detrend-solution"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
 <pre class="text"><code># first differencing
-diff(ts_comb)
+first.diff &lt;- diff(ts_comb)
 
 # taking residuals of fitted trend
-lm.res &lt;- lm(ts_comb ~ c(1:100)) # for some reason, we need the c() or else R freaks out</code></pre>
+lm.resid &lt;- lm(ts_comb ~ c(1:100))$residuals # we need the c() or else R freaks out
+
+plot(ts_comb, type = &quot;l&quot;)
+plot(first.diff, type = &quot;l&quot;)
+plot(lm.resid, type = &quot;l&quot;)</code></pre>
 </div>
 <p>You can compare the detrended time series to the original, using
 <code>plot(ts, type = "l")</code>.</p>
@@ -687,7 +794,7 @@ when it is strongly trended.</p>
 <h3>Autocorrelation function</h3>
 <p>The <strong>autocorrelation function</strong> (ACF) is a type of
 correlogram where correlations are calculated for a time series against
-itself at different time lags. Now let’s get the ACF plot for each
+itself at different time lags. Now, let’s get the ACF plot for each
 detrended time series to examine the autocorrelated noise structure. To
 produce the ACF plot, simply wrap <code>acf()</code> around the
 detrended time series. If you save this to an object, you can enter the
@@ -695,17 +802,36 @@ object name to bring up the actual ACF values for each time lag.</p>
 <div class="tutorial-exercise" data-label="acf" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
+<pre class="text"><code>n &lt;- 100
+
+set.seed(100)
+independ_noise &lt;- rnorm(100) # can pick whichever SD you want, but mean must equal 0
+autocorr_noise &lt;- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
+trend &lt;- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
+
+ts_comb &lt;- independ_noise + autocorr_noise + trend # combine the three components</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="acf-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>acf(diff(ts_comb))
+
+acf(lm(ts_comb ~ c(1:100))$residuals)
+
+acf(autocorr_noise)
+
+acf(presidents)</code></pre>
 </div>
 <p>Note that first differencing removed the positive autocorrelated
 noise structure (in fact it was so aggressive that there is now
 <em>negative</em> autocorrelation at lag = 1). Fitting a trend and
 taking residuals does not remove autocorrelation (unlike first
-differencing), so we still see positive autocorrelation up to lag = 2.
-Remember that this autocorrelated noise structure is combined with the
-independent noise component, so the autocorrelation is attenuated
-(compare this ACF to one done on just the autocorrelated noise component
-from your simulations).</p>
+differencing), so we still see (significant) positive autocorrelation up
+to lag = 2. Remember that this autocorrelated noise structure is
+combined with the independent noise component, so the autocorrelation is
+attenuated (compare this ACF to one done on just the autocorrelated
+noise component from your simulations).</p>
 <p>If you want to use <code>acf()</code> on real data, enter
 <code>acf(presidents)</code> to get the ACF for the time series of US
 president quarterly approval ratings (what I showed in lecture).</p>
@@ -714,7 +840,7 @@ president quarterly approval ratings (what I showed in lecture).</p>
 <h3>Spatial correlogram</h3>
 <p>Really quickly, let’s create a spatial correlogram for spatial data,
 so you can see what the code looks like.</p>
-<p>Below is autocorrelated noise I’ve simulated or you (same as in
+<p>Below is autocorrelated noise I’ve simulated for you (same as in
 lecture).</p>
 <p><img src="Week11_files/figure-html/unnamed-chunk-4-1.png" width="624" /></p>
 <div class="tutorial-exercise-support" data-label="spat_corr-setup"
@@ -731,8 +857,8 @@ y.red &lt;- predict(g.red, newdata=xy, nsim=1)
 
 gridded(y.red) = ~x+y</code></pre>
 </div>
-<p>All the relevant data is in the <code>y.red</code> dataframe, wherein
-the x- and y-coordinates and variable values are <code>x</code>,
+<p>All the relevant data is in the <code>y.red</code> data frame,
+wherein the x- and y-coordinates and variable values are <code>x</code>,
 <code>y</code>, and <code>sim1</code>, respectively. The code, then, for
 creating a correlogram is:
 <code>correlogram(krig = surf.ls(np = 0, x = y.red$x, y= y.red$y, z=y.red$sim1), nint = 100)</code>.
@@ -744,12 +870,21 @@ correlogram values to have more control over plotting.</p>
 <div class="tutorial-exercise" data-label="spat_corr"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>#
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="spat_corr-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>correlogram(
+  krig = surf.ls(
+    np = 0, 
+    x = y.red$x, 
+    y = y.red$y, 
+    z = y.red$sim1
+    ), 
+  nint = 100
+  )</code></pre>
 </div>
 </div>
 </div>
@@ -759,7 +894,7 @@ data-startover="1" data-lines="0">
 cross-correlogram that quantifies how two time series are correlated
 with each other at different lags. We will analyze the dataset I used in
 class: climate variability vs. mammalian extinction rates from the
-Plio-Pleistocene of eastern Africa. The dataframe is called
+Plio-Pleistocene of eastern Africa. The data frame is called
 <code>d</code>, and it contains the age (<code>age_Ma</code>), climate
 variability measure (<code>clim.var</code>), and extinction rates
 (<code>ext.rates</code>). You can plot both time series below if you’d
@@ -773,12 +908,17 @@ d &lt;- read.csv(text = clim_url)</code></pre>
 <div class="tutorial-exercise" data-label="cross_corr"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>#
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="cross_corr-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>plot(d$age_Ma, d$clim.var, type = &quot;l&quot;, xlim = rev(range(d$age_Ma)))
+
+plot(d$age_Ma, d$ext.rates, type = &quot;l&quot;, xlim = rev(range(d$age_Ma)))
+
+ccf(d$clim.var, d$ext.rates)</code></pre>
 </div>
 <p>To create a CCF, simply enter
 <code>ccf(d$clim.var, d$ext.rates)</code>. Negative lags are where
@@ -790,7 +930,7 @@ the actual CCF estimates.</p>
 <p>As with the previous topic, I will quickly go over the spatial
 counter part of cross-correlograms, just to show you the code.</p>
 <p>Below are maps of samples taken from the floodplain of the Meuse
-river in the Netherlands. Each sample has a measured organic matter and
+River in the Netherlands. Each sample has a measured organic matter and
 cadmium level.</p>
 <p><img src="Week11_files/figure-html/unnamed-chunk-5-1.png" width="624" /><img src="Week11_files/figure-html/unnamed-chunk-5-2.png" width="624" /></p>
 <p>To create the cross-correlogram, I’ve included the proper code in the
@@ -799,7 +939,7 @@ computer is). Within the <code>correlog()</code> function,
 <code>x</code> and <code>y</code> are the coordinates, <code>om</code>
 and <code>cadmium</code> are organic matter and cadmium levels, and
 <code>increment =</code> tells R how many distance bins to use. You can
-add a solid horizontal line with <code>abline(h = 0)</code>.</p>
+add a solid horizontal line at zero with <code>abline(h = 0)</code>.</p>
 <div class="tutorial-exercise-support" data-label="spat_cross-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
@@ -809,10 +949,8 @@ data-startover="1" data-lines="0">
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
 <pre class="text"><code>plot(correlog(x = meuse$x, y = meuse$y, z = meuse$om, w = meuse$cadmium, increment = 100, na.rm = TRUE))
-#
-#
-#
-#</code></pre>
+
+abline(h = 0)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 </div>
@@ -828,11 +966,11 @@ parameters. All parameters are estimated using maximum likelihood.</p>
 pre-loaded. Specifically, we will model the square-root transformed
 abundance of <code>Moorhen.Kauai</code> as a function of
 <code>Year</code> and <code>Rainfall</code> (no interaction).
-<code>Moorhen.Kauai ~ Year</code> assesses whether abundance changes
-linearly through time, while <code>Moorhen.Kauai ~ Rainfall</code>
-assesses whether abundance changes as a linear function of rainfall.
-Feel free to plot the data (e.g., as time series, scatter plots) to see
-what it looks like.</p>
+<code>sqrt(Moorhen.Kauai) ~ Year</code> assesses whether abundance
+changes linearly through time, while
+<code>sqrt(Moorhen.Kauai) ~ Rainfall</code> assesses whether abundance
+changes as a linear function of rainfall. Feel free to plot the data
+(e.g., as time series, scatter plots) to see what it looks like.</p>
 <div class="tutorial-exercise-support" data-label="gls-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
@@ -847,7 +985,7 @@ function requires two additional arguments:
 <code>na.action = na.omit</code>. The first argument tells R to model
 the autocorrelated errors using an AR1 structure
 (<code>form = ~Year</code> tells R that <code>Year</code> is a time IV;
-otherwise time would correspond to the order of observations). That is,
+otherwise, time would correspond to the order of observations). That is,
 <code>gls()</code> will estimate a parameter, <span
 class="math inline">\(\rho\)</span>, which is the correlation between
 errors one time step apart. <span class="math inline">\(\rho ^
@@ -859,27 +997,36 @@ errors three time steps apart, etc. The second argument in
 <div class="tutorial-exercise" data-label="gls" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
-<pre class="text"><code># Click &quot;Solution&quot; button if stuck
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="gls-solution"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>lm.res &lt;- lm(sqrt(Moorhen.Kauai) ~ Year + Rainfall, data = hawaii)
+<pre class="text"><code>plot(hawaii$Year, hawaii$Rainfall, type = &quot;l&quot;)
+
+plot(hawaii$Year, sqrt(hawaii$Moorhen.Kauai), type = &quot;l&quot;)
+
+plot(hawaii$Rainfall, sqrt(hawaii$Moorhen.Kauai))
+
+
+lm.res &lt;- lm(sqrt(Moorhen.Kauai) ~ Year + Rainfall, data = hawaii)
 
 gls.res &lt;- gls(sqrt(Moorhen.Kauai) ~ Year + Rainfall, data = hawaii, correlation = corAR1(form = ~Year), na.action = na.omit)
 
-acf(lm.res$residuals)
+lm.res$coefficients
+gls.res$coefficients
 
+summary(lm.res)$coefficients[, &quot;Pr(&gt;|t|)&quot;]
+summary(gls.res)$tTable[, &quot;p-value&quot;]
+
+acf(lm.res$residuals)
 acf(resid(gls.res, type = &quot;normalized&quot;))</code></pre>
 </div>
 <p>First note the high value for estimated <span
 class="math inline">\(\rho\)</span>, illustrating that there’s strong
-autocorrelation in the errors.</p>
+autocorrelation in the errors (<code>Phi1</code> is equal to <span
+class="math inline">\(\rho\)</span>).</p>
 <p>Now compare the coefficients and P-values between GLM and GLS. As you
 can see, the coefficients are fairly similar, and the significant
 P-values in GLM are smaller than their counterparts in GLS. This is to
@@ -888,16 +1035,16 @@ increase Type I error rate in GLM. When the non-independent errors are
 accounted for, the P-values will increase to their “proper” values,
 though they’re still significant in this case. The takeaway here is that
 GLM coefficient estimates are unbiased, even in the face of
-autocorrelated errors. So if you only care about coefficient estimates
+autocorrelated errors. So if you care only about coefficient estimates
 and not P-values, just go ahead and use <code>lm()</code>!</p>
 <p>Now plot the ACFs of the residuals from both models. For the
 <code>gls()</code> results, you have to extract residuals using
 <code>resid()</code> with argument <code>type = "normalized"</code>.
 Otherwise, the residuals will not be corrected using the estimated <span
 class="math inline">\(\rho\)</span> parameter.</p>
-<p>As you can see, the GLM residuals still show positive autocorrelation
-at lag = 1. This autocorrelation disappears in GLS, as to be expected
-(since the autocorrelation is modeled and removed).</p>
+<p>As you can see, the GLM residuals still show (significant) positive
+autocorrelation at lag = 1. This autocorrelation disappears in GLS, as
+to be expected (since the autocorrelation is modeled and removed).</p>
 <p>For spatial data, errors are modeled using five models:</p>
 <ol style="list-style-type: decimal">
 <li>Exponential (<code>corExp</code>)</li>
@@ -922,14 +1069,14 @@ class="section level2">
 <h2>Accounting for autocorrelated errors using an IV</h2>
 <p>Autocorrelated errors can be accounted for by including an IV that
 has the same autocorrelation structure. In other words, the
-autocorrelation in the errors can be modeled by the IV, thereby
-producing errors that are independent. For example, an herbivore
-species’ abundance is autocorrelated because it follows plant
-distribution, which itself is autocorrelated; if one models herbivore
-abundance as a function of plant distribution, then the autocorrelation
-in herbivore is explained by plant, thus producing independent errors.
-If model errors are independent, then this GLM assumption is satisfied,
-and P-values will be “normal” (no need for any correction!).</p>
+autocorrelation in the errors can be modeled by the IV, thereby removing
+autocorrelation from the residuals. For example, an herbivore species’
+abundance is autocorrelated because it follows plant distribution, which
+itself is autocorrelated; if one models herbivore abundance as a
+function of plant distribution, then the autocorrelation in herbivore is
+explained by plant, thus producing independent errors. If model errors
+are independent, then this GLM assumption is satisfied, and P-values
+will be “normal” (no need for any correction!).</p>
 <p>Let’s see an example of this, using the example I used in lecture.
 Below are spatial correlograms for an index of wetness and number of
 boreal tree species. As you can see, the autocorrelation structures are
@@ -938,7 +1085,7 @@ distribution of boreal species (or both are affected by some third
 variable).</p>
 <p><img src="Week11_files/figure-html/unnamed-chunk-6-1.png" width="624" /><img src="Week11_files/figure-html/unnamed-chunk-6-2.png" width="624" /></p>
 <p>Now create a linear model, using <code>lm()</code>, where
-<code>boreal ~ Wet</code> (the dataframe is called
+<code>boreal ~ Wet</code> (the data frame is called
 <code>Boreality</code>). Then create a spatial correlogram of the
 residuals, using
 <code>correlogram(surf.ls(0, Boreality$x, Boreality$y, lm.res$residuals), nint = 300)</code>.</p>
@@ -951,19 +1098,23 @@ Boreality &lt;- read.table(text = boreal_url, header = TRUE, sep = &quot;\t&quot
 <div class="tutorial-exercise" data-label="bor" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
-<pre class="text"><code>#
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="bor-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>lm.res &lt;- lm(boreal ~ Wet, data = Boreality)
+
+correlogram(surf.ls(0, Boreality$x, Boreality$y, lm.res$residuals), nint = 300)</code></pre>
 </div>
 <p>As you can see, there is still some leftover positive autocorrelation
 in the residuals, but the distance at which autocorrelation persists has
-drastically decreased. Thus, the autocorrelation in <code>boreal</code>
-has been mostly accounted for by the similar autocorrelation structure
-in <code>wetness</code>, leaving less autocorrelation in the
-<code>lm()</code> residuals.</p>
+drastically decreased. Moreover, the new correlogram appears flatter and
+“hugs” zero more, indicating less autocorrelation at all lags. Thus, the
+autocorrelation in <code>boreal</code> has been mostly accounted for by
+the similar autocorrelation structure in <code>Wet</code>, leaving less
+autocorrelation in the <code>lm()</code> residuals.</p>
 </div>
 <div id="section-exercise-2" class="section level2">
 <h2>Exercise 2</h2>
@@ -985,10 +1136,11 @@ another bird species shows a more noticeable relationship with
 <code>rainfall</code>. Fit a generalized least squares model with
 <code>sqrt(sqrt(Stilt.Maui))</code> (i.e., a double square-root
 transformation) as a function of <code>Year</code> and
-<code>Rainfall</code>. Make sure to specify that the autocorrelation
-structure is <code>corAR1()</code> as a function of <code>Year</code>.
-Then create a ACF plot of the residuals, making sure to use the
-residuals that have been GLS-corrected for autocorrelation.</p></li>
+<code>Rainfall</code> (no interaction). Make sure to specify that the
+autocorrelation structure is <code>corAR1()</code> as a function of
+<code>Year</code>. Then create a ACF plot of the residuals, making sure
+to use the residuals that have been GLS-corrected for
+autocorrelation.</p></li>
 </ol>
 <div class="tutorial-exercise-support" data-label="exer2-setup"
 data-caption="Code" data-completion="1" data-diagnostics="1"
@@ -999,11 +1151,7 @@ hawaii &lt;- read.table(text = hawaii_url, header = TRUE, sep = &quot;\t&quot;)<
 <div class="tutorial-exercise" data-label="exer2" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
-<pre class="text"><code># Click &quot;Solution&quot; button when done
-#
-#
-#
-#</code></pre>
+<pre class="text"><code># Click &quot;Solution&quot; button when done</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
 </div>
 <div class="tutorial-exercise-support" data-label="exer2-solution"
@@ -1037,7 +1185,8 @@ what random factors are and when to use them:</p>
 <ol style="list-style-type: decimal">
 <li>if we’re interested in estimating the SD of intercepts and/or slopes
 across levels</li>
-<li>if our sample size is too small</li>
+<li>if our sample size is too small relative to the number of estimated
+coefficients needed if using fixed factors</li>
 <li>if we want to use shrinkage/regularization to shrink estimates
 towards the population mean</li>
 <li>if we want to account for non-independence using blocking</li>
