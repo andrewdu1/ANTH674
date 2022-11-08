@@ -146,9 +146,8 @@ parts:</p>
 <li>Fitting and interpreting <strong>multivariate models</strong>, where
 there is more than one DV and one categorical independent variable
 (IV).</li>
-<li>Condensing multiple variables into fewer important composite
-variables for visualization purposes (i.e.,
-<strong>ordination</strong>).</li>
+<li>Condensing multiple variables into fewer composite variables for
+visualization purposes (i.e., <strong>ordination</strong>).</li>
 </ol>
 <p>I rarely see multivariate models in (biological) anthropology, but
 ordination is <em>extremely</em> common, especially principal components
@@ -246,7 +245,7 @@ unstandardized correlation (a correlation is standardized to be between
 <img
 src="https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png"
 wwidth="40%" alt="" />
-<p class="caption">Gray squares and the diagonal elements, while red
+<p class="caption">Gray squares are the diagonal elements, while red
 squares are the off-diagonal elements.</p>
 </div>
 <p>I have provided code in the console below for simulating a bivariate
@@ -260,13 +259,36 @@ data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
 <pre class="text"><code>n &lt;- 100
 means &lt;- c(1, 1)
-varcov &lt;- matrix(c(2, 0,
-                   0, 2), byrow = TRUE, nrow = 2)
+varcov &lt;- matrix(
+  c(2, 0,
+    0, 2), 
+  byrow = TRUE, 
+  nrow = 2)
 
 bivar_norm &lt;- rmvnorm(n, mean = means, sigma = varcov)
 
 plot(bivar_norm)</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="bivar-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>hist(bivar_norm[, 1])
+hist(bivar_norm[, 2])
+
+colMeans(bivar_norm) # mean of each variable
+apply(bivar_norm, 2, var) # variance of each variable
+
+# trying out different variance and covariance values
+varcov &lt;- matrix(
+  c(5, 3,
+    3, 5), 
+  byrow = TRUE, 
+  nrow = 2)
+
+bivar_norm &lt;- rmvnorm(n, mean = means, sigma = varcov)
+
+plot(bivar_norm)</code></pre>
 </div>
 <p>Try plotting histograms of each of the variables separately (they
 should be normally distributed). Does the mean of each variable closely
@@ -337,7 +359,7 @@ points(centroid[1], centroid[2], pch = 16, col = &quot;red&quot;, cex = 2)
 # Hotelling&#39;s T2
 anova(manova(as.matrix(d[, c(&quot;DV1&quot;, &quot;DV2&quot;)]) ~ d$grp))
 
-anova(manova(cbind(d$DV1, d$DV2) ~ d$grp)) # also works if you use cbind() to create the matrix</code></pre>
+anova(manova(cbind(DV1, DV2) ~ grp, data =d)) # also works if you use cbind() to create the matrix</code></pre>
 </div>
 <p>Now let’s conduct a Hotelling’s <em>T</em><sup>2</sup> on the data in
 the plot below. There are two groups (<code>grp</code>), each of which
@@ -352,7 +374,8 @@ groups (i.e., a binomial IV) is the same as a t-test. This also applies
 to multivariate models, so we can use the <code>manova()</code> function
 to conduct a Hotelling’s <em>T</em><sup>2</sup> test.
 <code>manova()</code> uses formula notation, where the DV must be a
-matrix, whose columns are the individual variables. Wrap
+matrix, whose columns are the individual variables (can use
+<code>as.matrix()</code> or <code>cbind()</code>). Wrap
 <code>anova()</code> around the <code>manova()</code> function to get
 the ANOVA table.</p>
 <p>As you can see, the two groups’ centroids are significantly different
@@ -389,7 +412,7 @@ teach &lt;- read.csv(text = man_url)</code></pre>
 </div>
 <p>First, run two separate one-way ANOVAs, each testing whether student
 satisfaction or test scores are significantly different across teaching
-methods (you can create boxplots to visualize the data).</p>
+methods (you can create box plots to visualize the data).</p>
 <div class="tutorial-exercise" data-label="man" data-caption="Code"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0">
@@ -399,13 +422,17 @@ data-lines="0">
 <div class="tutorial-exercise-support" data-label="man-solution"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code># ANOVAs
+<pre class="text"><code># box plots
+boxplot(Satisfaction ~ Method, data = teach)
+boxplot(Test ~ Method, data = teach)
+
+# ANOVAs
 anova(aov(Satisfaction ~ Method, data = teach))
 anova(aov(Test ~ Method, data = teach))
 
 # MANOVA
 anova(manova(as.matrix(teach[, c(&quot;Test&quot;, &quot;Satisfaction&quot;)]) ~ teach$Method))
-anova(manova(cbind(teach$Test, teach$Satisfaction) ~ teach$Method)) # also works</code></pre>
+anova(manova(cbind(Test, Satisfaction) ~ Method, data = teach)) # also works</code></pre>
 </div>
 <p>As you can see, neither of the one-way ANOVAs are significant (though
 this is likely due to small sample sizes, as <code>Test</code> looks
@@ -420,7 +447,9 @@ univariate ANOVAs. You can think of this as MANOVA incorporating and
 leveraging more information (i.e., the correlation between DVs) than
 ANOVAs. Indeed, you can see in the plot that the diagonal ellipse of
 blue points is separate from the red and black points when the DVs are
-plotted against each other in two dimensions.</p>
+plotted against each other in two dimensions. That is, blue has a larger
+test score for a given satisfaction score when compared to red and
+black.</p>
 </div>
 <div id="section-exercise-1" class="section level2">
 <h2>Exercise 1</h2>
@@ -481,8 +510,8 @@ the number of plot axes (e.g., visualizing
 requires two plot axes). Therefore, it is impossible to plot more than
 three variables in a single plot. Ordination allows us to get around
 this problem by distilling multiple variables into a smaller number of
-important composite variables. It does this by collapsing correlated
-variables into one (e.g., because <code>iris$Petal.Length</code> and
+composite variables. It does this by collapsing correlated variables
+into one (e.g., because <code>iris$Petal.Length</code> and
 <code>iris$Petal.Width</code> are strongly correlated, they offer
 redundant information and can be represented by one composite variable).
 This is why ordinations are known as <strong>data reduction
@@ -500,23 +529,24 @@ anthropology.</p>
 when all your variables are continuous. Conceptually, it creates
 composite variables (i.e., <strong>principal components</strong> or PCs)
 by first centering the data and then fitting a line through the axis of
-greatest variation (see animation below). It then rotates the plot so
-this line (i.e., the first principal component or PC1) is now on the
-x-axis. Subsequent PCs are fit so that they’re perpendicular (and thus
-independent) to previous PCs. These subsequent PCs can be thought of as
-fitting the residual variation left over from previous PCs (this is also
-why they always explain less variation than previous PCs). Each PC
-represents a composite of the original variables, and this is how PCA
-condenses one’s original variables into a few variables of interest
-(i.e., PCs). Note that you can only have as many PCs as you do
-variables, but it is usually the case that only the first several PCs
-are important.</p>
+greatest variation (see animation below; the specific line fitting
+method is called <strong>major axis regression</strong>). It then
+rotates the plot so this line (i.e., the first principal component or
+PC1) is now on the x-axis. Subsequent PCs are fit so that they’re
+perpendicular to (and thus independent of) previous PCs. These
+subsequent PCs can be thought of as fitting the residual variation left
+over from previous PCs (this is also why they always explain less
+variation than previous PCs). Each PC represents a composite of the
+original variables, and this is how PCA condenses one’s original
+variables into a few variables of interest (i.e., PCs). Note that you
+can only have as many PCs as you do variables, but it is usually the
+case that only the first several PCs are important.</p>
 <p><img src="https://i.stack.imgur.com/lNHqt.gif"
 style="width:100.0%" /></p>
 <p>Because PCA works by fitting PCs through axes of greatest variation,
-more variable variables will strongly influence how PCs are fit to the
-data. This is fine when the variation in one’s multivariate dataset is
-of interest itself, but this can be a problem when variables are more
+variables with more variation will strongly influence how PCs are fit to
+the data. This is fine when the variation in one’s multivariate dataset
+is of interest itself, but this can be a problem when variables are more
 variable just because, for example, they’re in different units.
 Therefore, it is common practice to scale each variable before running a
 PCA.</p>
@@ -544,7 +574,9 @@ data-startover="1" data-lines="0">
 <pre class="text"><code>iris.pca &lt;- prcomp(subset(iris, select = -Species))
 
 plot(iris.pca$x[, 1:2], type = &quot;n&quot;)
-points(iris.pca$x[iris$Species == &quot;setosa&quot;, 1:2], pch = 16) # you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
+
+# you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
+points(iris.pca$x[iris$Species == &quot;setosa&quot;, 1:2], pch = 16)
 points(iris.pca$x[iris$Species == &quot;versicolor&quot;, 1:2], pch = 16, col = &quot;blue&quot;)
 points(iris.pca$x[iris$Species == &quot;virginica&quot;, 1:2], pch = 16, col = &quot;red&quot;)
 
@@ -586,12 +618,16 @@ eigenvalues &lt;- iris.pca$sdev ^ 2
 
 barplot(eigenvalues, ylab = &quot;Variance&quot;, names.arg = c(&quot;PC1&quot;, &quot;PC2&quot;, &quot;PC3&quot;, &quot;PC4&quot;))
 
-perc_explain &lt;- eigenvalues / sum(eigenvalues) * 100</code></pre>
+perc_explain &lt;- eigenvalues / sum(eigenvalues) * 100
+
+# compare eigenvalues and variance in original dataset
+sum(eigenvalues)
+sum(apply(subset(iris, select = -Species), 2, var))</code></pre>
 </div>
 <p>A common way to plot eigenvalues is to create a bar plot. This is
-known as a <strong>scree plot</strong> (see image below), which mimics
-the profile of a mountainside where rubble has fallen (i.e., a scree
-slope).</p>
+known as a <strong>scree plot</strong>, which mimics the profile of a
+mountainside where rubble has fallen (i.e., a scree slope; see image
+below).</p>
 <p><img
 src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Yamnuska_bottom_cliff.jpg/1024px-Yamnuska_bottom_cliff.jpg"
 style="width:30.0%" /></p>
@@ -604,6 +640,12 @@ and PC2 explains a measly 5%. Therefore, if I were to subsequently
 analyze the PCs (e.g., for hypothesis testing), I would just analyze
 PC1, which does more than a good job of capturing the variation in the
 four <code>iris</code> variables.</p>
+<p>To interpret what eigenvalues mean in the context of the original
+variables, we can see that the sum of all eigenvalues equals the sum of
+the variances of all your original variables (check this in the console
+above). This demonstrates that the original variance in your dataset is
+preserved in PCA and that all PCA is doing is rotating and reorienting
+your original data.</p>
 <div id="section-singular-value-decomposition" class="section level3">
 <h3>Singular value decomposition</h3>
 <p><strong>NB</strong>: This section goes into brief detail about what
@@ -626,16 +668,17 @@ PC.</p>
 <div id="section-eigenvectors" class="section level2">
 <h2>Eigenvectors</h2>
 <p><strong>Eigenvectors</strong> tell us how each PC is related to the
-original variables. In this context, eigenvectors are also called
-<strong>loadings</strong> because they tell us how each of the original
-variables “loads” on each PC. Loadings range from -1 to 1, where the
-sign indicates the direction of the relationship between the variable
-and PC, and the magnitude indicates how much each variable contributes
-to the PC (also how tightly the two are correlated). For example, a PC1
-loading of 0.86 for <code>iris$Petal.Length</code> tells us that as PC1
-increases, <code>Petal.Length</code> increases, and vice versa (i.e.,
-the two are positively correlated). 0.86 is a large value, indicating
-that <code>Petal.Length</code> contributes a lot to and is strongly
+original variables. Each PC has one eigenvector, and the elements within
+each eigenvector are called <strong>loadings</strong> because they tell
+us how each of the original variables “loads” on each PC. Loadings range
+from -1 to 1, where the sign indicates the direction of the relationship
+between the variable and PC, and the magnitude indicates how much each
+variable contributes to the PC (also how tightly the two are
+correlated). For example, a PC1 loading of 0.86 for
+<code>iris$Petal.Length</code> tells us that as PC1 increases,
+<code>Petal.Length</code> increases, and vice versa (i.e., the two are
+positively correlated). 0.86 is a large value, indicating that
+<code>Petal.Length</code> contributes a lot to and is strongly
 correlated with PC1. On the other hand, a PC1 loading of -0.08 for
 <code>Sepal.Width</code> indicates that as PC1 increases,
 <code>Sepal.Width</code> decreases, and <code>Sepal.Width</code> doesn’t
@@ -664,7 +707,20 @@ each is negatively correlated with <code>Sepal.Width</code>.</p>
 <div class="tutorial-exercise" data-label="eigenvector"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
+<pre class="text"><code># Click &quot;Solution&quot; button if stuck</code></pre>
 <script type="application/json" data-opts-chunk="1">{"fig.width":6.5,"fig.height":4,"fig.retina":2,"fig.align":"default","fig.keep":"high","fig.show":"asis","out.width":624,"warning":true,"error":false,"message":true,"exercise.df_print":"paged","exercise.checker":"NULL"}</script>
+</div>
+<div class="tutorial-exercise-support" data-label="eigenvector-solution"
+data-caption="Code" data-completion="1" data-diagnostics="1"
+data-startover="1" data-lines="0">
+<pre class="text"><code>iris.pca &lt;- prcomp(subset(iris, select = -Species))
+iris.pca$rotation
+
+iris.vcov &lt;- cov(subset(iris, select = -Species))
+iris.svd &lt;- svd(iris.vcov)
+iris.svd$u
+
+biplot(iris.pca)</code></pre>
 </div>
 <p>One way to graphically portray loadings is as arrows on a PCA scatter
 plot. This is easily done in R with the <code>biplot()</code> function,
@@ -713,13 +769,22 @@ plant1 &lt;- iris.center[1, ]
 
 iris.pca &lt;- prcomp(iris1)
 
-sum(plant1 * iris.pca$rotation[, &quot;PC1&quot;]) # compare to iris.pca$x[1, 1]</code></pre>
+# compare the two
+sum(plant1 * iris.pca$rotation[, &quot;PC1&quot;])
+iris.pca$x[1, 1]
+
+# compare the two
+iris.center %*% iris.pca$rotation
+iris.pca$x</code></pre>
 </div>
 <p>This exercise emphasizes how PC loadings are also interpreted as how
 much each variable contributes to a PC. That is, in this case, the PC1
 score for Plant #1 is the sum of of its variables weighted by the PC1
 loadings. The larger magnitude the loading, the more that variable
-contributes to the final PC score.</p>
+contributes to the final PC score. Conversely, if a loading is near
+zero, it will essentially “negate” its corresponding variable (because
+the resulting product will be near zero), thus contributing very little
+to the final PC score.</p>
 <p>One can also use matrix algebra to get the PC scores for all
 observations and PCs. You do this by multiplying the matrix of centered
 <code>iris</code> variables by the matrix of PCA loadings:
@@ -751,7 +816,9 @@ data-lines="0">
 <div class="tutorial-exercise-support" data-label="hypo-solution"
 data-caption="Code" data-completion="1" data-diagnostics="1"
 data-startover="1" data-lines="0">
-<pre class="text"><code>anova(aov(iris.pca$x[, &quot;PC1&quot;] ~ iris$Species))</code></pre>
+<pre class="text"><code>iris.pca &lt;- prcomp(subset(iris, select = -Species))
+
+anova(aov(iris.pca$x[, &quot;PC1&quot;] ~ iris$Species))</code></pre>
 </div>
 <p>As you can see, the means of this composite PC1 variable is
 significantly different across <code>Species</code>.</p>
@@ -816,18 +883,18 @@ multivariate models and ordination. Many research questions require the
 analysis of a multivariate DV (e.g., the human skull example in
 <em>Multivariate models</em>). It is better to fit one’s analysis to the
 research question instead of the other way around (the research question
-is king!). Sticking with our skull example, we should treat the many
-linear measurements as a multivariate DV instead of analyzing them
+always rules!). Sticking with our skull example, we should treat the
+many linear measurements as a multivariate DV instead of analyzing them
 separately as univariate DVs (the latter asks a different research
 question). This is why it is important to have a fundamental
 understanding of the many statistical methods out there, so you can pick
 the one most appropriate for your research question.</p>
 <p>Multivariate models are used to assess how a multivariate DV varies
-as a function of one or more IV. This week, we only focused on those
+as a function of one or more IV. This week, we focused only on those
 multivariate models that have one categorical IV (i.e., Hotelling’s
-<em>T</em><sup>2</sup> and MANOVA). Next week, we will briefly cover
-those multivariate models that have a continuous IV. As alluded to in
-the previous paragraph, multivariate models ask a different research
+<em>T</em><sup>2</sup> and one-way MANOVA). Next week, we will briefly
+cover those multivariate models that have a continuous IV. As alluded to
+in the previous paragraph, multivariate models ask a different research
 question than multiple univariate models by jointly analyzing multiple
 DVs together. This also has the advantage of incorporating more
 information into the analysis (i.e., the correlations between DVs), with

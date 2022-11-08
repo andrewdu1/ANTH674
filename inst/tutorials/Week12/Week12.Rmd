@@ -34,7 +34,7 @@ These questions are addressed in the branch of statistics known as **multivariat
 This tutorial will teach you multivariate statistics in two main parts:
 
 1. Fitting and interpreting **multivariate models**, where there is more than one DV and one categorical independent variable (IV).
-2. Condensing multiple variables into fewer important composite variables for visualization purposes (i.e., **ordination**).
+2. Condensing multiple variables into fewer composite variables for visualization purposes (i.e., **ordination**).
 
 I rarely see multivariate models in (biological) anthropology, but ordination is *extremely* common, especially principal components analysis.
 This tutorial will teach you how to execute these multivariate methods in R, focusing on continuous variables only.
@@ -79,7 +79,7 @@ Whereas the univariate normal distribution has a single mean and SD (or its squa
 The variance-covariance matrix for a bivariate normal distribution is a 2x2 square matrix, where each **diagonal** element is the variance for one of the variable's normal distributions (these two numbers can be different), and the **off-diagonal** elements are the **covariance** between the two variables (the off-diagonal elements must be the same).
 The covariance is basically an unstandardized correlation (a correlation is standardized to be between -1 and 1).
 
-![Gray squares and the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
+![Gray squares are the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
 
 I have provided code in the console below for simulating a bivariate normal distribution.
 Each variable will have 100 data points, a mean of 1, and a variance of 2.
@@ -89,8 +89,30 @@ Go ahead and run the code (see what the output `bivar_norm` is and why `plot(biv
 ```{r bivar, exercise = TRUE}
 n <- 100
 means <- c(1, 1)
-varcov <- matrix(c(2, 0,
-                   0, 2), byrow = TRUE, nrow = 2)
+varcov <- matrix(
+  c(2, 0,
+    0, 2), 
+  byrow = TRUE, 
+  nrow = 2)
+
+bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
+
+plot(bivar_norm)
+```
+
+```{r bivar-solution}
+hist(bivar_norm[, 1])
+hist(bivar_norm[, 2])
+
+colMeans(bivar_norm) # mean of each variable
+apply(bivar_norm, 2, var) # variance of each variable
+
+# trying out different variance and covariance values
+varcov <- matrix(
+  c(5, 3,
+    3, 5), 
+  byrow = TRUE, 
+  nrow = 2)
 
 bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
 
@@ -152,7 +174,7 @@ points(centroid[1], centroid[2], pch = 16, col = "red", cex = 2)
 # Hotelling's T2
 anova(manova(as.matrix(d[, c("DV1", "DV2")]) ~ d$grp))
 
-anova(manova(cbind(d$DV1, d$DV2) ~ d$grp)) # also works if you use cbind() to create the matrix
+anova(manova(cbind(DV1, DV2) ~ grp, data =d)) # also works if you use cbind() to create the matrix
 ```
 
 Now let's conduct a Hotelling's *T*^2^ on the data in the plot below.
@@ -177,7 +199,7 @@ points(mean(gp2[,1]), mean(gp2[,2]), pch=21, bg="red", cex=2, col = "gray")
 We use Hotelling's *T*^2^ to assess whether the two groups' centroids are significantly different by modeling the two DVs as a function of the binomial IV.
 First recall that an ANOVA done on two groups (i.e., a binomial IV) is the same as a t-test.
 This also applies to multivariate models, so we can use the `manova()` function to conduct a Hotelling's *T*^2^ test.
-`manova()` uses formula notation, where the DV must be a matrix, whose columns are the individual variables.
+`manova()` uses formula notation, where the DV must be a matrix, whose columns are the individual variables (can use `as.matrix()` or `cbind()`).
 Wrap `anova()` around the `manova()` function to get the ANOVA table.
 
 As you can see, the two groups' centroids are significantly different (the P-value of interest is the one associated with the categorical IV).
@@ -221,20 +243,24 @@ man_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/ma
 teach <- read.csv(text = man_url)
 ```
 
-First, run two separate one-way ANOVAs, each testing whether student satisfaction or test scores are significantly different across teaching methods (you can create boxplots to visualize the data).
+First, run two separate one-way ANOVAs, each testing whether student satisfaction or test scores are significantly different across teaching methods (you can create box plots to visualize the data).
 
 ```{r man, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
 ```{r man-solution}
+# box plots
+boxplot(Satisfaction ~ Method, data = teach)
+boxplot(Test ~ Method, data = teach)
+
 # ANOVAs
 anova(aov(Satisfaction ~ Method, data = teach))
 anova(aov(Test ~ Method, data = teach))
 
 # MANOVA
 anova(manova(as.matrix(teach[, c("Test", "Satisfaction")]) ~ teach$Method))
-anova(manova(cbind(teach$Test, teach$Satisfaction) ~ teach$Method)) # also works
+anova(manova(cbind(Test, Satisfaction) ~ Method, data = teach)) # also works
 ```
 
 As you can see, neither of the one-way ANOVAs are significant (though this is likely due to small sample sizes, as `Test` looks like it varies across `Method` according to a box plot).
@@ -245,6 +271,7 @@ We now have a significant result!
 This result illustrates that MANOVAs have greater statistical power and are able to detect smaller effects than individual univariate ANOVAs.
 You can think of this as MANOVA incorporating and leveraging more information (i.e., the correlation between DVs) than ANOVAs.
 Indeed, you can see in the plot that the diagonal ellipse of blue points is separate from the red and black points when the DVs are plotted against each other in two dimensions.
+That is, blue has a larger test score for a given satisfaction score when compared to red and black.
 
 
 ## Exercise 1
@@ -290,7 +317,7 @@ anova(manova(as.matrix(iris_noSp) ~ iris$Species))
 Ordinations are most commonly used to explore and visualize a multivariate dataset.
 The number of variables in one's dataset dictates the number of plot axes (e.g., visualizing `iris$Petal.Length` and `iris$Petal.Width` requires two plot axes).
 Therefore, it is impossible to plot more than three variables in a single plot.
-Ordination allows us to get around this problem by distilling multiple variables into a smaller number of important composite variables.
+Ordination allows us to get around this problem by distilling multiple variables into a smaller number of composite variables.
 It does this by collapsing correlated variables into one (e.g., because `iris$Petal.Length` and `iris$Petal.Width` are strongly correlated, they offer redundant information and can be represented by one composite variable).
 This is why ordinations are known as **data reduction methods**.
 
@@ -303,16 +330,16 @@ I will introduce ordination using principal components analysis, by far the most
 ## Principal components analysis
 
 Principal components analysis (PCA) is an ordination method, used when all your variables are continuous.
-Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation (see animation below).
+Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation (see animation below; the specific line fitting method is called **major axis regression**).
 It then rotates the plot so this line (i.e., the first principal component or PC1) is now on the x-axis.
-Subsequent PCs are fit so that they're perpendicular (and thus independent) to previous PCs.
+Subsequent PCs are fit so that they're perpendicular to (and thus independent of) previous PCs.
 These subsequent PCs can be thought of as fitting the residual variation left over from previous PCs (this is also why they always explain less variation than previous PCs).
 Each PC represents a composite of the original variables, and this is how PCA condenses one's original variables into a few variables of interest (i.e., PCs).
 Note that you can only have as many PCs as you do variables, but it is usually the case that only the first several PCs are important.
 
 ![](https://i.stack.imgur.com/lNHqt.gif){width="100%"}
 
-Because PCA works by fitting PCs through axes of greatest variation, more variable variables will strongly influence how PCs are fit to the data.
+Because PCA works by fitting PCs through axes of greatest variation, variables with more variation will strongly influence how PCs are fit to the data.
 This is fine when the variation in one's multivariate dataset is of interest itself, but this can be a problem when variables are more variable just because, for example, they're in different units.
 Therefore, it is common practice to scale each variable before running a PCA.
 
@@ -334,7 +361,9 @@ Because all measurements are all in centimeters and are of the same order of mag
 iris.pca <- prcomp(subset(iris, select = -Species))
 
 plot(iris.pca$x[, 1:2], type = "n")
-points(iris.pca$x[iris$Species == "setosa", 1:2], pch = 16) # you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
+
+# you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
+points(iris.pca$x[iris$Species == "setosa", 1:2], pch = 16)
 points(iris.pca$x[iris$Species == "versicolor", 1:2], pch = 16, col = "blue")
 points(iris.pca$x[iris$Species == "virginica", 1:2], pch = 16, col = "red")
 
@@ -370,10 +399,14 @@ eigenvalues <- iris.pca$sdev ^ 2
 barplot(eigenvalues, ylab = "Variance", names.arg = c("PC1", "PC2", "PC3", "PC4"))
 
 perc_explain <- eigenvalues / sum(eigenvalues) * 100
+
+# compare eigenvalues and variance in original dataset
+sum(eigenvalues)
+sum(apply(subset(iris, select = -Species), 2, var))
 ```
 
 A common way to plot eigenvalues is to create a bar plot.
-This is known as a **scree plot** (see image below), which mimics the profile of a mountainside where rubble has fallen (i.e., a scree slope).
+This is known as a **scree plot**, which mimics the profile of a mountainside where rubble has fallen (i.e., a scree slope; see image below).
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Yamnuska_bottom_cliff.jpg/1024px-Yamnuska_bottom_cliff.jpg){width="30%"}
 
@@ -383,6 +416,9 @@ Do this in the console above.
 
 We can see that PC1 explains over 92% of the variation in the data, and PC2 explains a measly 5%.
 Therefore, if I were to subsequently analyze the PCs (e.g., for hypothesis testing), I would just analyze PC1, which does more than a good job of capturing the variation in the four `iris` variables.
+
+To interpret what eigenvalues mean in the context of the original variables, we can see that the sum of all eigenvalues equals the sum of the variances of all your original variables (check this in the console above). 
+This demonstrates that the original variance in your dataset is preserved in PCA and that all PCA is doing is rotating and reorienting your original data.
 
 ### Singular value decomposition
 
@@ -401,7 +437,7 @@ Then, use the `svd()` function to do an SVD of the variance-covariance matrix: `
 ## Eigenvectors
 
 **Eigenvectors** tell us how each PC is related to the original variables.
-In this context, eigenvectors are also called **loadings** because they tell us how each of the original variables "loads" on each PC.
+Each PC has one eigenvector, and the elements within each eigenvector are called **loadings** because they tell us how each of the original variables "loads" on each PC.
 Loadings range from -1 to 1, where the sign indicates the direction of the relationship between the variable and PC, and the magnitude indicates how much each variable contributes to the PC (also how tightly the two are correlated).
 For example, a PC1 loading of 0.86 for `iris$Petal.Length` tells us that as PC1 increases, `Petal.Length` increases, and vice versa (i.e., the two are positively correlated).
 0.86 is a large value, indicating that `Petal.Length` contributes a lot to and is strongly correlated with PC1.
@@ -418,6 +454,18 @@ This means that the first three variables are positively correlated with each ot
 As with `iris.pca$rotation`, these results tell us `Sepal.Length`, `Petal.Length`, and `Petal.Width` are positively correlated with each other, and each is negatively correlated with `Sepal.Width`.
 
 ```{r eigenvector, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r eigenvector-solution}
+iris.pca <- prcomp(subset(iris, select = -Species))
+iris.pca$rotation
+
+iris.vcov <- cov(subset(iris, select = -Species))
+iris.svd <- svd(iris.vcov)
+iris.svd$u
+
+biplot(iris.pca)
 ```
 
 One way to graphically portray loadings is as arrows on a PCA scatter plot.
@@ -452,12 +500,19 @@ plant1 <- iris.center[1, ]
 
 iris.pca <- prcomp(iris1)
 
-sum(plant1 * iris.pca$rotation[, "PC1"]) # compare to iris.pca$x[1, 1]
+# compare the two
+sum(plant1 * iris.pca$rotation[, "PC1"])
+iris.pca$x[1, 1]
+
+# compare the two
+iris.center %*% iris.pca$rotation
+iris.pca$x
 ```
 
 This exercise emphasizes how PC loadings are also interpreted as how much each variable contributes to a PC.
 That is, in this case, the PC1 score for Plant #1 is the sum of of its variables weighted by the PC1 loadings.
 The larger magnitude the loading, the more that variable contributes to the final PC score.
+Conversely, if a loading is near zero, it will essentially "negate" its corresponding variable (because the resulting product will be near zero), thus contributing very little to the final PC score.
 
 One can also use matrix algebra to get the PC scores for all observations and PCs.
 You do this by multiplying the matrix of centered `iris` variables by the matrix of PCA loadings: `iris.center %*% iris.pca$rotation` (see pgs. 525-526 in Gotelli & Ellison to learn how to multiply two matrices together).
@@ -477,6 +532,8 @@ Try this out below.
 ```
 
 ```{r hypo-solution}
+iris.pca <- prcomp(subset(iris, select = -Species))
+
 anova(aov(iris.pca$x[, "PC1"] ~ iris$Species))
 ```
 
@@ -533,12 +590,12 @@ mtcars.pca$rotation
 
 This tutorial introduced you to multivariate statistics with multivariate models and ordination.
 Many research questions require the analysis of a multivariate DV (e.g., the human skull example in *Multivariate models*).
-It is better to fit one's analysis to the research question instead of the other way around (the research question is king!).
+It is better to fit one's analysis to the research question instead of the other way around (the research question always rules!).
 Sticking with our skull example, we should treat the many linear measurements as a multivariate DV instead of analyzing them separately as univariate DVs (the latter asks a different research question).
 This is why it is important to have a fundamental understanding of the many statistical methods out there, so you can pick the one most appropriate for your research question.
 
 Multivariate models are used to assess how a multivariate DV varies as a function of one or more IV.
-This week, we only focused on those multivariate models that have one categorical IV (i.e., Hotelling's *T*^2^ and MANOVA).
+This week, we focused only on those multivariate models that have one categorical IV (i.e., Hotelling's *T*^2^ and one-way MANOVA).
 Next week, we will briefly cover those multivariate models that have a continuous IV.
 As alluded to in the previous paragraph, multivariate models ask a different research question than multiple univariate models by jointly analyzing multiple DVs together.
 This also has the advantage of incorporating more information into the analysis (i.e., the correlations between DVs), with the result that multivariate models are able to detect differences that are missed with multiple univariate models (e.g., our teaching method example).
