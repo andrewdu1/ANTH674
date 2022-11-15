@@ -30,7 +30,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Introduction
 
 This week, we finished learning about multivariate statistics, which is the study and analysis of multiple variables.
-We first learned about **distance matrices**, which are the foundation for most, if not all, multivariate methods.
+We first learned about **distance matrices**, which are the foundation for many multivariate methods.
 We learned how distance matrices play a key role in two new ordination methods: **principal coordinates analysis** and **non-metric multidimensional scaling**.
 We then learned how distance matrices can be analyzed using **cluster analysis** to produce **dendrograms**, an effective way to visualize how similar data points are in terms of their variables.
 I finally very briefly covered non-hierarchical clustering techniques (e.g., *K*-means clustering, discriminant analysis) and multivariate regression (e.g., redundancy analysis).
@@ -58,7 +58,7 @@ After absorbing the lecture and tutorial material, you should have a solid enoug
 
 ## Distance matrices
 
-**Distance matrices** are matrices that summarize how (dis)similar variables are when compared in a pairwise fashion.
+**Distance matrices** are matrices that summarize how (dis)similar observations/variables are when compared in a pairwise fashion.
 They have $n$ rows and $n$ columns (i.e., a square matrix), where $n$ is the number of analyzed variables.
 The variable names are the row and column names, and the element at the intersection of one variable (row) and another (column) tells you what the calculated distance is for those two variables (much like interpreting a scatter plot matrix).
 The diagonals (see figure below) are always zero because those elements are comparing one variable with itself: the variables are identical, so the distance is zero.
@@ -73,7 +73,7 @@ Let's calculate a distance matrix for the `iris` dataset.
 This is done using the `dist()` function, where the default calculated distance is the **Euclidean distance**.
 In R, the variables to be compared in the distance matrix are formatted as rows, so `dist(iris[, -5])` will generate a distance matrix comparing observations (e.g., individual plants) to each other.
 In this case, the more dissimilar two plants' petal and sepal measurements, the larger the distance.
-If we wanted to create a distance matrix comparing each pair of petal and sepal measurements to each other, we would have to transpose the dataset first, using `t()`.
+If we wanted to create a distance matrix comparing each pair of petal/sepal measurements to each other, we would have to transpose the dataset first, using `t()`.
 This type of distance matrix will calculate the distance between each pair of petal/sepal variables according to how (dis)similar each variable's measurements on all plants are. 
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Euclidean_distance_2d.svg/2560px-Euclidean_distance_2d.svg.png){width="60%"}
@@ -82,10 +82,15 @@ Because the `iris` measurements are continuous, we can use Euclidean distances f
 Enter `dist(iris[, -5])` below and compare it to `dist(t(iris[, -5]))`.
 
 ```{r dist, exercise = TRUE}
-# Click "Solution" button if stuck (exercise below)
+# Click "Solution" button if stuck
 ```
 
 ```{r dist-solution}
+dist(iris[, -5])
+dist(t(iris[, -5]))
+
+iris_euc <- dist(iris[, -5])
+
 x <- iris[1, -5]
 y <- iris[2, -5]
 
@@ -95,12 +100,12 @@ sqrt(sum((x - y) ^ 2))
 
 Let's work with the first distance matrix, so save it to an object (e.g., `iris_euc`).
 I actually find distance matrices in R kind of annoying to work with.
-They should have a set number of rows and columns (which should be equal), but `dim()` does not work on them. 
+They should have a set number of rows and columns (which should be equal), but `dim()` does not work on them (they're more like vectors than matrices in R). 
 `head()` returns only the first six elements of the matrix.
 I find it easier to visualize distance matrices by transforming them to a matrix class first, using `as.matrix()` (distance matrices are `dist` class in R).
 Let's look at the first five plants in our distance matrix using `as.matrix(iris_euc)[1:5, 1:5]`.
 As you can see, the diagonals are all zero, and the matrix is symmetrical: the lower triangle matches the upper triangle.
-This makes sense as the distance for Plant 1 and 2 is the same as that for Plant 2 and 1.
+This makes sense as the distance between Plants 1 and 2 is the same as that between Plants 2 and 1.
 
 Plants 1 and 2 have a Euclidean distance of 0.54.
 Let's calculate the Euclidean distance of these two plants "by hand", and see if we get 0.54.
@@ -113,7 +118,7 @@ The formula for calculating the Euclidean distance between the $i$th and $j$th o
 where $y_{i,k}$ is the measurement for the $i$th observation and the $k$th variable, and $n$ is the total number of variables.
 In English, this is basically saying subtract one observation's variables from the other, square the differences, sum them up, and take the square root.
 See if you can code the Euclidean distance for the first and second plant in `iris` (i.e., the first two rows).
-You can click the "Solution" button if you get stuck.
+You can click the "Solution" button in the above console if you get stuck.
 
 The value you get should be the same exact one in your distance matrix (`iris_euc[1]`).
 We could do this for every pairwise combination of plants in `iris`.
@@ -123,7 +128,7 @@ Or we could just use `dist()`.
 
 As I alluded to earlier, Euclidean distances are best for continuous variables.
 If at least one variable is not continuous, one has to choose a different distance metric.
-Some common ones are Jaccard and Sorensen for variables with binary outcomes (e.g., 0s and 1s), chi-square and Bray-Curtis for frequencies of categorical data, and Gower for mixed continuous and categorical data (see pg. 404 in your textbook for more distance metrics, though there are even more than that!).
+Some common ones are Jaccard and Sørensen for variables with binary outcomes (e.g., 0s and 1s), chi-square and Bray-Curtis for frequencies of categorical data, and Gower for mixed continuous and categorical data (see pg. 404 in your textbook for more distance metrics, though there are even more than that!).
 
 Let's calculate a chi-square distance matrix for the `HairEyeColor` dataset.
 This dataset is a contingency table of the number of individuals with a given hair and eye color, so the chi-square metric is appropriate here.
@@ -131,11 +136,21 @@ First enter `haireye <- margin.table(HairEyeColor, 1:2)` to add male and female 
 Enter `haireye` and see what comes out.
 
 ```{r chi, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r chi-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+
+library(analogue)
+distance(haireye, method = "chi.distance", dist = TRUE)
+
+distance(t(haireye), method = "chi.distance", dist = TRUE)
 ```
 
 To calculate a chi-square distance matrix on this contingency table, we're going to use the `distance()` function in the `analogue` package.
 To do this, enter `distance(haireye, method = "chi.distance", dist = TRUE)`; the argument `dist = TRUE` returns a `dist` class object.
-This distance matrix is telling us how similar hair colors are to each other, in terms of the proportion of individuals in each eye color.
+This distance matrix is telling us how similar hair colors are to each other, in terms of the proportion of individuals with each eye color.
 What do you think you'll get if you transpose the table first?
 Test your intuition by trying it out above.
 
@@ -150,6 +165,17 @@ You can add a 1:1 line with `abline(0, 1)`, where 0 is the intercept and 1 is th
 This plot is known as a **Shepard diagram**.
 
 ```{r compar, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r compar-solution}
+iris_pca <- prcomp(iris[, -5])
+
+pca.dist <- dist(iris_pca$x)
+iris_euc <- dist(iris[, -5])
+
+plot(pca.dist, iris_euc)
+abline(0, 1, col = "red")
 ```
 
 As you can see, the Euclidean distances between plants in terms of their original variables are preserved *exactly* in PCA space.
@@ -187,6 +213,29 @@ First fit a PCA (`iris_pca <- prcomp(iris[, -5])`) and create a PCA scatter plot
 You can color-code the points by species if you'd like.
 
 ```{r pcoa, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r pcoa-solution}
+iris_pca <- prcomp(iris[, -5])
+
+plot(iris_pca$x[, 1:2], type = "n")
+points(iris_pca$x[iris$Species == "setosa", 1:2])
+points(iris_pca$x[iris$Species == "versicolor", 1:2], col = "red")
+points(iris_pca$x[iris$Species == "virginica", 1:2], col = "blue")
+
+iris_euc <- dist(iris[, -5])
+iris_pcoa <- cmdscale(iris_euc, k = 2, eig = TRUE)
+iris_pcoa$points[, 2] <- -1 * iris_pcoa$points[, 2]
+
+plot(iris_pcoa$points, type = "n")
+points(iris_pcoa$points[iris$Species == "setosa",])
+points(iris_pcoa$points[iris$Species == "versicolor",], col = "red")
+points(iris_pcoa$points[iris$Species == "virginica",], col = "blue")
+
+iris_pcoa1 <- cmdscale(iris_euc, k = nrow(iris) - 1, eig = TRUE)
+plot(iris_euc, dist(iris_pcoa1$points))
+abline(0, 1, col = "red")
 ```
 
 To fit a PCoA to a Euclidean distance matrix, we need to first generate the matrix.
@@ -199,7 +248,7 @@ Go ahead and create the PCoA plot with `plot(iris_pcoa$points)`.
 You'll notice that the axes in your PCoA might be flipped (my y-axis is flipped).
 Remember that the signs of PC or principal coordinate scores are arbitrary; what matters is that they're internally consistent (see the *Eigenvectors* topic in the Week 11 tutorial).
 This happens because signs depend on an arbitrary decision made during SVD.
-To fix my flipped y-axis, I simply multiply all principal coordinate 2 scores by -1: `iris_pcoa$points[, 2] <- -1 * iris_pcoa$points[, 2]`. 
+To fix my flipped y-axis, I simply multiplied all principal coordinate 2 scores by -1: `iris_pcoa$points[, 2] <- -1 * iris_pcoa$points[, 2]`. 
 Now the PCA and PCoA plots are identical.
 And because they're identical, I know a Shepard diagram of the PCoA points will perfectly preserve the Euclidean distances in original `iris` variable space (you can confirm this if you'd like, but you have to first change the `cmdscale()` argument to `k = nrow(iris) - 1`, the maximum number of principal coordinates allowed with 150 data points).
 
@@ -213,6 +262,18 @@ Divide each eigenvalue by the total and multiply by 100 to get percent variance 
 Try this out below (you can also create a scree plot if you want!).
 
 ```{r perc_var, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r perc_var-solution}
+iris_euc <- dist(iris[, -5])
+iris_pcoa <- cmdscale(iris_euc, k = 2, eig = TRUE)
+
+barplot(iris_pcoa$eig / sum(iris_pcoa$eig) * 100)
+
+iris_pca <- prcomp(iris[, -5])
+iris_pca$sdev ^ 2
+iris_pcoa$eig / (nrow(iris) - 1)
 ```
 
 You might notice that the eigenvalues of PCA (`iris_pca$sdev ^ 2`) are not the same as those from PCoA.
@@ -237,11 +298,11 @@ Again, combine males and females using `haireye <- margin.table(HairEyeColor, 1:
 Calculate a chi-square distance matrix using the same code as before: `hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)`.
 I used this object name because the table rows are hair color, so that's the variable being compared in the distance matrix.
 Run the PCoA analysis with `hair_pcoa <- cmdscale(hair_chi, k = nrow(haireye) - 1, eig = TRUE)`.
-We are now extracting three principal coordinates with `k = nrow(haireye) - 1`, the maximum allowed given that there are only four rows (for $n$ rows, you can only get $n-1$ principal coordinates).
+We are now extracting three principal coordinates with `k = nrow(haireye) - 1`, the maximum allowed given that there are only four rows (for $n$ rows, you can get only $n-1$ principal coordinates).
 
 Create the PCoA plot.
 In lecture, I used `text()` instead of `points()` to add the hair color names to the plot.
-Look at the help file to see if you can figure out how to do it on your own (click the "Solution" button if you get stuck).
+Look at the help file to see if you can figure out how to do this on your own (click the "Solution" button if you get stuck).
 You can also calculate percent variance explained by each principal coordinate (which I didn't code) by analyzing the eigenvalues (like you did in the previous topic): `hair_pcoa$eig / sum(hair_pcoa$eig) * 100`.
 
 ```{r ca, exercise = TRUE}
@@ -249,6 +310,8 @@ You can also calculate percent variance explained by each principal coordinate (
 ```
 
 ```{r ca-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+
 # hair color
 hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
 hair_pcoa <- cmdscale(hair_chi, k = nrow(haireye) - 1, eig = TRUE)
@@ -257,6 +320,10 @@ plot(hair_pcoa$points[, 1:2], type = "n", xlab = "Principal Coordinate 1", ylab 
 text(hair_pcoa$points[, 1:2], rownames(hair_pcoa$points))
 abline(h = 0, lty = 3) # x-axis
 abline(v = 0, lty = 3) # y-axis
+
+hair_pcoa$eig / sum(hair_pcoa$eig) * 100
+
+mosaic(haireye, shade = TRUE, legend = TRUE)
 
 # eye color
 eye_chi <- distance(t(haireye), method = "chi.distance", dist = TRUE)
@@ -269,6 +336,8 @@ abline(v = 0, lty = 3) # y-axis
 
 # hair and eye color
 plot(hair_pcoa$points[, 1:2], type = "n", xlim = range(hair_pcoa$points[, 1], eye_pcoa$points[, 1]), ylim = range(hair_pcoa$points[, 2], eye_pcoa$points[, 2]), xlab = "Principal Coordinate 1", ylab = "Principal Coordinate 2") # adjust the axes if names are cut off# adjust the axes if names are cut off
+
+eye_pcoa$points[, 1] <- -1 * eye_pcoa$points[, 1] # flip x-axis
 
 text(hair_pcoa$points[, 1:2], rownames(hair_pcoa$points), col = "maroon1")
 text(eye_pcoa$points[, 1:2], rownames(eye_pcoa$points), col = "chartreuse3")
@@ -285,7 +354,7 @@ Do this using `mosaic(haireye, shade = TRUE, legend = TRUE)`.
 I discuss in more detail how to interpret a PCoA plot below, when we plot both hair and eye color on the same plot.
 
 We could also create a PCoA plot of eye color by computing a chi-square distance matrix on the transposed version of our `haireye` table (so eye color is now on the rows).
-Try that out above (click the "Solution" button if you get stuck).
+Try this out above (click the "Solution" button if you get stuck).
 
 One of the nice things about doing PCoA on both hair and eye color is that we can plot both on the same PCoA plot (you could've plotted `iris` petal/sepal measurements on the PCoA plot from the previous topic).
 To do this, we first have to see if any of our axes are flipped (remember, this happens because of an arbitrary decision made during SVD).
@@ -339,7 +408,7 @@ So a CA is *identical* to a weighted PCoA.
 
 A weighted PCoA is done in R using the `wcmdscale()` function in the `vegan` package.
 Let's do this on a new dataset, `mite`, which has more data points, so you can see how a weighted PCoA is identical to CA.
-Load the `mite` dataset using `data("mite")` (it's from the `vegan` package), and look at the help file for details about this dataset.
+Load the `mite` dataset using `data(mite)` (it's from the `vegan` package), and look at the help file for details about this dataset.
 First, create a chi-square distance matrix of the dataset using `mite_chi <- distance(mite, method = "chi.distance", dist = TRUE)`.
 Soil cores (think of them like sites) are rows, so this is what is being compared.
 Soil cores with smaller distances will be more similar in terms of their species composition and abundances.
@@ -347,11 +416,30 @@ Now run the weighted PCoA on the distance matrix with `mite_wpcoa <- wcmdscale(m
 Now create the plot of soil cores with `plot(mite_wpcoa$points[, 1:2])`.
 
 ```{r wcmd, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r wcmd-solution}
+data(mite)
+
+mite_chi <- distance(mite, method = "chi.distance", dist = TRUE)
+
+mite_wpcoa <- wcmdscale(mite_chi, k = nrow(mite) - 1, eig = TRUE, w = rowSums(mite) / sum(mite))
+plot(mite_wpcoa$points[, 1:2])
+
+mite_ca <- ca(mite)
+plot(mite_ca)
+
+mite_wpcoa$eig
+mite_ca$sv ^ 2
+
+plot(mite_chi, dist(mite_wpcoa$points))
+abline(0, 1, col = "red")
 ```
 
 We can also just do CA directly using the `ca()` function in the `ca` package.
 Enter `mite_ca <- ca(mite)` and then `plot(mite_ca)`.
-You can see that both soil core (blue circles) and mite species (red triangles) are automatically plotted, and percent variance explained is automatically calculated and added to the plot.
+You can see that both soil cores (blue circles) and mite species (red triangles) are automatically plotted, and percent variance explained is automatically calculated and added to the plot.
 To get out the eigenvalues yourself, enter `mite_ca$sv ^ 2`.
 
 You can also see that the array of soil core points from the weighted PCoA is identical to that from the CA (though my y-axis in weighted PCoA is flipped).
@@ -386,20 +474,37 @@ Enter `plot(nmds$points)` to plot the data.
 Use `text()` to add hair color labels to the plot.
 
 ```{r nmds, exercise = TRUE}
+# Click "Solution" button if stuck
 ```
 
-As you can see, black hair is far away from brown, as to be expected given how different their proportion of eye colors are (again, enter `mosaic(haireye, shade = TRUE, legend = TRUE)` to visualize this).
+```{r nmds-solution}
+library(MASS)
+
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+nmds <- isoMDS(hair_chi, k = 2)
+
+plot(nmds$points, type = "n")
+text(nmds$points, rownames(haireye))
+
+nmds$stress
+
+plot(hair_chi, dist(nmds$points))
+abline(0, 1)
+```
+
+As you can see, black hair is far away from blond, as to be expected given how different their proportion of eye colors are (again, enter `mosaic(haireye, shade = TRUE, legend = TRUE)` to visualize this).
 Black and red hair are each close to brown hair because these pairs of hair colors have the most similar proportion of eye colors.
 
 `nmds$stress` gives us a measure of **stress**, which is how much the Euclidean distances between points in NMDS space *don't* correspond with the chi-square distances in the original distance matrix.
 Stress is what is minimized during the NMDS iteration process.
 `isoMDS()` returns stress as a percentage, though its typically reported as a proportion, so divide stress by 100.
-A lower stress is preferred, where any number below 0.2 is acceptable (rule of thumb).
-The stress of our NMDS analysis is pretty much zero indicating that there's a new perfect correlation between the Euclidean distances of NMDS points and the chi-square distances.
+A lower stress is preferred, where any number below 0.2 is acceptable (general rule).
+The stress of our NMDS analysis is pretty much zero indicating that there's a near perfect correlation between the Euclidean distances of NMDS points and the chi-square distances.
 We can see this with a Shepard plot: `plot(hair_chi, dist(nmds$points))`.
 The reason the Shepard plot here is so good is because `isoMDS()` automatically uses a PCoA on the distance matrix to get the starting configuration for NMDS (i.e., NMDS starts with the location of points from a PCoA and then continually adjusts them until stress is minimized).
 So this NMDS looks exactly like your earlier PCoA plot because that's the optimal configuration!
-For your lecture, I chose a random starting configuration, hence why the scatter plot and Shepard diagram looks different.
+For your lecture, I chose a random starting configuration, hence why the scatter plot and Shepard diagram look different.
 
 As with PCoA, you could also plot an NMDS for eye color, but you cannot add those points to the hair color plot.
 Again, that's because the points are arbitrarily aligned with the axes, so it's difficult to get hair and eye color points aligned in the same direction.
@@ -418,7 +523,7 @@ There are two main kinds of clustering algorithms: **agglomerative clustering** 
 The former starts with separate observations as individual clusters and successively joins them based on the similarities of their variables, while the latter starts with one large cluster of all observations and splits the data into smaller clusters until each observation is its own cluster.
 Agglomerative clustering is more popular than divisive clustering.
 
-![](https://static.packt-cdn.com/products/9781789952292/graphics/C12626_02_15.jpg){width="70%"}
+![](https://static.packt-cdn.com/products/9781789952292/graphics/C12626_02_15.jpg){width="80%"}
 
 ### Agglomerative clustering
 
@@ -430,6 +535,18 @@ The `method = "average"` argument means we're using the **UPGMA (unweighted pair
 Enter `plot(hair_agg_clust)` to see the dendrogram.
 
 ```{r agglom, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r agglom-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)
+
+hair_agg_clust <- hclust(hair_chi, method = "average")
+plot(hair_agg_clust, ylab = "Chi-square distance", hang = -1)
+
+hair_agg_clust$height[1]
+hair_chi
 ```
 
 We can make our dendrogram more visually appealing.
@@ -453,10 +570,21 @@ Then enter `plot(hair_div_clust, hang = -1, ylab = "Chi-square distance")`.
 This code returns two plots; if we only want the second plot with the dendrogram, add `which.plots = 2` to the `plot()` function.
 
 ```{r div, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r div-solution}
+library(diana)
+
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)
+
+hair_div_clust <- diana(hair_chi)
+plot(hair_div_clust, hang = -1, ylab = "Chi-square distance")
 ```
 
 This dendrogram is very similar to the one produced by agglomerative clustering.
-There are some subtle differences with the chi-square distance at which higher clusters are joined.
+There are some subtle differences with the chi-square distances at which higher clusters are joined.
 This is due to differences between the agglomerative and divisive clustering algorithms in terms of how higher clusters should be joined.
 The largest difference is that blond hair is on the right side of the plot in the divisive clustering dendrogram.
 This difference is purely aesthetic, however, as dendrograms can be thought of as mobiles: you can rotate clusters around the stem, and the results are identical.
@@ -475,11 +603,11 @@ Include the percentage of variance explained in the axis labels.
 Which car model is most similar to the Duster 360?
 
 2. For this question, we are going to analyze a new dataset: `dune` from the `vegan` package.
-Load the dataset using `data("dune")`
+Load the dataset using `data(dune)`.
 Look at the help file for details about this dataset.
 We are going to use a new distance metric for our distance matrix: Bray-Curtis.
 So, set `method = "bray"` in the `distance()` function (we are going to plot sites, which are already formatted as rows).
-Then create a two-dimensional NMDS plot of the sites.
+Create a two-dimensional NMDS plot of the sites.
 What is the stress from the NMDS analysis?
 
 3. Perform a UPGMA cluster analysis on the distance matrix from Question 1.
@@ -505,6 +633,8 @@ text(mtcars_pcoa$points, rownames(mtcars_pcoa$points), cex = 0.75)
 # Camaro Z28
 
 # Q2
+library(vegan)
+data(dune)
 dune_bray <- distance(dune, method = "bray", dist = TRUE)
 dune_nmds <- isoMDS(dune_bray, k = 2)
 plot(dune_nmds$points)
@@ -539,11 +669,11 @@ NMDS is the outlier ordination method, as it doesn't use SVD and instead "brute 
 
 Ordination and cluster analysis are unified by the fact that they both analyze distance matrices.
 So these two methods analyze identical inputs but display the results in different fashions.
-Ordination plots multivariate data in a reduced dimensional space, with closer points reflecting observation with more similar variables.
+Ordination plots multivariate data in a reduced dimensional space, with closer points reflecting observations with more similar variables.
 In this way, ordination can be thought of as displaying similarities between observations on a continuous scale.
 Cluster analysis, on the other hand, places data points in clusters, so it portrays similarities between observations in a discrete fashion.
-These two method are just different ways of visualizing distance matrices; whichever one is more appropriate is dicatated by your research question.
+These two methods are just different ways of visualizing distance matrices; whichever one is more appropriate is dictated by your research question.
 
-So instead of approaching these methods individually and becoming overwhelmed, remember how they're all unified and that'll greatly simplify how much you have to learn/remember; this will in turn facilitate your comprehension of these methods.
+So, instead of approaching these methods individually and becoming overwhelmed, remember how they're all unified and that'll greatly simplify how much you have to learn/remember; this will in turn facilitate your comprehension of these methods.
 (Recall that I adopted the same strategy when teaching you linear models).
 By teaching you multivariate methods in this way, I have hopefully maximized your understanding of these techniques, which will enable you to use them in your own research.
