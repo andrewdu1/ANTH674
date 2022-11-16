@@ -574,7 +574,7 @@ This code returns two plots; if we only want the second plot with the dendrogram
 ```
 
 ```{r div-solution}
-library(diana)
+#library(diana)
 
 haireye <- margin.table(HairEyeColor, 1:2)
 hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)
