@@ -528,7 +528,7 @@ Agglomerative clustering is more popular than divisive clustering.
 ### Agglomerative clustering
 
 Let's perform agglomerative clustering on our `haireye` table from before (`haireye <- margin.table(HairEyeColor, 1:2)`).
-Create the chi-square distance matrix using `hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)`.
+Create the chi-square distance matrix using `hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)`.
 To do agglomerative clustering in R, we use the `hclust()` function.
 Enter `hair_agg_clust <- hclust(hair_chi, method = "average")`.
 The `method = "average"` argument means we're using the **UPGMA (unweighted pair group method with arithmetic mean)** algorithm, which is the most common in anthropology.
@@ -540,7 +540,7 @@ Enter `plot(hair_agg_clust)` to see the dendrogram.
 
 ```{r agglom-solution}
 haireye <- margin.table(HairEyeColor, 1:2)
-hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
 
 hair_agg_clust <- hclust(hair_chi, method = "average")
 plot(hair_agg_clust, ylab = "Chi-square distance", hang = -1)
@@ -574,10 +574,8 @@ This code returns two plots; if we only want the second plot with the dendrogram
 ```
 
 ```{r div-solution}
-#library(diana)
-
 haireye <- margin.table(HairEyeColor, 1:2)
-hair_chi <- distance(haireye, method = "chi-distance", dist = TRUE)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
 
 hair_div_clust <- diana(hair_chi)
 plot(hair_div_clust, hang = -1, ylab = "Chi-square distance")
