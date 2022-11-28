@@ -97,6 +97,24 @@ What do you think you'll get when you enter `intersect(A, B)`?
 Check your intuition below.
 
 ```{r intersect, exercise = TRUE}
+# Click "Solution" button if stuck 
+```
+
+```{r intersect-solution}
+A <- 1:3
+B <- 2:4
+
+intersect(A, B)
+length(intersect(A, B)) / 6
+
+union(A, B) # compare with unique(c(A, B))
+length(union(A, B)) / 6
+
+setdiff(A, B)
+setdiff(B, A)
+
+setequal(A, B)
+setequal(1:3, 3:1)
 ```
 
 If we view `A` and `B` as two events each representing the roll of one die, $P(A\cap B)$ equals `length(intersect(A, B)) / 6`.
@@ -157,24 +175,41 @@ The mathematical function for the binomial PMF is:
 By inserting $X=3$, $n=3$, and $p=0.5$ into the equation above, we get 0.125, which is the probability of getting three heads in three coin flips when the coin is fair (i.e., $p=0.5$).
 
 Instead of plugging numbers into equations and solving them, we can take advantage of R's functions to do the work for us.
-`dbinom()` gives us the probability resulting from a given value(s) of $X$, $n$, and $p$ for the binomial PMF.
+`dbinom()` gives us the probability resulting from given values of $X$, $n$, and $p$ for the binomial PMF.
 Thus, we can calculate the probability for $X=3$, $n=3$, and $p=0.5$ by entering `dbinom(x = 3, size = 3, prob = 0.5)`.
 Try this out below.
 
 ```{r binom, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r binom-solution}
+dbinom(x = 3, size = 3, prob = 0.5)
+
+dbinom(x = 0:3, size = 3, prob = 0.5)
+
+sum(dbinom(0:3, 3, 0.5))
 ```
 
 Let's generalize our three heads example to the probability of flipping 0, 1, 2, or 3 heads (i.e., the entire sample space), so we can get a distribution.
 Similar to before, I'm interested in the number of heads obtained in three coin flips.
 The entire sample space is {TTT, HTT, THT, TTH, HHT, HTH, THH, HHH}.
 Therefore, the probability of getting no heads is $P(X=0)=1/8$, the probability of getting one head is $P(X=1)=3/8$, the probability of getting two heads is $P(X=2)=3/8$, and the probability of getting three heads is $P(X=3)=1/8$ (which is what we calculated above).
-Instead of enumerating all possible outcomes in the sample space, which becomes very tedious with more coin flips, these probabilities can be obtained by inserting the number of heads of interest ($X$) into the equation above along with $n=3$ and $p=0.5$.
+Instead of listing all possible outcomes in the sample space, which becomes very tedious with more coin flips, these probabilities can be obtained by inserting the number of heads of interest ($X$) into the equation above along with $n=3$ and $p=0.5$.
 Or we can use R and enter `dbinom(x = 0:3, size = 3, prob = 0.5)`. 
 The resulting distribution (and plotting code) is shown below.
 
 ```{r fig.cap = "**Figure 2.** A binomial PMF quantifies the probability of getting $X$ successes in $n$ trials when the probability of a success is $p$. The PMF has two parameters: $n$ and $p$."}
 x <- 0:3
-plot(x, dbinom(x, 3, prob = 0.5), type = "h", lwd = 3, xlab = "Number of heads", ylab = "Probability", main = "Binomial PMF; n = 3, p = 0.5")
+plot(
+  x, 
+  dbinom(x, 3, prob = 0.5), 
+  type = "h", 
+  lwd = 3, 
+  xlab = "Number of heads", 
+  ylab = "Probability", 
+  main = "Binomial PMF; n = 3, p = 0.5"
+  )
 ```
 
 We can see from this figure that the probability of getting one or two heads in three flips is the same, and this probability is three times greater than the probability of flipping zero or three heads. 
@@ -198,12 +233,25 @@ In R speak, `dpois(x = 0, lambda = 2)`.
 The full distribution for values of $X$ between zero and 10 is shown below (the entire sample space of a Poisson PMF always ranges from zero to infinity).
 
 ```{r pois, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r pois-solution}
+dpois(x = 0, lambda = 2)
 ```
 
 ```{r fig.cap = "**Figure 3.** A Poisson PMF quantifies the probability of getting $X$ occurrences in a fixed area or time period, given the average number of occurrences in that area/time ($\\lambda$). The PMF has one parameter: $\\lambda$."}
 
 x <- 0:10
-plot(x, dpois(x, 2), type="h", xlab = "Number of phone calls", ylab = "Probability", lwd = 3, main = expression(paste("Poisson PMF; ", lambda, " = 2")))
+plot(
+  x, 
+  dpois(x, 2), 
+  type = "h", 
+  xlab = "Number of phone calls", 
+  ylab = "Probability", 
+  lwd = 3, 
+  main = expression(paste("Poisson PMF; ", lambda, " = 2"))
+  )
 ```
 
 Other popular PMFs are the discrete uniform (`dunif()`), geometric (`dgeom()`), negative binomial (`dnbinom()`), and hypergeometric (`dhyper()`) distributions.
@@ -231,11 +279,23 @@ For example the probability that $X=0$ in a normal distribution where $\mu=0$ an
 We can plot the entire standard normal distribution for a given range of $X$ values as shown below (I used a minimum of -3 and a maximum of 3).
 
 ```{r norm, exercise = TRUE}
+# Click "Solution" button if stuck
 ```
 
-```{r fig.cap = "**Figure 4.** A normal PDF quantifies the probability of getting a value of $X$ given the mean ($\\mu$) and SD ($\\sigma$)."}
+```{r norm-solution}
+dnorm(0, mean = 0, sd = 1)
+```
+
+```{r fig.cap = "**Figure 4.** A normal PDF quantifies the probability of getting a value of $X$, given the mean ($\\mu$) and SD ($\\sigma$)."}
 x <- seq(-3, 3, length.out = 1000) # to make the distribution smooth
-plot(x, dnorm(x, mean = 0, sd = 1), type = "l", ylab = "Probability", lwd = 3, main = "Normal PDF; mean = 0, SD = 1")
+plot(
+  x, 
+  dnorm(x, mean = 0, sd = 1), 
+  type = "l", 
+  ylab = "Probability", 
+  lwd = 3, 
+  main = "Normal PDF; mean = 0, SD = 1"
+  )
 ```
 
 ### Lognormal PDF
@@ -244,10 +304,16 @@ Another popular PDF is the **lognormal distribution**, which becomes normally di
 While normal distributions describe variables that are each the outcome of many processes *additively* combined (cf. central limit theorem), lognormal distributions describe variables that are each the outcome of many processes *multiplicatively* combined (or additively combined in log space).
 Therefore, lognormal distributions describe many variables in the real world.
 Part of this is also due to the lognormal distribution's incredible flexibility.
-As the lognormal's measure of dispersion approaches zero, its shape becomes normal (e.g., compare `hist(rlnorm(1000))` to `hist(rlnorm(1000, sd = 1e-10))`).
+As the lognormal's measure of dispersion approaches zero, its shape becomes normal (e.g., compare `hist(rlnorm(1000))` to `hist(rlnorm(1000, sdlog = 1e-10))`).
 As the dispersion becomes large, the lognormal approaches the power distribution, which also characterizes many real world patterns.
 
 ```{r lnorm, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r lnorm-solution}
+hist(rlnorm(1000))
+hist(rlnorm(1000, sdlog = 1e-10))
 ```
 
 The lognormal distribution has two parameters, $\mu$ and $\sigma$, which are the mean and SD of the distribution in log space, respectively.
@@ -259,14 +325,28 @@ The distribution's sample space ranges from zero to infinity and is described by
 
 One can use `dlnorm()` to calculate the probability that $X$ is some value, given $\mu$ and $\sigma$, and also to plot a lognormal distribution.
 
-```{r fig.cap = "**Figure 5.** A lognormal PDF quantifies the probability of getting a value of $X$ given the mean ($\\mu$) and SD ($\\sigma$) in log space."}
+```{r fig.cap = "**Figure 5.** A lognormal PDF quantifies the probability of getting a value of $X$, given the mean ($\\mu$) and SD ($\\sigma$) in log space."}
 x <- seq(0, 3, length.out = 1000)
 
-plot(x, dlnorm(x, meanlog = 0, sdlog = 0.5), type = "l", lwd = 2, col = "red", ylab = "Probability", main = "Lognormal PDF")
+plot(
+  x, 
+  dlnorm(x, meanlog = 0, sdlog = 0.5),
+  type = "l", 
+  lwd = 2, 
+  col = "red", 
+  ylab = "Probability", 
+  main = "Lognormal PDF"
+  )
 
-lines(x, dlnorm(x, meanlog = 0, sdlog = 1), col = "blue", lwd = 2)
+lines(
+  x, 
+  dlnorm(x, meanlog = 0, sdlog = 1),
+  col = "blue", 
+  lwd = 2
+  )
 
 text(1.4, 0.6, expression(paste(mu, " = 0, ", sigma, " = 0.5")), pos = 4, col = "red", cex = 1.5)
+
 text(1.4, 0.2, expression(paste(mu, " = 0, ", sigma, " = 0.1")), pos = 2, col = "blue", cex = 1.5)
 ```
 
@@ -301,6 +381,20 @@ points(3, y1[x == 3], pch = 16, cex = 1.5, col = "red")
 ```
 
 ```{r cdf, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r cdf-solution}
+sum(dpois(0:3, lambda = 2))
+ppois(3, lambda = 2)
+
+integrate(dnorm, -Inf, -1)
+pnorm(-1, mean = 0, sd = 1)
+
+pnorm(0, mean = 0, sd = 1) - pnorm(-1, mean = 0, sd = 1)
+
+1 - pnorm(1.5, mean = 0, sd = 1)
+pnorm(1.5, mean = 0, sd = 1, lower.tail = FALSE)
 ```
 
 With PDFs and continuous variables, one cannot sum up probabilities associated with distinct values of $X$, since $X$ is not discrete, so integration is used instead.
@@ -359,7 +453,7 @@ Let's say we wanted to test if the red group in the figure below is significantl
 The observed t-statistic is 0.81, so we want to calculate the probability of getting values of t that are greater than or equal to 0.81.
 This is equivalent to using the CDF for the t-distribution, i.e., `pt()`.
 
-```{r echo = FALSE, fig.cap = "**Figure 9.** The left plot shows two distributions, and we want to calculate a one-tailed P-value to see if the mean of the red group is significantly greater than the mean of the blue group. The right plot shows the sampling distribution of the test statistic (i.e., the t-statistic), assuming the null hypothesis is true (i.e., there is no difference between the groups). The P-value is equivalent to the probability of getting a test statistic greater than or equal to that observed (0.81), and this is equal to the gray-shaded area under the curve. One can calculate the area using the CDF for the t-distribtion."}
+```{r echo = FALSE, fig.cap = "**Figure 9.** The left plot shows two distributions, and we want to calculate a one-tailed P-value to see if the mean of the red group is significantly larger than the mean of the blue group. The right plot shows the sampling distribution of the test statistic (i.e., the t-statistic), assuming the null hypothesis is true (i.e., there is no difference between the groups). The P-value is equivalent to the probability of getting a test statistic greater than or equal to that observed (0.81), and this is equal to the gray-shaded area under the curve. One can calculate the area using the CDF for the t-distribtion."}
 
 set.seed(100)
 x <- rnorm(20)
@@ -379,7 +473,7 @@ plot(x, dt1, type = "l", lwd = 3, ylab = "Probability", xlab="t")
 polygon(c(t.res$statistic, x[x >= t.res$statistic], max(x)), c(0, dt1[x >= t.res$statistic], 0), col = "gray")
 ```
 
-Let's do this in the console below (I have simulated the two groups for you: `red` and `blue`).
+Let's do this in the console below (I have already written the code for the two groups for you in the console; the object names are `red` and `blue`).
 Let's make R do the work for us by having it calculate the t-statistic and degrees of freedom, which is the one parameter in the t-distribution that is a function of sample size.
 So enter `t.res <- t.test(red, blue, alternative = "greater")` (`alternative = "greater"` is telling R that we're doing a one-tailed test, testing if the first-entered object is significantly larger than the second-entered object).
 Then use the t-distribution's CDF to calculate the P-value: `1 - pt(t.res$statistic, t.res$parameter)` or `pt(t.res$statistic, t.res$parameter, lower.tail = FALSE)`.
@@ -387,9 +481,21 @@ As you can see, the resulting probability is exactly the same as the P-value fro
 So every time R returns a P-value, it is doing so using the CDF for the null distribution of interest (e.g., t-distribution, F-distribution, chi-squared distribution).
 
 ```{r P, exercise = TRUE}
+# Click "Solution" button if stuck
+
 set.seed(100)
 blue <- rnorm(20)
 red <- rnorm(20, mean = 0.2)
+```
+
+```{r P-solution}
+t.res <- t.test(red, blue, alternative = "greater")
+
+1 - pt(t.res$statistic, t.res$parameter) # or
+pt(t.res$statistic, t.res$parameter, lower.tail = FALSE)
+
+# compare w/ P-value from t.test()
+t.res$p.value
 ```
 
 
@@ -449,7 +555,7 @@ red <- rnorm(20, mean = 0.2)
 ```
 
 ```{r exer1, exercise = TRUE}
-# Click "Solutions" button when done
+# Click "Solution" button when done
 ```
 
 ```{r exer1-solution}
@@ -475,10 +581,10 @@ We will learn how to do all three in R.
 ![](https://rss.onlinelibrary.wiley.com/cms/asset/c5712cd7-b1e1-4cb2-95cd-14469a2a2211/sign619-gra-0001-m.png){width="30%"}
 
 Traditional inference in frequentist statistics is concerned with the probability of the data, given some hypothesized parameter value or model: $P(D|M)$. 
-For example, P-values calculate the probability of getting the data (or more extreme), assuming the true parameter value is zero (i.e., the null hypothesis).
-Likelihood flips this conditional probability and is interested in the probability of the model, given the data: $P(M|D)$.
+For example, P-values calculate the probability of getting the data (or more extreme), assuming some parameter value associated with the null hypothesis.
+Likelihood flips this conditional probability and is interested in the probability of the parameter value or model, given the data: $P(M|D)$.
 This is often the more direct question of interest for researchers: given the data, they want to know something about the parameter/hypothesis/model.
-Traditional inference, on the other hand, first assumes some parameter value (usually the null value of zero), assesses how probable the observed data are under this null value, and then makes an inferential statement about the parameter (a very circuitous form of inference!).
+Traditional inference, on the other hand, first assumes some parameter value (usually the null value), assesses how probable the observed data are under this null value, and then makes an inferential statement about the parameter (a very circuitous form of inference!).
 
 Here is another quick example.
 Traditional inference asks what is the probability of getting four heads in 10 coin flips (the data), given that $p=0.5$ (the assumed model parameter).
@@ -519,9 +625,25 @@ n <- 157
 x <- 10:60
 p <- seq(0.05, 0.4, length.out = 1000)
 
-plot(x, dbinom(x = x, size = n, prob = X / n), type = "h", lwd = 2, xlab = "X (number of successful stalks)", ylab = "P(X | p)", main = "Probability (assuming p = 0.22)")
+plot(
+  x, 
+  dbinom(x = x, size = n, prob = X / n), 
+  type = "h", 
+  lwd = 2, 
+  xlab = "X (number of successful stalks)", 
+  ylab = "P(X | p)", 
+  main = "Probability (assuming p = 0.22)"
+  )
 
-plot(p, dbinom(x = X, size = n, prob = p), type = "l", lwd = 2, xlab = "p (stalking success rate)", ylab = "L(p | X)", main = "Likelihood function")
+plot(
+  p, 
+  dbinom(x = X, size = n, prob = p), 
+  type = "l", 
+  lwd = 2, 
+  xlab = "p (stalking success rate)", 
+  ylab = "L(p | X)", 
+  main = "Likelihood function"
+  )
 ```
 
 There are three key things to note from this figure.
@@ -532,9 +654,20 @@ As a more specific example, the probability of getting 34 successful stalks, giv
 3) Likelihoods are not true probabilities, as they don't satisfy the first axiom of probability.
 That is, the area under the curve does not sum to one.
 We can see this by defining the likelihood function first (`likelihood <- function(p) dbinom(x = 34, size = 157, prob = p)`) and then integrating from zero to one (`integrate(likelihood, 0, 1)`).
-The violation of the first axiom is OK, since we're only concerned with which parameter values have higher likelihoods relative to others.
+The violation of the first axiom is OK, since we're only concerned with which parameter values have higher likelihoods relative to others (i.e., we're never interested in the absolute likelihood values).
 
 ```{r mle, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r mle-solution}
+# P(X|p), which is equal to L(p|X)
+dbinom(x = 34, size = 157, p = 0.22)
+
+likelihood <- function(p) dbinom(x = 34, size = 157, prob = p)
+integrate(likelihood, 0, 1)
+
+optimize(dbinom, x = 34, size = 157, log = TRUE, lower = 0, upper = 1, maximum = TRUE)
 ```
 
 As I mentioned previously, the MLE of $p$ is the value that returns the highest likelihood.
@@ -550,9 +683,25 @@ n <- 157
 
 p <- seq(0.05, 0.4, length.out = 1000)
 
-plot(p, dbinom(x = X, size = n, prob = p), type = "l", lwd = 2, xlab = "p (stalking success rate)", ylab = "L(p | X)", main = "Likelihood function")
+plot(
+  p, 
+  dbinom(x = X, size = n, prob = p), 
+  type = "l", 
+  lwd = 2, 
+  xlab = "p (stalking success rate)", 
+  ylab = "L(p | X)", 
+  main = "Likelihood function"
+  )
 
-plot(p, dbinom(x = X, size = n, prob = p, log = TRUE), type = "l", lwd = 2, xlab = "p (stalking success rate)", ylab = "logL(p | X)", main = "Log-likelihood function")
+plot(
+  p, 
+  dbinom(x = X, size = n, prob = p, log = TRUE), 
+  type = "l", 
+  lwd = 2, 
+  xlab = "p (stalking success rate)", 
+  ylab = "logL(p | X)", 
+  main = "Log-likelihood function"
+  )
 ```
 
 For simple log-likelihood functions like ours, the maximum can be found by taking the derivative of the function, setting it equal to zero, and then solving for $p$. 
@@ -576,11 +725,11 @@ We *a priori* set $p=0.1$, so there are no estimated free parameters.
 Our alternative model (M~1~) allowed $p$ to vary and be estimated, so there is one extra free parameter compared to M~0~.
 Thus, M~0~ is nested within M~1~.
 Recalling that increasing the number of free parameters in a linear model can only increase R^2^, the same is true in likelihood: adding free parameters can only increase the likelihood (after all, likelihood is a measure of goodness of fit).
-LRTs ask if the extra free parameter increases the likelihood above and beyond any difference expected from sampling error (i.e., the parameter is significant).
+LRTs ask if the extra free parameter increases the likelihood above and beyond any difference expected from sampling error (i.e., the parameter is statistically significant).
 
 To do a LRT, we first calculate the likelihood ratio (hence the name): M~0~'s likelihood divided by M~1~'s likelihood.
 Note that this ratio ranges from zero to one, since the more complex model's (M~1~) likelihood can only be greater than or equal to that of the simpler model (M~0~).
-Similar to before, we work with log-likelihoods, so the log-transformed likelihood ratio becomes the difference between two log-likelihoods: $log(L(M_0)/L(M_1)) = log(L(M_0)) - log(L(M_1))$.
+Similar to before, we work with log-likelihoods, so the log-transformed likelihood ratio becomes the difference between two log-likelihoods: $\textrm{log}(L(M_0)/L(M_1)) = \textrm{log}(L(M_0)) - \textrm{log}(L(M_1))$.
 It has been demonstrated that -2 times the difference in log-likelihoods follows a chi-square distribution if the null hypothesis is true (i.e., this is how we get our null sampling distribution; see figure below).
 The number of degrees of freedom is equal to the difference in number of free parameters between our models, which is one in our case.
 
@@ -609,6 +758,14 @@ pchisq(LRT.test, df = 1, lower.tail = FALSE)
 ```
 
 ```{r lrt, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r lrt-solution}
+M0 <- lm(mpg ~ 1, data = mtcars)
+M1 <- lm(mpg ~ wt, data = mtcars)
+
+lrtest(M0, M1)
 ```
 
 ### The `lrtest()` function
@@ -621,15 +778,15 @@ As you can see, the P-value is significant, indicating that the more complicated
 
 ## Akaike Information Criterion
 
-As I mentioned in our very first lecture, a powerful form of scientific inference is to compare models on equal footing, as opposed to privileging one model over another (null hypothesis tests privilege the null hypothesis by requiring a very low P-value for rejection).
+As I mentioned in our very first lecture, a powerful form of scientific inference is to compare models on equal footing, as opposed to privileging one model over another (e.g., null hypothesis tests privilege the null hypothesis by requiring a very low P-value for rejection).
 This is a form of **model selection**, where one uses statistics to choose one model from a set of candidate models, given how well each fits the data.
 A commonly used criterion in model selection is the **Akaike Information Criterion** (AIC).
 AIC recognizes that a more complex model (i.e., one with more free parameters) will always fit the data better than a simpler model.
-AIC thus accordingly balances goodness of fit (i.e., the log-likelihood) with model complexity (i.e., the number of free parameters): $AIC = -2logL + 2K$, where $K$ is the number of free parameters in the model.
+AIC thus accordingly balances goodness of fit (i.e., the log-likelihood) with model complexity (i.e., the number of free parameters): $\textrm{AIC} = -2\textrm{log}L + 2K$, where $K$ is the number of free parameters in the model.
 AIC measures the amount of information lost in approximating reality with a model, so a lower AIC means better model support.
 
 There is also a bias-corrected form of AIC, which is preferred if sample sizes are not large (i.e., $n/K<40$, where $n$ is sample size).
-The formula for this is $AIC_c=AIC + (2K[K+1])/(n-K-1)$.
+The formula for this is $\textrm{AIC}_c=\textrm{AIC} + (2K[K+1])/(n-K-1)$.
 AIC~c~ approaches AIC as sample size increases, so one should always use the AIC~c~.
 
 Let's calculate the AIC and AIC~c~ for each of our two stalking success models (see code below).
@@ -655,10 +812,22 @@ AICc_M1 <- AIC_M1 + (2 * 1 * (1 + 1)) / (n - 1 - 1)
 ```
 
 ```{r aic, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r aic-solution}
+M1 <- lm(qsec ~ wt, data = mtcars)
+M2 <- lm(qsec ~ hp + mpg, data = mtcars)
+
+AIC(M1); AIC(M2)
+AICc(M1); AICc(M2)
+
+akaike.weights(c(AIC(M1), AIC(M2)))
+akaike.weights(c(AICc(M1), AICc(M2)))
 ```
 
 Whether using AIC or AIC~c~, M~0~'s score is ~23.5 and M~1~'s score is ~7.1.
-A rule of thumb is that an AIC or AIC~c~ difference of more than two means strong model support, so M~1~ has much stronger support than M~0~.
+A general rule is that an AIC or AIC~c~ difference of more than two means strong model support, so M~1~ has much stronger support than M~0~.
 
 A more interpretable way to present AIC results, in my opinion, is to transform AIC scores into weights.
 AIC weights sum to one across all models, with higher weights indicating more support.
@@ -682,7 +851,7 @@ Let's say we wanted to assess if advertising in traditional media (`newspaper`) 
 Fit the two models (`lm(sales ~ newspaper)` & `lm(sales ~ youtube + facebook)`) and compute the raw AIC~c~ scores and their weights.
 
 ```{r exer2, exercise = TRUE}
-# Click "Solutions" button when done
+# Click "Solution" button when done
 ```
 
 ```{r exer2-solution}
@@ -749,7 +918,7 @@ To make Bayes' theorem concrete, I will use the example from lecture.
 We want to know what is the probability ($p$) that police officers will return a lost wallet to the owner but also steal some money.
 In fact, the show *Primetime* ran an experiment addressing this question and found that 40 out of 40 officer returned the lost wallet with **NO** money missing.
 
-![](https://patch.com/img/cdn20/users/22871539/20190308/092626/styles/raw/public/processed_images/53739858_400115654125174_787329627763769344_n-1552053921-7468.jpg){width="40%"}
+![](https://patch.com/img/cdn20/users/22871539/20190308/092626/styles/raw/public/processed_images/53739858_400115654125174_787329627763769344_n-1552053921-7468.jpg){width="60%"}
 
 ### Formulating the prior distribution
 
@@ -757,7 +926,7 @@ Let's say I think this probability is low (around 0.3) but not zero.
 Furthermore, I'm not very confident in my 0.3 guesstimate, so I will make the distribution wide.
 The standard distribution for modeling a probability is the **beta distribution**, which is continuous from zero to one and can take on a number of different shapes, as determined by its two parameters: $\alpha$ and $\beta$ (see figure below).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Beta_distribution_pdf.svg/1200px-Beta_distribution_pdf.svg.png){width="50%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Beta_distribution_pdf.svg/1200px-Beta_distribution_pdf.svg.png){width="70%"}
 
 For my prior distribution, I will use a beta distribution, where $\alpha=2$ and $\beta=3$ (see figure below).
 This distribution quantifies all the prior information I have regarding $p$.
@@ -765,7 +934,14 @@ This distribution quantifies all the prior information I have regarding $p$.
 ```{r}
 p <- seq(0, 1, length.out = 1000)
 
-plot(p, dbeta(p, shape1 = 2, shape2 = 3), type = "l", lwd = 2, ylab = "Probability", main = "Prior distribution")
+plot(
+  p, 
+  dbeta(p, shape1 = 2, shape2 = 3), 
+  type = "l", 
+  lwd = 2, 
+  ylab = "Probability", 
+  main = "Prior distribution"
+  )
 ```
 
 ```{r prior, exercise = TRUE}
@@ -780,21 +956,29 @@ Below is the plot of the likelihood function.
 ```{r}
 p <- seq(0, 1, length.out = 1000)
 
-plot(p, dbinom(x = 0, size = 40, prob = p), type = "l", lwd = 2, ylab = "L(p | X)", main = "Likelihood function")
+plot(
+  p, 
+  dbinom(x = 0, size = 40, prob = p), 
+  type = "l", 
+  lwd = 2, 
+  ylab = "L(p | X)", 
+  main = "Likelihood function"
+  )
 ```
 
-From the plot of the likelihood function, you can probably guess that the $MLE$ of $p$ is zero.
+From the plot of the likelihood function, you can probably guess that the $\textrm{MLE}$ of $p$ is zero.
 But do we really expect that **NO** officers would have stolen any money?
 It could be that $p$ in reality is greater than zero but very small; that is, if we had a larger sample size, we might sample that one elusive crooked officer.
-Because our prior distribution is not concentrated on zero, this ensures that the final estimate of $p$ will be greater than zero, even though the data are concentrated at zero.
+Because our prior distribution is not concentrated on zero, this ensures that the final estimate of $p$ (using the posterior distribution) will be greater than zero, even though the data are concentrated at zero.
 This is one of the advantages of Bayesian methods: "adjusting" the data when it is nonrepresentative or incomplete.
+A frequentist, on the other hand, would estimate $p$ as zero.
 
 ### Combining the prior with the likelihood to get the posterior distribution
 
 As we saw in Bayes' theorem, the posterior probability distribution is simply the prior times the likelihood, divided by the scaling factor.
 Oftentimes, we can safely ignore the scaling factor, which is often difficult to calculate.
 The resulting probability distribution looks identical, but the scale of the y-axis changes.
-This is OK because we only care about which values of $p$ are more probable relative to each other.
+This is OK because we only care about which values of $p$ are more probable than others.
 When we drop the scaling factor, the posterior probability is not equal to but proportional to the prior times the likelihood, i.e., $P(H|D) \propto P(H)P(D|H)$.
 This revised formula emphasizes how the prior distribution can be thought of as weighting certain values of $p$ in the likelihood function.
 It also emphasizes that when an uninformative prior is used (i.e., all values of $p$ are equally probable), this just becomes a likelihood analysis.
@@ -810,11 +994,18 @@ likelihood <- dbinom(x = 0, size = 40, prob = p)
 
 posterior <- prior * likelihood
 
-plot(p, posterior, type = "l", lwd = 2, ylab = "P(H|D)", main = "Posterior distribution")
+plot(
+  p, 
+  posterior, 
+  type = "l", 
+  lwd = 2, 
+  ylab = "P(H|D)", 
+  main = "Posterior distribution"
+  )
 ```
 
 One can also use algebra to multiply the beta PDF by the binomial PMF to get the posterior PDF: $p^{\alpha + X - 1}(1-p)^{\beta + n - X - 1}$, where $\alpha$ and $\beta$ are the parameters of the beta prior (i.e., 2 and 3), $X$ is the number of officers who stole money (i.e., 0), and $n$ is the total number of officers sampled (i.e., 40).
-Note that the posterior PDF is itself a beta distribution with new parameters $\alpha_1 = \alpha + X$ and $\beta_1 = \beta + n - X$.
+Note that the posterior PDF is itself a beta distribution with new parameters $\alpha_1 = \alpha + X$ and $\beta_1 = \beta + n - X$ (when the prior and posterior distributions are the same (e.g., beta), the prior is known as a **conjugate prior**; this means we can get an equation for the posterior distribution, which was important before fast computers).
 Because statisticians know the formula for calculating the mean of a beta distribution ($\frac{\alpha}{\alpha + \beta}$), we can use the new beta parameters to compute the posterior mean, which is $\frac{\alpha_1}{\alpha_1 + \beta_1} = \frac{\alpha + X}{(\alpha + X) + (\beta + n - X)}$.
 Plugging in the proper numbers gives a mean of about 0.04, which is our estimate of $p$ using Bayes' theorem.
 We can also use `qbeta()` to get the 95% confidence interval, termed **credible interval** in Bayesian inference: `qbeta(c(0.025, 0.975), shape1 = 2 + 0, shape2 = 3 + 40 - 0)`.
@@ -839,8 +1030,20 @@ x <- 0
 post.mean <- (a + b) / (a + b + n) * (a / (a + b)) + (n / (a + b + n)) * (x / n)
 post.mean[1] <- a / (a + b) # mean of prior
 
-plot(n, post.mean, type = "l", lwd = 2, xlab = "Sample size", ylab = "Posterior mean")
-abline(h = a / (a + b), col = "red", lwd = 2)
+plot(
+  n, 
+  post.mean, 
+  type = "l", 
+  lwd = 2, 
+  xlab = "Sample size", 
+  ylab = "Posterior mean"
+  )
+
+abline(
+  h = a / (a + b), 
+  col = "red", 
+  lwd = 2
+  )
 ```
 
 This graph plots the posterior mean estimate as a function of sample size, with the mean of the prior distribution plotted as a horizontal red line.
