@@ -1,0 +1,21 @@
+INSTRUCTIONS FOR ACCESSING INTERACTIVE R TUTORIALS
+
+1. Install R and RStudio.
+
+2. Run these lines of code in your RStudio console:
+
+install.packages("devtools", dep = TRUE)
+install.packages("learnr", dep = TRUE)
+devtools::install_github("andrewdu1/ANTH674")
+
+2a. If the consoles ever disappear in the tutorial, exit and reopen RStudio, and then do a force reinstall of the package:
+
+devtools::install_github("andrewdu1/ANTH674", force = TRUE)
+
+3. To run a given week's tutorial:
+
+learnr::run_tutorial("Week1", package = "ANTH674")
+
+For Week 2's tutorial, you will type in "Week2" instead of "Week1". 
+Same for Week 3's tutorial, and so on and so forth.
+See the course syllabus for the topics covered each week. 
