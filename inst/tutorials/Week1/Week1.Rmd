@@ -22,7 +22,7 @@ library(knitr)
 
 Welcome to your first lab R tutorial! 
 
-![](https://ccawebfiles.blob.core.windows.net/images/happyCoder02.jpg){width="60%"}
+![](https://www.pblworks.org/sites/default/files/inline-images/girl-celebrates.png){width="60%"}
 
 From here on out, Monday's class will be me lecturing about a certain topic, and Wednesday's lab will be devoted to you operationalizing what you learned using R (after all, the best way to learn statistics is to *do* statistics). 
 In this way, topics are doubly reinforced (and triply so when homework is included), and you will hone your R skills.
