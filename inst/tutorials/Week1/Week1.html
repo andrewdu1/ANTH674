@@ -545,7 +545,7 @@ data-pipe="|&gt;">
 <script type="application/json" data-ui-opts="1">{"engine":"r","has_checker":false,"caption":"<span data-i18n=\"text.enginecap\" data-i18n-opts=\"{&quot;engine&quot;:&quot;R&quot;}\">R Code<\/span>"}</script>
 </div>
 <div id="section-del-hint">
-<p>You need to use <code>length()</code></p>
+<p>You need to use <code>length()</code>. <code>x[-length(x)]</code></p>
 </div>
 <p><strong>Remember:</strong> parentheses are associated with functions,
 while hard brackets are associated with subsetting!</p>
@@ -798,7 +798,7 @@ petals. It looks like this:</p>
 src="https://cdn.britannica.com/39/91239-004-44353E32/Diagram-flowering-plant.jpg" /></p>
 <p>You can also bring up column and row names using
 <code>colnames()</code> and <code>rownames()</code>, respectively. Try
-these functions out below.</p>
+these functions out below on <code>iris</code>.</p>
 <div class="tutorial-exercise" data-label="names" data-completion="1"
 data-diagnostics="1" data-startover="1" data-lines="0"
 data-pipe="|&gt;">
@@ -900,8 +900,7 @@ zero. Therefore, using <code>sum()</code> will count the number of
 satisfy your criterion). Try out <code>sum(x &gt; 5)</code>.</p>
 <p><strong>NB:</strong> <code>sum()</code> is not only applied to
 vectors with logical elements, but is also applied to vectors with
-numbers. See what happens when you use <code>sum()</code> on
-<code>x &lt;- 1:10</code>.</p>
+numbers. See what happens when you enter <code>sum(x)</code>.</p>
 <p>Below is a table of all the relationships you can test with R:</p>
 <table>
 <thead>

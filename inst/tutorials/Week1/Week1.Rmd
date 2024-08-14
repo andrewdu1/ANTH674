@@ -483,7 +483,7 @@ It looks like this:
 ![](https://cdn.britannica.com/39/91239-004-44353E32/Diagram-flowering-plant.jpg)
 
 You can also bring up column and row names using `colnames()` and `rownames()`, respectively.
-Try these functions out below.
+Try these functions out below on `iris`.
 
 ```{r names, exercise = TRUE}
 ```
@@ -569,7 +569,7 @@ Therefore, using `sum()` will count the number of `TRUE` in your vector (i.e., t
 Try out `sum(x > 5)`.
 
 **NB:** `sum()` is not only applied to vectors with logical elements, but is also applied to vectors with numbers.
-See what happens when you use `sum()` on `x <- 1:10`.
+See what happens when you enter `sum(x)`.
 
 Below is a table of all the relationships you can test with R:
 
@@ -640,7 +640,7 @@ That is, instead of typing the number itself, use R code to call upon the proper
 So in the above example, I would code `x[x < 15]`.
 Now my code is flexible enough to be used on any vector, `x`, provided the goal is to subset out all elements less than 15.
 
-All this also applies to subsetting out rows/columns in matrices and dataframes.
+All this also applies to subsetting out rows/columns in matrices and data frames.
 Any time you're coding and you use the number(s) itself to subset, ask yourself if you can accomplish the same task with soft coding!
 **All code in your HW should be soft code!**
 
