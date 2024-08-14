@@ -329,7 +329,7 @@ Can you figure out how to remove the last element of an array?
 ```
 
 <div id = "del-hint">
-You need to use `length()`
+You need to use `length()`. `x[-length(x)]`
 </div>
 
 **Remember:** parentheses are associated with functions, while hard brackets are associated with subsetting!
