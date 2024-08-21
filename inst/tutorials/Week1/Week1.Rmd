@@ -55,7 +55,7 @@ From the [R website](https://www.r-project.org): "R is a free software environme
 R is an *extremely* powerful tool for analyzing data and producing publication-ready graphics.
 Here is an example of the latter:
 
-![](https://i.stack.imgur.com/K5Lrv.png)
+![](https://www.datanovia.com/en/wp-content/uploads/2020/03/ggridges-visualize-distribution-in-r-density-logo-1.png){width="80%"}
 
 R's power lies in its flexibility: if you can think up an analysis, you can execute it in R.
 This means you can adapt analyses *to your research question* instead of having to adapt analyses to a statistical program's limited capabilities.
