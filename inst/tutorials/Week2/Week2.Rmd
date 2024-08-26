@@ -24,7 +24,7 @@ This week is all about wrangling data in R.
 Many data scientists only wrangle data for their companies (i.e., they don't analyze data), so this is a very marketable skill!
 As you will see, there are all kinds of errors and issues in raw data that need to be fixed before data analysis can begin.
 
-![](https://22570l2e793j2oo9c81ug2nh-wpengine.netdna-ssl.com/wp-content/uploads/2018/05/data-wrangling-how-to-do-effectively.jpg){width="70%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Data_Wrangling_From_Messy_To_Clean_Data_Management.jpg/729px-Data_Wrangling_From_Messy_To_Clean_Data_Management.jpg){width="80%"}
 
 R "automates" the data wrangling process by using code to clean data en masse.
 This way, you don't have to fix every single data entry by hand, which is time-consuming and increases the likelihood that you will create data errors because humans are fallible.
@@ -517,7 +517,7 @@ You'll see that it works just fine, so spaces or special characters in character
 Let's see what happens when you create a data frame, wherein variable names have a space or special character in them.
 I've provided you the code on how to do so.
 Note that you have to use character strings (i.e., quotation marks) to define variable names with spaces or special characters.
-Try out different special characters to see what happens.
+Use `colnames(DF)` to see what R does to spaces and special characters in variables names.
 
 ```{r variab, exercise = TRUE}
 DF <- data.frame("mass(kg)" = 1:10, 
@@ -525,10 +525,9 @@ DF <- data.frame("mass(kg)" = 1:10,
                  lower_case = letters[1:10])
 ```
 
-Use `colnames(DF)` to see what R does to spaces and special characters in variables names.
-
 R has automatically transformed spaces and special characters into periods!
 This can cause headaches and confusion if you try to subset out a variable, which you know as `mass(kg)`, but is now represented as `mass.kg.`.
+Try out other different special characters to see what happens (they usually get transformed into periods).
 
 Note that the same transformation of spaces and special characters into periods happens when you import into R a spreadsheet that has spaces or special characters in the variable names.
 
@@ -573,7 +572,7 @@ In R, each column within a data frame can be a different class (e.g., numeric, c
 Let's see what happens when we import the above spreadsheet, where this is *not* the case.
 
 The dataset is in a data frame called `mult_data`.
-Use `head()` to look at the data frame structure.
+Use `head(mult_data)` to look at the first six rows of the data frame (i.e., get an idea of the data frame's structure).
 
 ```{r multData-setup, message = FALSE, echo = FALSE}
 mult_data_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/multData_perCell.csv")
