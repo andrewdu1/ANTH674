@@ -78,7 +78,7 @@ These are interpreted as `factor` levels in R.
 Let's look at the dataset I analyzed in lecture: `HairEyeColor`.
 This dataset comprises the hair and eye color and sex of 592 statistics students (you can enter `?HairEyeColor` for more information).
 I have created a vector for you called `hair_color`, wherein each element is a different `factor` level of hair color.
-It's a long vector, so you can get a feel for it by using `head()` and `table()`.
+It's a long vector, so you can get a feel for it by using `head(hair_color)` and `table(hair_color)`.
 Try this out below.
 
 ```{r hair-setup}
@@ -168,7 +168,7 @@ Sticking with our hair color example, imagine we were interested in hair color s
 So, hair color could be ordered as `Blond`, `Red`, `Brown`, `Black`. 
 
 Let's look at our `hair_color` vector of hair colors again.
-We can use the `levels()` function to see what the factor levels are and what order they're in.
+We can use the `levels()` function to see what the factor levels are and what order they're in, i.e., `levels(hair_color)`.
 
 ```{r hair_order-setup}
 hair_color <- apply(HairEyeColor, 1, sum)
@@ -297,6 +297,22 @@ Create a histogram of petal lengths from `iris`.
 Try to make the histogram as clear and informative as possible (e.g., readable labels, informative axis label names with units).
 
 ```{r contin_plot, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r contin_plot-solution}
+hist(
+  iris$Petal.Length, 
+  xlab = "Petal length (cm)",
+  ylab = "Number of flowers",
+  main = ""
+  )
+
+plot(
+  density(iris$Petal.Length), 
+  xlab = "Petal length (cm)", 
+  main = ""
+  )
 ```
 
 Now create a density plot of the same variable.
@@ -311,6 +327,12 @@ We will use the `iris` dataset to create our plots.
 Use `head()` to remind yourself what the variables are.
 
 ```{r cont_cat, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r cont_cat-solution}
+boxplot(iris$Petal.Length ~ iris$Species)
+boxplot(iris$Petal.Length ~ iris$Species, horizontal = TRUE)
 ```
 
 Let's say we wanted to plot `Petal.Length` as a function of `Species`.
@@ -339,6 +361,13 @@ Take a moment to do so now.
 Once the package is installed, load it using the `library()` function below, i.e., `library(vioplot)`.
 
 ```{r violin, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r violin-solution}
+library(vioplot)
+vioplot(iris$Petal.Length ~ iris$Species)
+vioplot(iris$Petal.Length ~ iris$Species, horizontal = TRUE)
 ```
 
 Now you can make violin plots using the same exact code as box plots.
@@ -356,7 +385,7 @@ First, plot the density of `Petal.Length` for one species (pick whichever one yo
 Enter in the subsetted `Petal.Length` into `plot(density())` below.
 
 ```{r dens_plot, exercise = TRUE}
-# Click "Solution" if you don't remember how to subset
+# Click "Solution" button if stuck
 ```
 
 ```{r dens_plot-solution}
@@ -367,6 +396,8 @@ setosa_PL <- subset(
   subset = Species == "setosa", 
   select = Petal.Length
   )
+
+plot(density(setosa_PL))
 ```
 
 You can see that we're going to run into a problem: if `Petal.Length` for other species is very different, there's no room to plot them!
@@ -491,6 +522,18 @@ This is done using the `plot()` function, where the first and second arguments a
 Try this out below (doesn't matter which variable is on the x- or y-axis).
 
 ```{r scatter, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r scatter-solution}
+plot(
+  iris$Petal.Width, 
+  iris$Petal.Length,
+  col = "green",
+  cex = 2,
+  pch = 10,
+  log = "xy"
+  )
 ```
 
 Simple!
@@ -659,7 +702,7 @@ Now you just use `median()` on the numeric vector of hair color.
 
 We see the answer is `3`, corresponding to `Brown` hair color (can you write soft code so that R returns `Brown` instead of `3`?).
 
-Remember that `median()` has an `na.rm` argument to remove `NA`s.
+Remember that `median()` has an `na.rm` argument to remove `NA`s if needed.
 
 
 ## Location: discrete/continuous
@@ -678,6 +721,20 @@ Try out the function below.
 You can start with generating 10 numbers from a normal distribution with mean of 5 and a SD of 3.
 
 ```{r rnorm, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r rnorm-solution}
+rnorm(n = 10, mean = 5, sd = 3)
+
+x <- rnorm(10000)
+hist(x)
+mean(x)
+median(x)
+
+x1 <- c(x, 1000000)
+mean(x1)
+median(x1)
 ```
 
 Try that same exact line of code again.
@@ -700,7 +757,7 @@ Do the mean and median match up?
 Why would that be?
 
 Here is a simple way to see how the arithmetic mean is influenced by extreme values.
-Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 10000)` if `x` is your object of 10,000 numbers).
+Take your object of 10,000 normally distributed values, and let's add one large number to it (i.e., `c(x, 1000000)` if `x` is your object of 10,000 numbers).
 Now calculate the mean.
 We see it's not zero (the true value) anymore, even when the extreme value is swamped by the other 10,000 values!
 Now calculate the median.
@@ -713,6 +770,14 @@ Let's save to an object 1,000 random numbers from a lognormal distribution with 
 Create a histogram of the object.
 
 ```{r rlnorm, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r rlnorm-solution}
+x <- rlnorm(n = 1000, meanlog = 0, sdlog = 2)
+hist(x)
+mean(x)
+median(x)
 ```
 
 Now calculate the mean and median of the vector.
@@ -731,6 +796,29 @@ You can log-transform numbers using `log()` (which is the natural logarithm), `l
 In fact, you can use whichever base you want using the `base` argument in `log()`.
 Try out the different log-transformations and see how they affect the shape of the distribution.
 You'll see that the distribution is exactly the same and only the numbers on the x-axis have changed, so which log to use doesn't really matter for plotting (though log base 10 might be most interpretable for plotting since whole numbers correspond to orders of magnitude: 1 = 10, 2 = 100, 3 = 1000, etc.).
+
+```{r geomean, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r geomean-solution}
+x <- rlnorm(n = 1000, meanlog = 0, sdlog = 2)
+hist(log(x))
+hist(log10(x))
+hist(log2(x))
+
+mean(log(x))
+
+# log transform & then take the antilog.
+# Should get original number back
+exp(log(5))
+10 ^ log10(5)
+2 ^ log2(5)
+
+# geometric mean
+exp(mean(log(x)))
+prod(x) ^ (1 / length(x))
+```
 
 You can see that the distribution is normal now, which is how the lognormal works, so now it makes sense to calculate the arithmetic mean.
 Do this on the log-transformed values.
@@ -806,7 +894,12 @@ surprise <- rep(20, 20)
 ```
 
 ```{r shan, exercise = TRUE}
-#
+# Click "Solution" if stuck
+```
+
+```{r shan-solution}
+shannon(no_surprise)
+shannon(surprise)
 ```
 
 The index is difficult to interpret on its own and is most useful for comparing spread among categorical distributions.
@@ -857,15 +950,18 @@ Calculate the standard deviation (`sd()`) and variance (`var()`) and see if you 
 
 ```{r var-solution}
 x <- rnorm(10000)
-
 sd(x)
 var(x)
+
+x1 <- c(x, 1000000)
+sd(x1)
+var(x1)
 ```
 
 You do, which means these summary statistics are doing their job correctly.
 
 Now we can see how the standard deviation and variance are influenced by extreme values.
-As you did earlier, add 10,000 to your vector and then calculate both statistics.
+As you did earlier, add 1,000,000 to your vector and then calculate both statistics.
 
 We see both measures are heavily influenced by extreme values, the variance more so because it is squared relative to SD, so large numbers are magnified.
 
@@ -978,6 +1074,17 @@ For example, $\textrm{log}(x^2)$ becomes $2\textrm{log}(x)$ and $\textrm{log}(2x
 You can see that these are equal below, using whichever number you'd like for $x$.
 
 ```{r log, exercise = TRUE}
+# Click "Solution" if stuck
+```
+
+```{r log-solution}
+x <- 5
+
+log(x ^ 2)
+2 * log(x)
+
+log(2 * x)
+log(2) + log(x)
 ```
 
 ### Analyses & visualizing relationships
@@ -1005,6 +1112,8 @@ for(i in seq_along(pop_size)[-1]) pop_size[i] <- ceiling(pop_size[i - 1] * 1.1)
 ```
 
 ```{r pop-solution}
+plot(1:50, pop_size)
+
 plot(1:50, log10(pop_size))
 
 plot(1:50, pop_size, log = "y")
@@ -1074,13 +1183,18 @@ Plot `mpg` as a function of `wt` after centering and scaling the variables to ha
 
 ```{r exer2-solution}
 # Question 1a
-plot(uspop, log = "y") # log-transform population size
+plot(uspop)
 
 # Question 1b
+plot(uspop, log = "y") # log-transform population size
+
+# Question 1c
+median(uspop)
+IQR(uspop)
+# geometric mean & SD work best if the data are lognormal
 exp(mean(log(uspop))) # geometric mean
 exp(sd(log(uspop))) # geometric standard deviation
-# median & IQR work too
-median(uspop); IQR(uspop)
+hist(log(uspop)) # not quite lognormal though
 
 # Question 2a
 # I would treat this as ordinal. 
