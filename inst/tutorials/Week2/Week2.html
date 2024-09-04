@@ -830,6 +830,9 @@ forced our numbers to be characters, rendering them unanalyzable.</p>
 <p>One way would be to fix the issues by hand in the original
 spreadsheet, but that can be tedious, especially for the
 <code>mass</code> column.</p>
+<div id="section-how-i-learned-to-do-it-in-grad-school"
+class="section level4">
+<h4>How I learned to do it in grad school</h4>
 <p>We can instead use the <code>substr()</code> and <code>nchar()</code>
 functions to extract substrings from a character vector
 (<strong>NB:</strong> this only works for characters!). What do I mean
@@ -881,6 +884,20 @@ figure out which element has the <code>?</code> using
 finding question marks using <code>grep()</code> or <code>grepl()</code>
 is slightly complicated: you have to use <code>"\\?"</code> instead of
 <code>"?"</code>.</p>
+</div>
+<div id="section-perhaps-a-better-way-to-do-it" class="section level4">
+<h4>Perhaps a better way to do it</h4>
+<p>Instead of using <code>substr()</code> and <code>nchar()</code>, the
+<code>gsub()</code> function will replace some specified existing
+partial string by another specified partial string. For example, imagine
+I want to trim <code>" kg"</code> from the end of <code>"12 kg"</code>.
+I can use <code>gsub()</code> to tell R to replace <code>" kg"</code>
+with <code>""</code>. Assigning <code>"12 kg"</code> to <code>x</code>,
+i.e., <code>x &lt;- "12 kg"</code>, <code>gsub(" kg", "", x)</code> will
+trim off <code>" kg"</code> and return <code>"12"</code>.</p>
+</div>
+<div id="section-continuing-on" class="section level4">
+<h4>Continuing on</h4>
 <p>The <code>5; 6</code> in column <code>height</code> can be split
 using <code>strsplit()</code>, though I won’t go into the details of how
 to do this (you can look at the help file and try it out yourself if
@@ -893,6 +910,7 @@ accomplish with your analyses.</p>
 <p><strong>A better solution to all the problems above is to input your
 data into a spreadsheet in the proper format to begin with! Remember,
 one piece of data for each cell!</strong></p>
+</div>
 </div>
 </div>
 <div id="section-exercise-2-cleaning-data" class="section level2">
