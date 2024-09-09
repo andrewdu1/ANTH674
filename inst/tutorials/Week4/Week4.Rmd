@@ -1091,7 +1091,7 @@ BUT, the null hypothesis is almost *never* true, and that leads us to our final 
 As I mentioned in lecture, three things affect P-values.
 Using the example of comparing the means of two groups, P-values will go down if:
 
-1. Mean difference is larger.
+1. Mean difference is larger. Jenna
 2. Variation among observations in each sample decreases.
 3. Sample size of each group increases.
 
