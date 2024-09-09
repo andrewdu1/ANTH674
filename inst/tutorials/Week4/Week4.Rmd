@@ -1099,7 +1099,7 @@ Basically, these three things act to decrease the overlap between the sampling d
 We are going to focus on sample size for this topic.
 
 As long as an effect is non-zero (even if it is minuscule), a large enough sample size will generate enough statistical power to return P < 0.05.
-This is due to the law of large numbers: a larger sample size ensures that the sample means of each group are estimated so precisely that the mean differences between groups will be obviously non-zero, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the sampling distribution and be significant).
+This is due to the law of large numbers: a larger sample size ensures that the sample means of each group are estimated so precisely that the mean differences between groups will be obviously non-zero, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the null sampling distribution and be significant).
 
 You can see how this works by bootstrapping the mean difference sampling distribution, and seeing how it changes by varying sample size, while keeping the mean and SD of both groups fixed.
 But for now, we will just use simulations to see how P-values vary as a function of sample size.
@@ -1182,7 +1182,7 @@ Let's start with setting `mean1 = 0` and `mean2 = 0` (i.e., the null hypothesis 
 You can see that P-values do not vary as a function of sample size when the null hypothesis is true.
 However, let's now create a small difference in means: `mean1 = 5` and `mean2 = 4.8`.
 
-You can see how even a small mean difference will be exploited as significant if sample size is large enough.
+You can see how even a small mean difference will be exploited as statistically significant if sample size is large enough.
 Go ahead and play around with different sample sizes, means, and SDs to see how different combinations contribute to different P-values.
 
 ```{r power, exercise = TRUE, exercise.setup = "pvals_fxn"}
@@ -1205,7 +1205,7 @@ Therefore, a non-significant result just means your sample size (and therefore s
 P > 0.05 is also known as a Type II error: failing to reject the null hypothesis when it is false (again, I think null hypotheses are *always* false).
 To correct this, you just need a larger sample size.
 
-![](http://alterealitygam.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/Type_I_and_Type_II_Error_Table.jpg){width="50%"}
+![](https://www.scribbr.com/wp-content/uploads/2021/01/type-i-and-ii-error-2.png){width="100%"}
 
 Therefore, a P-value is in essence just tracking sample size, and it is given too much importance in research (in my opinion).
 The "P" in P-value stands for probability, but it really should stand for power (i.e., statistical power).
