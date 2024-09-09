@@ -71,7 +71,7 @@ That is, the probability of some event happening is defined as the long-run freq
 For example, the probability of flipping heads is known to be 0.5 because if we were to flip a coin many, many times (preferably infinity), half of those flips would be heads.
 Let's learn more about this through simulating random data.
 
-![](https://psmag.com/.image/c_limit%2Ccs_srgb%2Cq_auto:good%2Cw_380/MTMzNTIwNTUwOTIzMzg4OTM4/shutterstock_109028771jpg.webp){width="40%"}
+![](https://www.pbs.org/newshour/app/uploads/2015/03/159615168-1024x768.jpg){width="50%"}
 
 A coin flip can either come up heads or tails.
 With two outcomes, this is a binomial random variable ("random" because we don't know with 100% certainty whether a given coin flip will come up heads or tails).
@@ -371,6 +371,16 @@ Make a histogram of your results.
 What does the distribution look like?
 
 ```{r CLT, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r CLT-solution}
+lnorm_samp_dist <- array(dim = 1000)
+
+for(i in 1:length(lnorm_samp_dist)) {
+  
+  lnorm_samp_dist[i] <- mean(rlnorm(100, meanlog = 1.5, sdlog = 0.5))
+}
 ```
 
 It's normal!
@@ -542,13 +552,13 @@ Hopefully, you can now see how powerful and useful bootstrapping is!
 
 ### Bootstrapping in action
 
-Let's once again create a random sample of 100 normally distributed observations from our population (`mean = 5.5, sd = 0.3`).
+Let's once again create a random sample of 100 normally distributed observations from our population (`mean = 5.5, sd = 0.3`); you can assign these numbers to the object `x`.
 I will present each coding step involved in bootstrapping the sampling distribution for the population mean.
 
-1. Create an empty vector of length 1,000 since we will do 1,000 bootstrap iterations (feel free to do more if your computer is fast enough!).
-2. Initiate a `for()` loop, where `i` goes from `1` to the length of the empty vector.
-3. Within the curly braces, resample with replacement the vector of 100 normally distributed observations; you can save this to a new object.
-4. Calculate the mean of the object, and save the result to the $i$th element of your empty vector.
+1. Create an empty vector of length 1,000 since we will do 1,000 bootstrap iterations (feel free to do more if your computer is fast enough!); assign this empty vector to an object (e.g., `boot_dist`).
+2. Initiate a `for()` loop, where `i` goes from `1` to the length of the empty vector (i.e., `boot_dist`).
+3. Within the curly braces, resample with replacement the vector of 100 normally distributed observations (i.e., `x`); you can save the 100 resampled numbers to a new object (e.g., `x_boot`).
+4. Calculate the mean of the object, and save the result to the $i$th element of your empty vector (i.e., `boot_dist`).
 Then close the curly braces.
 
 Try this out below.
@@ -629,18 +639,20 @@ In frequentist statistics, the parameter value is fixed, and the confidence inte
 Therefore, for each iteration of a CI, it either captures the true parameter value or misses it.
 Given the preset significance threshold of $\alpha = 0.05$, 5% of confidence intervals will miss the parameter value on average.
 
+**NB**: For a given $\alpha$ level, the corresponding CI is set at $(1 - \alpha)$%.
+This is why 95% CI are so common in scientific research (i.e., because $\alpha$ is almost always set at 0.05).
+
 Let's conduct some simulations to see all this in action.
 
 We will recreate the figure from my lecture, keeping in mind that the CI won't look exactly the same due to the stochasticity involved in sampling from a population.
 What we want to do is calculate 50 CI for the mean of a normally distributed population that has `mean = 0, sd = 1` (i.e., the default `rnorm()` arguments).
-With 50 CI, on average 2.5 will miss the true mean (i.e., 0), so we're expecting 2 or 3 CI to miss (though you might get 4 or none!).
+With 50 CI, on average 2.5 will miss the true mean (i.e., 0), so we're expecting 2 or 3 CI to miss (though you might get 4 or none due to stochasticity!).
 
 I will tell you how to code this step by step.
 
-1. Create an empty array, called `ci.res`, with 50 rows and 2 columns (rows for 50 CI and one column each for the lower and upper CI limit, respectively).
+1. Create an empty array, called `ci.res`, with 50 rows and 2 columns (rows for 50 CI and one column each for the lower and upper CI limit, respectively); this is done with `ci.res <- array(dim = c(50, 2))`.
 2. Use a `for()` loop to iterate through each row, i.e., `i in 1:nrow(ci.res)`.
-3. Save to an object, `x` 100 observations from the population with `mean = 0, sd = 1`.
-This is done with `rnorm(100)`.
+3. Save to an object, `x`, 100 randomly sampled observations from the normally distributed population with `mean = 0, sd = 1`; this is done with `rnorm(100)`.
 4. Calculate standard error using SD divided by square-root of sample size (i.e., 10); save this to an object called `se`.
 5. Calculate the lower confidence limit as `mean(x) - 1.96 * se` and save this to `ci.res[i, 1]`.
 6. Calculate the upper confidence limit as `mean(x) + 1.96 * se` and save this to `ci.res[i, 2]`.
@@ -680,10 +692,10 @@ segments(
 abline(h = 0, col = "red")
 ```
 
-How many CI missed the true value, i.e., 0?
+How many CI missed the true value of the population mean, i.e., 0 (you might need to scroll to the right to see the whole plot)?
 
 So, let's say you calculate 95% CI on a sample of data you're analyzing.
-Your calculated CI is equivalent to *one* of the CIs calculated above.
+Your calculated CI is equivalent to *one* of the CI segments calculated above.
 Therefore, there is a 5% chance that your CI completely missed the true parameter value, i.e., you were unlucky :(.
 
 [You can also explore all this through this awesome interactive activity](https://seeing-theory.brown.edu/frequentist-inference/index.html#section2).
@@ -691,11 +703,11 @@ Therefore, there is a 5% chance that your CI completely missed the true paramete
 
 ## Confidence intervals and sample size
 
-Confidence intervals shrink as sample size increases because the law of large numbers tells us that sample means are estimated more precisely with larger sample sizes.
-That is, each mean in the sampling distribution will be pretty close to the true population mean, such that the spread of the sampling distribution will be small (which causes CI to be small).
+Confidence intervals shrink as sample size increases because the law of large numbers tells us that population parameters (e.g., the mean) are estimated more precisely with larger sample sizes.
+That is, each, mean in the sampling distribution will be pretty close to the true population mean, such that the spread of the sampling distribution will be small (which causes CI to be small).
 
 We will explore this behavior through simulations by again recreating a figure from my lecture (again, realizing that the CI won't look *exactly* the same).
-We will create CI using samples of different sizes that are drawn from a normal distribution with `mean = 0, sd = 1`.
+We will create CI using samples of different sizes that are drawn from a normally distributed population with `mean = 0, sd = 1`.
 Again, I will walk you through the code step by step.
 
 1. Let's first create a vector of sample sizes: `n <- c(5, 10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000)`.
@@ -703,7 +715,7 @@ Again, I will walk you through the code step by step.
 3. Use a `for()` loop to iterate through the rows, i.e., `i in 1:nrow()`.
 4. Use `rnorm()` to draw observations from the population distribution with sample size equal to the $i$th element from vector `n`.
 Can you figure out how to do that?
-5. The remainder of the code follows Steps 4-6 from the previous topic (i.e., calculate 95% CI using the standard error formula).
+5. The remainder of the code follows Steps 4–6 from the previous topic (i.e., calculate 95% CI using the standard error formula).
 Can you code the steps without looking back (look back or click the "Solution" button if you have to)?
 6. Click the "Solution" button to see code for creating the plot.
 
@@ -744,8 +756,8 @@ segments(
 abline(h = 0, col = "red")
 ```
 
-So, the takeaway here is that as sample size increases, the CI will shrink around the true value.
-As a result, you can be pretty confident that you know what the true parameter value is, which is great if you want to use the data to corroborate some predicted value from a hypothesis.
+So, the takeaway here is that as sample size increases, the CI will shrink around the true value (though the phenomenon of 5% of CI missing the true value still applies here!).
+As a result, you can be pretty confident that you know what the true parameter value is, which is great if you want to use data to corroborate some predicted value from a hypothesis.
 It also means that your CI will pretty much exclude every value except the parameter, such that the estimated mean will be significantly different from all other values.
 Lastly, this exercise emphasizes how a value capture by the CI does not mean it's the true parameter value: the shrinking of CI with larger sample size almost guarantees that that value will be excluded.
 
@@ -881,7 +893,7 @@ A one-tailed test is used if we want to test whether the larger group (i.e., `x`
 For either test, we first calculate the observed test statistic (i.e., the mean difference: `mean(x) - mean(y)`).
 Save this to an object called `obs_diff`.
 
-For a two-tailed test, we want to count the number of null distribution values that are greater than or equal to `obs_diff` but also less than or equal to`-1 * obs_diff`.
+For a two-tailed test, we want to count the number of null distribution values that are greater than or equal to `obs_diff` but also less than or equal to `-1 * obs_diff`.
 Why is this?
 This is because our bootstrapped iterations randomly assigned heights (with replacement) to new samples of `x` and `y`, such that sometimes `mean(x)` was larger and sometimes `mean(y)` was larger (thus, sometimes the mean difference was positive and sometimes it was negative).
 Because we're not concerned with which group is larger, we need to consider the null distribution values in either side of the tail (see image above).
@@ -984,7 +996,7 @@ Type I error is falsely rejecting the null hypothesis when it is true.
 The probability of committing this error is equivalent to the preset significance level ($\alpha$), which is 0.05 in most scientific fields (i.e., the probability of committing a Type I error is 5%).
 We will go over Type II error in the next topic.
 
-![](http://alterealitygam.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/Type_I_and_Type_II_Error_Table.jpg){width="50%"}
+![](https://www.scribbr.com/wp-content/uploads/2021/01/type-i-and-ii-error-2.png){width="100%"}
 
 Type I error happens because you can get a large effect just by chance even if there is no effect in the underlying statistical population.
 For example, look at the null sampling distribution below (i.e., the sampling distribution of a test statistic, assuming the null hypothesis is true).
@@ -1087,7 +1099,7 @@ Basically, these three things act to decrease the overlap between the sampling d
 We are going to focus on sample size for this topic.
 
 As long as an effect is non-zero (even if it is minuscule), a large enough sample size will generate enough statistical power to return P < 0.05.
-This is due to the law of large numbers: a larger sample size ensures that the sample means of each group are estimated so precisely that the mean differences between groups will be very obvious, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the sampling distribution and be significant).
+This is due to the law of large numbers: a larger sample size ensures that the sample means of each group are estimated so precisely that the mean differences between groups will be obviously non-zero, and the sampling distribution of mean differences will have very narrow spread (such that a small observed mean difference will fall outside the sampling distribution and be significant).
 
 You can see how this works by bootstrapping the mean difference sampling distribution, and seeing how it changes by varying sample size, while keeping the mean and SD of both groups fixed.
 But for now, we will just use simulations to see how P-values vary as a function of sample size.
