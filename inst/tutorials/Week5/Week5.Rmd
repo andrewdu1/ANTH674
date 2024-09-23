@@ -36,7 +36,7 @@ Because we're dealing with two continuous variables, simple linear regression is
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Linear_regression.svg/1280px-Linear_regression.svg.png){width="60%"}
 
 We will cover what linear regression is used for, what it tells us, and how it's used in statistical inference.
-Everything you learn in this tutorial is *incredibly* important, as it forms the foundation of future lectures (e.g., multiple regression, GLMs, generalized linear models, mixed models, principal components analysis).
+Everything you learn in this tutorial is *incredibly* important, as it forms the foundation for future lectures (e.g., multiple regression, GLMs, generalized linear models, mixed models, principal components analysis).
 In sum, linear regression really does form the basis of most commonly used statistical tests, so if you understand regression, you understand most methods used in statistics!
 
 
@@ -225,7 +225,7 @@ If you plot the IV and DV with the estimated regression line, you can see which 
 You can compare these points to the residuals from `lm.res$residuals`, keeping in mind that the residuals are in the same order as your IV and DV.
 
 We can further illustrate that the residuals are indeed the difference between each observed DV and the predicted values.
-What do you think you'll get if you enter `points(x, lm.res$fitted.values + lm.res$residuals, col = "blue")`.
+What do you think you'll get if you enter `points(x, lm.res$fitted.values + lm.res$residuals, col = "blue", cex = 2)`.
 Try it out below (after you've created the plot).
 
 ```{r resid, exercise = TRUE}
@@ -239,7 +239,7 @@ lm.res <- lm(y ~ x)
 plot(x, y)
 abline(lm.res)
 
-points(x, lm.res$fitted.values + lm.res$residuals, col = "blue")
+points(x, lm.res$fitted.values + lm.res$residuals, col = "blue", cex = 2)
 ```
 
 [This website](https://shiney.zoology.ubc.ca/whitlock/Residuals/) is good for illustrating exactly what a residual is.
@@ -597,8 +597,17 @@ We can also show this graphically by simulating an exponential relationship and 
 First plot `x` and `y`, as I've entered it in the console, and then create another plot with `y` log-transformed (or log-transform the y-axis using the `log = "y"` argument in `plot()`).
 
 ```{r expon, exercise = TRUE}
+# Click "Solution" if stuck
 x <- runif(30, max = 10)
 y <- 3 * 2 ^ x
+```
+
+```{r expon-solution}
+plot(x, y)
+
+plot(x, log(y))
+# OR
+plot(x, y, log = "y")
 ```
 
 You can see that after a log-transformation, the relationship is linear (which it *must* be, as I've shown mathematically above).
@@ -632,8 +641,17 @@ As before, we can show this graphically by simulating a power function and seein
 First plot `x` and `y`, as I've entered it in the console, and then create another plot with both `x` and `y` log-transformed (or log-transform both axes using `log = "xy"` in `plot()`).
 
 ```{r power, exercise = TRUE}
+# Click "Solution" if stuck
 x <- runif(30)
 y <- 2 * x ^ 5
+```
+
+```{r power-solution}
+plot(x, y)
+
+plot(log(x), log(y))
+# OR
+plot(x, y, log = "xy")
 ```
 
 You can see after the log-transformations that the relationship is now linear (which it *must* be as I've shown mathematically above).
@@ -691,8 +709,15 @@ I have provided you with code for variables with a non-linear (in this case, qua
 Create a scatter plot and then check out the regression diagnostic plots.
 
 ```{r non_lin, exercise = TRUE}
+# Click "Solution" if stuck
 x <- runif(30, min = -2, max = 2)
 y <- x ^ 2
+```
+
+```{r non_lin-solution}
+plot(x, y)
+lm.res <- lm(y ~ x)
+plot(lm.res)
 ```
 
 You can see that the residuals in the first residual plot are horseshoe-shaped, reflecting the non-linear, horseshoe-shaped relationship between the IV and DV.
@@ -703,8 +728,15 @@ I have provided you with code for a DV with increasing variance as IV increases 
 Create a scatter plot and then check out the regression diagnostic plots.
 
 ```{r hetero, exercise = TRUE}
+# Click "Solution" if stuck
 x <- runif(50)
 y <- 5 + 3 * x + rnorm(50) * 10 * x
+```
+
+```{r hetero-solution}
+plot(x, y)
+lm.res <- lm(y ~ x)
+plot(lm.res)
 ```
 
 You can see the "funnel" of points in the residual plots, illustrating that the variance of errors increases as a function of the fitted DV values.
@@ -715,8 +747,15 @@ I have provided you with code for simulating a DV with non-independent errors.
 Create a scatter plot and then look at the regression diagnostic plots.
 
 ```{r autocor, exercise = TRUE}
+# Click "Solution" if stuck
 x <- seq(-2 * pi, 2 * pi, length.out = 30)
 y <- 2 * x + 3 * sin(x) + rnorm(30)
+```
+
+```{r autocor-solution}
+plot(x, y)
+lm.res <- lm(y ~ x)
+plot(lm.res)
 ```
 
 You can see a "wavy" pattern in the residual plots, indicating that positive residuals tend to follow positive residuals and negative residuals tend to follow negative ones.
@@ -738,7 +777,7 @@ The true slope is zero; we are using zero because we know that the expected perc
 As with assessing any statistic, we need to look at its average behavior, so we need a `for()` loop.
 Let's "kill two birds with one stone" and look at the behavior of the slope and P-value with one set of iterations.
 
-1. Create two empty arrays, both of which have 1,000 elements.
+1. Create two empty arrays, each of which has 1,000 elements (i.e., these are vectors).
 One array is for the slope, and the other is for the P-value.
 You can alternatively create an empty array with 1,000 rows and 2 columns.
 2. Initiate the `for()` loop with `for(i in 1:length())`, where `length()` refers to the length of one of the empty arrays.
@@ -780,7 +819,7 @@ Now calculate the mean for your vector of slopes.
 You can see that it's pretty close to zero, demonstrating that the slope is an unbiased estimate even in the face of heteroscedasticity.
 
 Now calculate the proportion of P-values that are less than or equal to 0.05.
-I got 0.075, showing that the test is slightly more liberal than your standard regression hypothesis test (i.e., we have slightly more P-values than expected, so Type I error rate here is 0.075 instead of the nominal 0.05).
+I got 0.075, showing that the test is slightly more liberal than your standard regression hypothesis test (i.e., we have slightly more significant P-values than expected, so Type I error rate here is 0.075 instead of the nominal 0.05).
 In practice, this is a really small, negligible difference.
 
 So according to our simulations, given the scenario as we've constructed it, it seems like the P-value is behaving just fine.
@@ -793,7 +832,7 @@ As before, the true slope is zero, so the expected percentage of simulated P-val
 
 Again, we need a `for()` loop to look at the average behavior of these statistics, and we will again "kill two birds with one stone" by looking at the slope and P-value simultaneously.
 
-1. Create two empty arrays, both of which have 1,000 elements.
+1. Create two empty arrays, each of which has 1,000 elements (i.e., these are both vectors).
 One array is for the slope, and the other is for the P-value.
 You can alternatively create an empty array with 1,000 rows and 2 columns.
 2. Initiate the `for()` loop with `for(i in 1:length())`, where `length()` refers to the length of one of the empty arrays.
@@ -875,6 +914,13 @@ First, plot the two variables against each other and then enter `cor(x, y)` belo
 ```
 
 ```{r cor-solution}
+x <- runif(100)
+y <- runif(100)
+
+plot(x, y)
+cor(x, y)
+
+
 # Step 1
 cor.res <- array(dim = 1000)
 
@@ -889,10 +935,21 @@ for(i in 1:length(cor.res)){
   cor.res[i] <- cor(x, y)
 }
 
-
+# positive, linear relationship
 x <- runif(30)
 y <- 2 + 2 * x + rnorm(30)
+plot(x, y)
+cor(x, y)
 
+# negative, linear relationship
+x <- runif(30)
+y <- 2 - 2 * x + rnorm(30)
+plot(x, y)
+cor(x, y)
+
+# negative, linear relationship with larger scatter
+x <- runif(30)
+y <- 2 - 2 * x + rnorm(30, sd = 10)
 plot(x, y)
 cor(x, y)
 ```
@@ -908,7 +965,7 @@ To see that $r$ is zero on average, you would need to conduct many iterations, j
 Try this out above.
 
 Now let's simulate two variables that are correlated.
-This is done using the same exact code in the linear regression section.
+This is done using the same exact code in the linear regression section (click the *Solutions* button above if you want to see the code).
 First plot the data and then calculate the Pearson correlation coefficient.
 What do you get?
 Do the same but with a negative slope this time.
@@ -949,7 +1006,7 @@ Calculate the regression slope in this way (remembering that you also have to ce
 
 #### Hypothesis tests
 
-We can calculate a P-value or confidence interval testing if the sample's correlation coefficient is significantly different from zero.
+We can calculate a P-value or confidence intervals to test if the sample's correlation coefficient is significantly different from zero.
 This is easy to do in R: `cor.test(x, y)` will give you the P-value and 95% confidence interval for the correlation coefficient.
 To extract the P-value, enter `cor.test(x, y)$p.value`.
 To extract the 95% confidence interval, enter `cor.test(x, y)$conf.int`.
@@ -972,13 +1029,24 @@ I have written the code to simulate an exponential relationship in the console b
 Plot the data first and then calculate the Pearson correlation coefficient.
 
 ```{r rank, exercise = TRUE}
+# Click "Solution" if stuck
 x <- runif(30, max = 5)
 y <- exp(x)
 ```
 
-You can see it's high, but we know it should be 1, given that these two variables always increase together (i.e., it's a **monotonic** relationship).
+```{r rank-solution}
+plot(x, y)
+cor(x, y)
+cor(x, y, method = "spearman")
+cor(x, y, method = "kendall")
 
-Now let's calculate the two rank correlation coefficients.
+y <- exp(x) + rnorm(30)
+cor.test(x, y, method = "spearman")
+```
+
+You can see that the correlation coefficient is high, but shouldn't it be 1, given that these two variables always increase together according to an exponential function (i.e., this is a **monotonic** relationship)?
+
+Now let's calculate the two rank correlation coefficients, which measure not linearity but monotonicity.
 Within `cor()`, set the argument `method` to `"spearman"` and then `"kendall"`.
 What do you get?
 
@@ -1058,7 +1126,7 @@ cor.test(log(msleep$brainwt), log(msleep$bodywt))
 ## Conclusion
 
 In this tutorial, we covered virtually everything you need to know about simple linear regression so that you can now use it in your own research.
-Linear regression is an important statistical tool in its own right, but it also forms the basis of many of the methods in statistics (e.g., t-tests, ANOVA, principal components analysis).
+Linear regression is an important statistical tool in its own right, but it also forms the basis for many of the methods in statistics (e.g., t-tests, ANOVA, principal components analysis).
 Therefore, understanding all the topics in this tutorial is crucial for understanding future lecture material (e.g., the assumptions covered here also apply to t-tests, ANOVAs, etc.).
 
 I have also illustrated in this tutorial how R can be used to better understand how certain methods work.
