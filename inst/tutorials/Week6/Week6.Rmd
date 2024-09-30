@@ -199,7 +199,7 @@ This is especially likely if you conduct many tests.
 Thus, you should always be skeptical of high correlation coefficients during EDA and only present them as intriguing hypotheses that need to be tested with independent datasets.
 
 That said, the probability of getting a large, significant correlation coefficient (or some other test statistic) is 5% if the null hypothesis is true.
-So if you calculate 20 correlation coefficients and find 15 are very large, you're likely onto something real, as getting 20 large coefficients by chance is miniscule (assuming all null hypotheses are true).
+So if you calculate 20 correlation coefficients and find 15 are very large, you're likely onto something real, as getting 15 large coefficients by chance is miniscule (assuming all null hypotheses are true, the probability of getting 15 or more significant tests by chance is $3.7 \times 10^{-16}$).
 
 
 ## Saving a plot as a PDF
@@ -255,19 +255,19 @@ We have previously covered how to calculate P-values and confidence intervals, s
 
 ## Multiple comparisons 
 
-As mentioned previously, the more tests you run, the more likely you'll find a large, significant statistic just by chance (assuming the null hypothesis is true).
-More precisely, on average 5% of your tests will be significant, assuming the null hypothesis is true.
+As mentioned previously, the more tests you run, the more likely you'll find a large, significant statistic just by chance.
+More precisely, on average, 5% of your tests will be significant, assuming the null hypothesis is true for all tests.
 Therefore, it is common practice to correct your significance level or P-values if you conduct many tests.
 
 ## Bonferroni correction
 
 This is the most common method, but it is also problematic for a number of reasons, which I'll discuss in the next section.
 
-As I covered in lecture, Bonferroni corrections adjust the **family-wise error rate** (FWER), which is the probability of committing at least one Type I error within a set of tests.
-Specifically, Bonferroni corrects FWER to be 0.05, *assuming all null hypotheses are true*. 
+As I covered in lecture, Bonferroni corrections adjust the **family-wise error rate** (FWER), which is the probability of committing *at least one* Type I error within a set of tests.
+Specifically, Bonferroni corrects FWER to be 0.05, *assuming the null hypothesis is true for all tests*. 
 It creates a new significance level ($\alpha_{BC}$), defined as $\alpha_{BC} = \alpha / k$, where $\alpha$ is the traditional 0.05 significance level and $k$ is the number of tests conducted.
 
-![](http://alterealitygam.wpengine.netdna-cdn.com/wp-content/uploads/2015/02/Type_I_and_Type_II_Error_Table.jpg){width="50%"}
+![](https://www.scribbr.com/wp-content/uploads/2021/01/type-i-and-ii-error-2.png){width="100%"}
 
 In R, we can use the `p.adjust()` function with argument `method = "bonferroni` to automatically calculate Bonferroni-corrected P-values.
 Let's do so using our six variables from before.
@@ -445,7 +445,28 @@ How many P-values are less than or equal to 0.05 after each correction?
 # Q1
 mtcars1 <- subset(mtcars, select = c(mpg, disp, hp, drat, wt, qsec))
 
-# Q2 (after copying and pasting the panel.cor() and panel.hist() functions)
+# Q2
+## First, copy & paste panel.hist & panel.cor functions from pairs help file
+panel.hist <- function(x, ...)
+{
+    usr <- par("usr")
+    par(usr = c(usr[1:2], 0, 1.5) )
+    h <- hist(x, plot = FALSE)
+    breaks <- h$breaks; nB <- length(breaks)
+    y <- h$counts; y <- y/max(y)
+    rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+    par(usr = c(0, 1, 0, 1))
+    r <- abs(cor(x, y))
+    txt <- format(c(r, 0.123456789), digits = digits)[1]
+    txt <- paste0(prefix, txt)
+    if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+    text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
 pairs(mtcars1, lower.panel = panel.smooth, diag.panel = panel.hist, upper.panel = panel.cor)
 
 # Q3
@@ -473,8 +494,8 @@ This is known as **overfitting**.
 
 ![](https://www.educative.io/api/edpresso/shot/6668977167138816/image/5033807687188480){width="80%"}
 
-If the new dataset you want to predict on has a different noise structure than your training dataset (as is likely), then an overfit model will perform poorly.
-This is why it is so important that your test dataset is as independent from your training dataset as possible; that is, your independent test dataset mimics the new (likely independent) dataset you want to predict on.
+If the new dataset you want to predict on has a different noise structure than your training dataset (as is likely), then an overfit model will perform poorly on the new dataset.
+This is why it is so important that your test dataset is as independent from your training dataset as possible; that is, your independent test dataset mimics the new (likely independent) dataset you want to ultimately predict on.
 If truly independent, a test dataset with known IVs and DVs will give an honest assessment of how well your trained model does on new data, which is the ultimate goal of prediction.
 
 
@@ -691,9 +712,9 @@ The IV and DV are in a dataframe called `AC`, which also has the x and y coordin
 This dataset is preloaded into your console below.
 
 Let's do a 75-25 holdout, where 75% of the dataset is used for training and 25% is used for testing.
-This is typically done by randomly sampling 75% of the data points from one's dataset (with the remaining 25% for testing), but we know from lecture that this strategy is fraught when the data are autocorrelated ([here is a good article illustrating the problem](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1600-0706.2012.00299.x?casa_token=Vy2V1WNu-vUAAAAA:sdMScTkcVfK_YVSuavhZcHSFl-QfeUCDzw_28rpWiMH31g8oyCAEQoZK3cwG5CfAofqRreDsgDUizkVc)).
+This is typically done by randomly sampling 75% of the data points from one's dataset (with the remaining 25% for testing), but we know from lecture that this strategy is fraught when the data are autocorrelated ([here is a good article illustrating the problem](https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1600-0706.2012.00299.x?casa_token=Vy2V1WNu-vUAAAAA:sdMScTkcVfK_YVSuavhZcHSFl-QfeUCDzw_28rpWiMH31g8oyCAEQoZK3cwG5CfAofqRreDsgDUizkVc) and [here is a good YouTube video](https://youtu.be/TK_2MIbChb0?si=sCFRibTAJKQH_Fvb)).
 This is because the underlying autocorrelation structure of the training dataset will be present in the test dataset, such that these two datasets are not truly independent. 
-This means any assessment of the predictive abilities of our model will be overly optimistic: the test dataset is too similar to the training dataset, but any dataset we ultimately want to predict on will likely be very different from our training dataset (i.e., autocorrelation structure will be different).
+This means any assessment of the predictive abilities of our model will be overly optimistic: the test dataset is too similar to the training dataset, but any dataset we ultimately want to predict on will likely be very different from our training dataset (i.e., the autocorrelation structure will be different).
 To address this issue with spatial autocorrelation, we want to designate a segregated corner of the map as the test dataset.
 
 1. Let's use the bottom-right corner of the dataset (i.e., `x >= 25` and `y <= 25`).
