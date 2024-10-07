@@ -70,7 +70,7 @@ where $Y$ is the DV, $X_{1..n}$ are the different IVs, $\beta_0$ is the intercep
 
 The intercept is interpreted in the same exact way as in simple linear regression: the DV value when all IVs are set to zero.
 Each estimated slope is interpreted as the change in DV when the IV in question increases by one, *when all other IVs are held constant.*
-One can see why this would be of interest: we often want to isolate and understand the effect of a single IV on the DV.
+One can see why this would be of interest: we often want to isolate and understand the effect of a single IV on the DV, while accounting for the effects of other IVs (e.g., confounding variables).
 In fact, researchers will often include an IV that they're not interested in just so they can remove its effect when interpreting other multiple regression coefficients (these "uninteresting" IVs are called **covariates**).
 
 Let's fit a multiple regression to some data from `mtcars` and understand how the coefficients are interpreted.
@@ -186,7 +186,7 @@ That is, it'll start fitting the noise in your dataset (bad), as opposed to the 
 ![](https://miro.medium.com/max/1848/1*_7OPgojau8hkiPUiHoGK_w.png){width="90%"}
 
 This is especially true as your ratio of data points to parameters decreases (general rule is that you should have at least 20 data points per parameter).
-Overfitting is bad since you're not focusing on the signal and pattern of interest anymore (i.e., how your DV changes with some IV) and instead you're starting to fit the noise structure (i.e., factors aside from the IVs that influence the DV).
+Overfitting is bad since you're not focusing on the signal and pattern of interest anymore (i.e., how your DV changes with some measured IV) and instead you're starting to fit the noise structure (i.e., factors aside from the measured IVs that influence the DV).
 Overfitting is extremely bad when you want to predict DVs for a new dataset, since the noise structure in the new dataset will not match what is in your original data.
 
 Overfitting aside, the more IVs in one's model, the higher the $R^2$, all else being equal.
@@ -243,7 +243,7 @@ And because interaction terms are symmetrical, this also implies that the slope 
 The multiple regression formula, including an interaction term, is:
 
 \begin{align}
-  Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 (X_1 \times X_2) + \epsilon.
+  Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2 + \beta_3 (X_1 X_2) + \epsilon.
 \end{align}
 
 In R, one fits an interaction model with `lm(y ~ x1 * x2)`; the `*` implies $\beta_1$ and $\beta_2$ (from the formula) are estimated too.
@@ -666,5 +666,5 @@ Lastly, variance partitioning is a great tool for scientific inference!
 I strongly encourage you to use it if you'll use multiple regression in your research.
 
 Make sure you understand everything we covered in lecture and this tutorial.
-All of this material will served as the foundation for next week's lecture, where we will learn about general linear models with non-continuous IVs and DVs (e.g., ANOVA, logistic regression).
+All of this material will serve as the foundation for next week's lecture, where we will learn about general linear models with non-continuous IVs and DVs (e.g., ANOVA, logistic regression).
 Thus, everything you learned here applies there as well!
