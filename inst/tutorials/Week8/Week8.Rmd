@@ -301,7 +301,7 @@ abline(ancova.res$coefficients["(Intercept)"] + ancova.res$coefficients["am"], a
 ```
 
 You can see that there are three estimated coefficients, all of which are significant.
-The intercept is the intercept of the regression of `$qsec ~ hp` when `am == 0` (i.e., the baseline level).
+The intercept is the intercept of the regression of `qsec ~ hp` when `am == 0` (i.e., the baseline level).
 To illustrate this point, first plot `qsec ~ hp`, with the points color-coded by `am`.
 Now use `abline()` to fit a line with the aforementioned intercept and a slope that is the `hp` coefficient (i.e., our continuous IV).
 Thus far, you have used `abline()` with an `lm()` object, but you can also fit a line with `abline()`, where the first argument is the intercept and the second argument is the slope.
@@ -395,8 +395,8 @@ ancova.res <- lm(Petal.Width ~ Sepal.Width * Species, data = iris)
 summary(ancova.res)
 
 # intercept increases by 0.63988 as you go from setosa to virginica.
-# we don't have a large enough sample size to determine if/how the intercept changes from setosa to versicolor
-# slope increases as you go from setosa to versicolor (0.35374) and setosa to virginica (0.39324).
+# we don't have a large enough sample size to determine precisely how the intercept changes from setosa to versicolor (i.e., P > 0.05)
+# slope increases as you go from setosa to versicolor (by 0.35374) and setosa to virginica (by 0.39324).
 ```
 
 
