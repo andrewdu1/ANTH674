@@ -186,6 +186,8 @@ lm.res <- lm(speed ~ logWeight, data = Mammals)
 seg.res <- segmented(lm.res)
 
 summary(seg.res)
+slope(seg.res)
+intercept(seg.res)
 ci.seg <- confint(seg.res)
 
 plot(speed ~ logWeight, data = Mammals)
@@ -242,6 +244,7 @@ library(strucchange)
 plot(Nile)
 
 bp.nile <- breakpoints(Nile ~ 1)
+confint(bp.nile)
 
 lm.bp <- lm(Nile ~ breakfactor(bp.nile, breaks = 1))
 summary(lm.bp)
