@@ -1,0 +1,12 @@
+name: Week7
+title: Week7
+username: andrewdu
+account: andrewdu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13199785
+bundleId: 9298850
+url: https://andrewdu.shinyapps.io/Week7/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

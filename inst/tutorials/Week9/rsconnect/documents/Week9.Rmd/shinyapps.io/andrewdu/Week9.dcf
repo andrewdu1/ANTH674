@@ -1,0 +1,12 @@
+name: Week9
+title: Week9
+username: andrewdu
+account: andrewdu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13199805
+bundleId: 9298856
+url: https://andrewdu.shinyapps.io/Week9/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
