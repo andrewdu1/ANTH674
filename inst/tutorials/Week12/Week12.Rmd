@@ -330,14 +330,12 @@ I will introduce ordination using principal components analysis, by far the most
 ## Principal components analysis
 
 Principal components analysis (PCA) is an ordination method, used when all your variables are continuous.
-Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation (see animation below; the specific line fitting method is called **major axis regression**).
+Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation ([see animation here](https://i.sstatic.net/lNHqt.gif); the specific line fitting method is called **major axis regression**).
 It then rotates the plot so this line (i.e., the first principal component or PC1) is now on the x-axis.
 Subsequent PCs are fit so that they're perpendicular to (and thus independent of) previous PCs.
 These subsequent PCs can be thought of as fitting the residual variation left over from previous PCs (this is also why they always explain less variation than previous PCs).
 Each PC represents a composite of the original variables, and this is how PCA condenses one's original variables into a few variables of interest (i.e., PCs).
-Note that you can only have as many PCs as you do variables, but it is usually the case that only the first several PCs are important.
-
-![](https://i.stack.imgur.com/lNHqt.gif){width="100%"}
+Note that you can only have as many PCs as you do variables, but it is usually the case that only the first several PCs are important (importance based on amount of variance in data explained).
 
 Because PCA works by fitting PCs through axes of greatest variation, variables with more variation will strongly influence how PCs are fit to the data.
 This is fine when the variation in one's multivariate dataset is of interest itself, but this can be a problem when variables are more variable just because, for example, they're in different units.
@@ -432,6 +430,7 @@ All this is easy to do in R.
 First, create the variance-covariance matrix of the dataset by entering `iris.vcov <- cov(subset(iris, select = -Species))`.
 Then, use the `svd()` function to do an SVD of the variance-covariance matrix: `iris.svd <- svd(iris.vcov)`.
 `iris.svd$d` returns the eigenvalues from the SVD for each PC. 
+`iris.svd$u` returns the eigenvectors, from which one can calculate PC scores (see next section). 
 
 
 ## Eigenvectors
@@ -441,7 +440,7 @@ Each PC has one eigenvector, and the elements within each eigenvector are called
 Loadings range from -1 to 1, where the sign indicates the direction of the relationship between the variable and PC, and the magnitude indicates how much each variable contributes to the PC (also how tightly the two are correlated).
 For example, a PC1 loading of 0.86 for `iris$Petal.Length` tells us that as PC1 increases, `Petal.Length` increases, and vice versa (i.e., the two are positively correlated).
 0.86 is a large value, indicating that `Petal.Length` contributes a lot to and is strongly correlated with PC1.
-On the other hand, a PC1 loading of -0.08 for `Sepal.Width` indicates that as PC1 increases, `Sepal.Width` decreases, and `Sepal.Width` doesn't contribute much to PC1.
+On the other hand, a PC1 loading of -0.08 for `Sepal.Width` indicates that as PC1 increases, `Sepal.Width` decreases—but this relationship is noisy—and `Sepal.Width` doesn't contribute much to PC1.
 
 To get out the loadings in R, enter `iris.pca$rotation`.
 If you did SVD in the last topic, you can get out the loadings with `iris.svd$u`.
