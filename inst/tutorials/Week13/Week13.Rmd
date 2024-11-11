@@ -36,7 +36,7 @@ We then learned how distance matrices can be analyzed using **cluster analysis**
 I finally very briefly covered non-hierarchical clustering techniques (e.g., *K*-means clustering, discriminant analysis) and multivariate regression (e.g., redundancy analysis).
 In this tutorial, we will learn how to conduct all these analyses in R, and by doing so, better learn what the methods are doing "underneath the hood".
 
-![](https://46gyn61z4i0t1u1pnq2bbk2e-wpengine.netdna-ssl.com/wp-content/uploads/2018/03/What-is-a-Dendrogram.png){width="70%"}
+![](https://www.researchgate.net/profile/Seo-Min-Ho/publication/264786798/figure/fig9/AS:392334660390915@1470551280938/Dendrogram-for-hierarchical-clustering-and-nMDS-ordination-plot-for-mesozooplankton_W640.jpg){width="100%"}
 
 My hope is that between the lecture and this tutorial, you will not only know what these methods are used for but also how they work (at least conceptually).
 As your textbook says (pgs. 427-428), many statistical programs (including R) automate these methods, such that many researchers do not know the assumptions and mechanics of these techniques.
@@ -65,7 +65,7 @@ The diagonals (see figure below) are always zero because those elements are comp
 The off-diagonals are almost always greater than zero, with larger numbers indicating more dissimilar variables.
 The best way to learn about distance matrices is by example, so let's do that below.
 
-![Gray squares and the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
+![Gray squares are the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
 
 ### Euclidean distance
 
@@ -403,15 +403,15 @@ So while brown hair and hazel eyes are plotted together, these points are close 
 I introduced CA using PCoA because you are somewhat familiar with PCoA now and also to emphasize how all these ordination methods are related.
 That is, CA is pretty much just PCoA done on a chi-square distance matrix.
 The one additional difference in CA is that it up-weights cells in the table with larger sample sizes.
-This helps ameliorate the effect of smaller sample sizes which have larger sampling errors and may be outliers.
-So a CA is *identical* to a weighted PCoA.
+This helps ameliorate the effect of smaller sample sizes, which have larger sampling errors and may be outliers.
+So, a CA is *identical* to a weighted PCoA.
 
 A weighted PCoA is done in R using the `wcmdscale()` function in the `vegan` package.
 Let's do this on a new dataset, `mite`, which has more data points, so you can see how a weighted PCoA is identical to CA.
 Load the `mite` dataset using `data(mite)` (it's from the `vegan` package), and look at the help file for details about this dataset.
 First, create a chi-square distance matrix of the dataset using `mite_chi <- distance(mite, method = "chi.distance", dist = TRUE)`.
 Soil cores (think of them like sites) are rows, so this is what is being compared.
-Soil cores with smaller distances will be more similar in terms of their species composition and abundances.
+Soil cores with smaller distances will be more similar in terms of their mite species composition and abundances.
 Now run the weighted PCoA on the distance matrix with `mite_wpcoa <- wcmdscale(mite_chi, k = nrow(mite) - 1, eig = TRUE, w = rowSums(mite) / sum(mite))`, where the `w = rowSums(mite) / sum(mite)` argument tells us to weigh soil cores by the abundance of mite individuals in each core relative to the number of all mite individuals in the dataset.
 Now create the plot of soil cores with `plot(mite_wpcoa$points[, 1:2])`.
 
@@ -465,7 +465,7 @@ It does this by leveraging computing power to try many different layouts of poin
 Because of the computing power involved, NMDS is a relatively new ordination technique.
 Also, because NMDS uses this iteration technique, it does not perform SVD on a distance matrix, so the axes are not fit through the axes of greatest variation and there is no percent variance explained by the axes.
 How the points are related to axes in NMDS is completely arbitrary; all that matters is how close points are to each other.
-Lastly, like with PCoA, NMDS can be done on *any* distance matrix.
+Lastly, as with PCoA, NMDS can be done on *any* distance matrix.
 
 To do an NMDS in R, we will use the `isoMDS()` function from the `MASS` package.
 We will use our `haireye` dataset from before (`haireye <- margin.table(HairEyeColor, 1:2)`).
@@ -665,8 +665,7 @@ For ordination, the unifying method is PCoA, of which PCA and CA are specialized
 That is, PCA can be thought of as a PCoA done on a Euclidean distance matrix, and CA can be thought of as a PCoA done on a chi-square distance matrix.
 NMDS is the outlier ordination method, as it doesn't use SVD and instead "brute force" searches for the optimal configuration of points in a reduced number of dimensions (e.g., two or three).
 
-Ordination and cluster analysis are unified by the fact that they both analyze distance matrices.
-So these two methods analyze identical inputs but display the results in different fashions.
+Ordination and cluster analysis are unified by the fact that they both analyze distance matrices, so these two methods analyze identical inputs but display the results in different fashions.
 Ordination plots multivariate data in a reduced dimensional space, with closer points reflecting observations with more similar variables.
 In this way, ordination can be thought of as displaying similarities between observations on a continuous scale.
 Cluster analysis, on the other hand, places data points in clusters, so it portrays similarities between observations in a discrete fashion.
