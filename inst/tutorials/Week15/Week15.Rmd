@@ -453,7 +453,7 @@ Let's say we wanted to test if the red group in the figure below is significantl
 The observed t-statistic is 0.81, so we want to calculate the probability of getting values of t that are greater than or equal to 0.81.
 This is equivalent to using the CDF for the t-distribution, i.e., `pt()`.
 
-```{r echo = FALSE, fig.cap = "**Figure 9.** The left plot shows two distributions, and we want to calculate a one-tailed P-value to see if the mean of the red group is significantly larger than the mean of the blue group. The right plot shows the sampling distribution of the test statistic (i.e., the t-statistic), assuming the null hypothesis is true (i.e., there is no difference between the groups). The P-value is equivalent to the probability of getting a test statistic greater than or equal to that observed (0.81), and this is equal to the gray-shaded area under the curve. One can calculate the area using the CDF for the t-distribtion."}
+```{r echo = FALSE, fig.cap = "**Figure 9.** The left plot shows two distributions, and we want to calculate a one-tailed P-value to see if the mean of the red group is significantly larger than the mean of the blue group. The right plot shows the sampling distribution of the test statistic (i.e., the t-statistic), assuming the null hypothesis is true (i.e., the mean difference between groups equals zero). The P-value is equivalent to the probability of getting a test statistic greater than or equal to that observed (0.81), and this is equal to the gray-shaded area under the curve. One can calculate the area using the CDF for the t-distribtion."}
 
 set.seed(100)
 x <- rnorm(20)
@@ -475,6 +475,7 @@ polygon(c(t.res$statistic, x[x >= t.res$statistic], max(x)), c(0, dt1[x >= t.res
 
 Let's do this in the console below (I have already written the code for the two groups for you in the console; the object names are `red` and `blue`).
 Let's make R do the work for us by having it calculate the t-statistic and degrees of freedom, which is the one parameter in the t-distribution that is a function of sample size.
+These numbers can be complicated to compute, so we will have R do it for us using `t.test()`. 
 So enter `t.res <- t.test(red, blue, alternative = "greater")` (`alternative = "greater"` is telling R that we're doing a one-tailed test, testing if the first-entered object is significantly larger than the second-entered object).
 Then use the t-distribution's CDF to calculate the P-value: `1 - pt(t.res$statistic, t.res$parameter)` or `pt(t.res$statistic, t.res$parameter, lower.tail = FALSE)`.
 As you can see, the resulting probability is exactly the same as the P-value from `t.test()`!
@@ -847,7 +848,7 @@ As before, we can transform either AIC or AIC~c~ scores to weights using `akaike
 
 2. Let's analyze a new dataset, `marketing`, found in the `datarium` package.
 Enter `?marketing` to see what this dataset is.
-Let's say we wanted to assess if advertising in traditional media (`newspaper`) better explains sales than advertising in digital media (`youtube` and `facebook`).
+Let's say we wanted to assess whether `sales` is better explained by advertising in traditional media (`newspaper`) or digital media (`youtube` and `facebook`).
 Fit the two models (`lm(sales ~ newspaper)` & `lm(sales ~ youtube + facebook)`) and compute the raw AIC~c~ scores and their weights.
 
 ```{r exer2, exercise = TRUE}
@@ -892,7 +893,7 @@ Conversely, it can be argued that inference is never done in a vacuum, and there
 For example, a presidential approval rating poll in a county gives 41% even though other organizations got around 55% in the same county.
 Should the first poll ignore the others' results, even though it's the outlier?
 Moreover, one's dataset can be nonrepresentative or incomplete, and it would behoove any researcher to incorporate prior information to ameliorate this.
-Bayesian methods offer a principled, formalized way of combining prior information with data when making statistical inferences.
+Bayesian methods offer a principled, formalized, and transparent way of combining prior information with data when making statistical inferences.
 
 In this tutorial, we will go over how one uses Bayes' theorem to combine prior information with the likelihood function to get the posterior probability distribution.
 
@@ -901,7 +902,7 @@ In this tutorial, we will go over how one uses Bayes' theorem to combine prior i
 
 Much like likelihood, Bayesians are interested in the probability of some hypothesis/model/parameter, given the data.
 This is known as the **posterior probability**, which is most informative when characterized as a distribution.
-The posterior probability distribution is simply the prior probability times the likelihood function.
+The posterior probability distribution is proportional to the prior probability times the likelihood function.
 The **prior probability** is a probability distribution that quantifies all the prior information regarding some quantity of interest.
 All this is formalized with Bayes' theorem (or rule), which is:
 
@@ -925,6 +926,7 @@ In fact, the show *Primetime* ran an experiment addressing this question and fou
 Let's say I think this probability is low (around 0.3) but not zero.
 Furthermore, I'm not very confident in my 0.3 guesstimate, so I will make the distribution wide.
 The standard distribution for modeling a probability is the **beta distribution**, which is continuous from zero to one and can take on a number of different shapes, as determined by its two parameters: $\alpha$ and $\beta$ (see figure below).
+[Click this link](http://varianceexplained.org/statistics/beta_distribution_and_baseball/) for a nice intuitive explanation of how the beta distribution works.
 
 ![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Beta_distribution_pdf.svg/1200px-Beta_distribution_pdf.svg.png){width="70%"}
 
@@ -1011,6 +1013,34 @@ Plugging in the proper numbers gives a mean of about 0.04, which is our estimate
 We can also use `qbeta()` to get the 95% confidence interval, termed **credible interval** in Bayesian inference: `qbeta(c(0.025, 0.975), shape1 = 2 + 0, shape2 = 3 + 40 - 0)`.
 
 ```{r posterior, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r posterior-solution}
+# parameters of prior distribution (beta)
+a <- 2
+b <- 3
+# data
+X <- 0
+n <- 40
+# parameters of posterior distribution (beta)
+a.post <- a + X
+b.post <- b + n - X
+
+# plotting the posterior distribution
+p <- seq(0, 1, length.out = 1000)
+plot(
+  p, 
+  dbeta(p, shape1 = a.post, shape2 = b.post), 
+  type = "l", 
+  lwd = 2, 
+  ylab = "P(H|D)", 
+  main = "Posterior distribution"
+  ) # compare to plot above (it's the same, but y-axis is different; this one is a proper probability distribution)
+# posterior mean
+a.post / (a.post + b.post)
+# 95% credible intervals
+qbeta(c(0.025, 0.975), shape1 = a.post, shape2 = b.post)
 ```
 
 With more complicated models, we cannot use algebra to derive the posterior PDF.
@@ -1071,7 +1101,7 @@ It may seem complicated at first, but all it involves is weighting the likelihoo
 As a result, if you're familiar with likelihood methods, you already understand 90% of Bayesian statistics. 
 While many may view the incorporation of prior information into one's analysis as a subjective and borderline unethical exercise, I believe that this is a great strength of Bayesian methods.
 I can think of exactly zero instances where humans make decisions without drawing on prior experience (either consciously or subconsciously).
-Bayesian methods offer a principled and formalized way of combining prior information with the data, whereas most researchers do so in a non-transparent, ad hoc manner. 
+Bayesian methods offer a principled, formalized, and transparent way of combining prior information with the data, whereas most researchers do so in a non-transparent, ad hoc manner. 
 The Bayesian interpretation of a confidence interval (i.e., credible interval) is also more intuitive: a 95% credible interval means that there's a 95% probability that the parameter lies within the estimated interval.
 
 As I mentioned in the *Introduction*, I do not expect you to be able to build your own models after the lecture and this tutorial.
