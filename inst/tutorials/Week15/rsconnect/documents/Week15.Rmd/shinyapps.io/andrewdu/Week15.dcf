@@ -1,0 +1,12 @@
+name: Week15
+title: Week15
+username: andrewdu
+account: andrewdu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13418941
+bundleId: 9399501
+url: https://andrewdu.shinyapps.io/Week15/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
