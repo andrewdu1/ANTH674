@@ -14,7 +14,7 @@ library(knitr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Week 9:** Modern regression models
+# **Week 10:** Modern regression models
 
 #### ANTH 674: Research Design and Analysis in Anthropology
 #### Professor Andrew Du

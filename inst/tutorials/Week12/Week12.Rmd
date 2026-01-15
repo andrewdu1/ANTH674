@@ -1,5 +1,5 @@
 ---
-title: "Multivariate models & principal components analysis"
+title: "Mixed models and autocorrelation"
 output: 
   learnr::tutorial:
     progresive: true
@@ -10,14 +10,19 @@ runtime: shiny_prerendered
 ```{r setup, include = FALSE}
 library(learnr)
 library(knitr)
-
-library(mvtnorm)
-library(RCurl)
+library(nlme)
+library(lme4)
+library(ape)
+library(lattice)
+library(gstat)
+library(sp)
+library(spatial)
+library(ncf)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Week 12:** Multivariate models & principal components analysis
+# **Week 12:** Mixed models and autocorrelation
 
 #### ANTH 674: Research Design and Analysis in Anthropology
 #### Professor Andrew Du
@@ -25,538 +30,799 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-Thus far, we have learned only about models where there is one dependent variable (DV) involved (i.e., univariate statistics).
-But many times, we have multiple variables we want to model as the DV, or we're interested in the structure and visualization of our multivariate dataset.
-These questions are addressed in the branch of statistics known as **multivariate statistics**.
+This week, we covered two different but related topics: linear mixed models and autocorrelation.
+**Linear mixed models** (LMMs) model a DV as a linear function of **fixed** and **random factors** (sometimes also called fixed and random effects, respectively).
+**Fixed factors** are categorical variables whose levels are the only ones of interest.
+Therefore, we estimate coefficients for the different levels because we are interested in how the intercept and/or slope of the DV against another IV changes with each level in our fixed factor.
+**Random factors** are categorical variables whose levels are a random, representative sample of some larger population of levels.
+Therefore, we are not interested in estimating coefficients for each level but instead want to infer something about the population of intercepts/slopes from which our levels are sampled.
+A utilitarian perspective can help with determining whether your factor is fixed or random: do you want to estimate coefficients for each level (along with P-values and confidence intervals) or do you want to estimate the SD of the population of intercepts/slopes from which your levels are sampled? 
+As always, the distinction depends on your research question!
 
-![](https://d2mvzyuse3lwjc.cloudfront.net/doc/en/Tutorial/images/Transparent_Parametric_Surfaces_combined_with_Scatter_Plot/Transparent_Parametric_Surfaces_01.png?v=47975){width="50%"}
+![](https://hlplab.files.wordpress.com/2011/05/simpsons-paradox.png?w=1410){width="75%"}
 
-This tutorial will teach you multivariate statistics in two main parts:
+The second topic we covered was how to measure and deal with autocorrelation in your analyses.
+As a reminder, **autocorrelation** is simply non-independence in your data, where data points closer in space/time/phylogeny are more similar.
+Autocorrelation is somewhat related to LMMs because one can specify blocking factors as random factors to account for autocorrelation in LMMs.
+What we specifically covered was how to isolate the autocorrelated noise component in one's data through detrending.
+We also covered how to measure autocorrelation in the data using correlograms.
+Lastly, we went over how to measure the association between two variables in time and space using cross-correlograms and generalized least squares.
 
-1. Fitting and interpreting **multivariate models**, where there is more than one DV and one categorical independent variable (IV).
-2. Condensing multiple variables into fewer composite variables for visualization purposes (i.e., **ordination**).
+![](https://www.influxdata.com/wp-content/uploads/autocorrelation-in-time-series-data-figure-5.png){width="75%"}
 
-I rarely see multivariate models in (biological) anthropology, but ordination is *extremely* common, especially principal components analysis.
-This tutorial will teach you how to execute these multivariate methods in R, focusing on continuous variables only.
-By the end of this tutorial, you should be able to conduct basic multivariate statistics for your own research, if your research questions demand it.
+In this tutorial, we will cover how to do all of the above in R.
+Where necessary, we will do some simple simulations to really make clear how some of these methods and concepts work.
+At the end of the tutorial, you should be able to run basic LMMs and know how to handle autocorrelation in your own research.
 
 
 ## Goals for this tutorial
 
 #### 1) Continue the never-ending journey of familiarizing yourself with R.
-#### 2) Learn what multivariate models and their advantages are.
-#### 3) Learn how to fit multivariate models with one categorical independent variable (i.e., Hotelling's *T*^2^ and MANOVA).
-#### 4) Learn what a principal components analysis (PCA) is and what it does.
-#### 5) Learn how to fit a PCA to data in R. 
-#### 6) Learn how to extract eigenvalues and eigenvectors from a multivariate dataset and understand what their roles are in PCA.
+#### 2) Know when to specify a factor as fixed or random.
+#### 3) Learn how to run a LMM in R.
+#### 4) Learn how to do variance partitioning with LMMs.
+#### 5) Learn what the three components of temporal and spatial (and phylogenetic data are) and how to isolate autocorrelated noise. 
+#### 6) Learn how to do correlograms, cross-correlograms, and generalized least squares in R.
 
 
-## Multivariate models
+## Random factors
 
-Multivariate models are those where more than one DV are modeled as a function of one or more IVs.
-I will illustrate why we would want to do this with an example.
-Imagine I'm interested in how skull morphology varies across certain groups of humans.
-I've taken a bunch of linear measurements, connecting osteometric points on each skull (see figure below).
-Instead of testing each linear measurement separately as a function of group, I can analyze all linear measurements together, which is a true test of overall skull morphology as a function of group (it also means less P-values calculated!).
-That is, fitting a multivariate model instead of multiple univariate models asks a different research question!
+I briefly defined random factors in the *Introduction*, and I taught when to use them and how they're used in lecture. 
+In this tutorial, we will learn about random factors via another avenue: simulations.
 
-![](http://people.wku.edu/darlene.applegate/forensic/lab9/skullpts1.gif){width="35%"}
+### Random intercept model
 
-The main advantage of multivariate models is that they can account for the correlation between DVs, which may reveal differences between groups that are undetectable when using univariate methods to analyze each DV separately.
-This tutorial will cover only those multivariate models where multiple DVs are modeled as a function of one categorical IV.
-Next week's lecture and tutorial will briefly cover multivariate models with a continuous IV.
+As I mentioned in the *Introduction*, one specifies a factor as random if one is interested in estimating the SD of the population of intercepts or slopes from which the levels are sampled.
+Let's see how this works by first simulating data and then estimating the population SD of the intercepts across levels using LMMs.
 
-### Multivariate normal distributions
+One can think of a random factor as an extra term added to the intercept:
 
-**NB:** I didn't really cover this topic in class, so feel free to skim this section (it's not necessary to complete the exercises or HW).
+\begin{align}
+  Y = \beta_0 + \alpha + \beta_1 X + \epsilon, 
+\end{align}
 
-Multivariate models assume that the dependent variables are **multivariate normally distributed**.
-That is, each variable is normally distributed and possibly correlated with each other. 
-Let's illustrate this concept by simulating a multivariate normal distribution, focusing on two variables for simplicity's and visualization's sake (i.e., the bivariate normal distribution).
+where $\alpha \sim N(0, \tau)$. 
+That is, $\alpha$ is a random factor that is normally distributed with mean zero and SD equal to $\tau$.
+So each level within a random factor is associated with a number drawn from this normal distribution that tells us by how much that level's intercept deviates from the main estimated intercept ($\beta_0$, a fixed effect).
+This SD ($\tau$) is the parameter estimated in a LMM, and hopefully you can now see why levels from a random factor are associated with some population, whose SD ($\tau$) we want to estimate.
 
-A bivariate normal distribution is an extension of the univariate normal to two variables.
-Whereas the univariate normal distribution has a single mean and SD (or its square: variance), the bivariate normal distribution has a vector of two means (one for each variable) and a **variance-covariance matrix**.
-The variance-covariance matrix for a bivariate normal distribution is a 2x2 square matrix, where each **diagonal** element is the variance for one of the variable's normal distributions (these two numbers can be different), and the **off-diagonal** elements are the **covariance** between the two variables (the off-diagonal elements must be the same).
-The covariance is basically an unstandardized correlation (a correlation is standardized to be between -1 and 1).
+Below is the code to simulate the data, with comments on what each line is doing (code adapted from [here](https://m-clark.github.io/mixed-models-with-R/random_intercepts.html)).
+After you get somewhat of a handle of what's going on, copy and paste the code into the console below.
 
-![Gray squares are the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
+```{r eval=FALSE}
+intercept_SD <- 0.5 # setting SD of population of intercept deviations
+e_SD <- 0.25 # setting SD of population of error terms
 
-I have provided code in the console below for simulating a bivariate normal distribution.
-Each variable will have 100 data points, a mean of 1, and a variance of 2.
-The zeroes in the off-diagonals mean that the two variables are uncorrelated.
-Go ahead and run the code (see what the output `bivar_norm` is and why `plot(bivar_norm)` works).
+set.seed(1234) # to make simulations replicable
+Nlevels <- 100 # number of levels within the random factor
+NperLevel <- 5 # number of observations per level
+N <- Nlevels * NperLevel # total number of observations
+Levels <- factor(rep(1:Nlevels, each = NperLevel)) # create factor level associated with each observation
+a <- rnorm(Nlevels * NperLevel, sd = intercept_SD) # simulate random draws from normal distribution of intercepts (specifically, deviations from main intercept)
+e <- rnorm(N, sd = e_SD) # simulate error terms
+x <- runif(N) # simulate IV
+y <- 2 + .5 * x + a[Levels] + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random factor, and add error terms
 
-```{r bivar, exercise = TRUE}
-n <- 100
-means <- c(1, 1)
-varcov <- matrix(
-  c(2, 0,
-    0, 2), 
-  byrow = TRUE, 
-  nrow = 2)
-
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
-
-plot(bivar_norm)
+d <- data.frame(x, y, Levels) # combine everything into one data frame
 ```
 
-```{r bivar-solution}
-hist(bivar_norm[, 1])
-hist(bivar_norm[, 2])
-
-colMeans(bivar_norm) # mean of each variable
-apply(bivar_norm, 2, var) # variance of each variable
-
-# trying out different variance and covariance values
-varcov <- matrix(
-  c(5, 3,
-    3, 5), 
-  byrow = TRUE, 
-  nrow = 2)
-
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
-
-plot(bivar_norm)
-```
-
-Try plotting histograms of each of the variables separately (they should be normally distributed).
-Does the mean of each variable closely match our prespecified number (i.e., 1)?
-What about the variance for each variable?
-If you increase the diagonal elements, the variance of each variable should increase (and vice versa).
-If the off-diagonals are non-zero, the variables will be correlated (positive off-diagonals will generate a positive correlation, while negative off-diagonals will create negative correlations).
-Go ahead and try out different values for the means, variances, and covariances.
-
-In the next topic, we will conduct a Hotelling's *T*^2^ test on data simulated from a bivariate normal distribution. 
-
-
-## Hotelling's *T*^2^
-
-**Hotelling's *T*^2^** models more than one DV as a function of one categorical IV with two levels (i.e., the IV is binomial).
-It is the multivariate extension of the t-test.
-Whereas the t-test tests if two groups' means are significantly different, Hotelling's *T*^2^ tests if two groups' centroids are significantly different.
-A **centroid** is a measure of central tendency for more than one variable.
-It can be thought of as the central tendency of a cloud of points in *n* dimensions, where *n* is the number of variables involved.
-It is calculated simply as the mean of each variable, which gives its coordinates.
-
-I have simulated two DVs for you (using the code from the previous topic), and they are saved as two columns in the matrix, `bivar_norm`.
-Go ahead and calculate the centroid of the two variables.
-You can create a scatter plot of the two DVs against each other with `plot(bivar_norm)`, and then add the centroid to the plot using `points()`.
-
-```{r hotelling-setup, echo = FALSE}
-n <- 100
-means <- c(1, 1)
-varcov <- matrix(c(2, 0,
-                   0, 2), byrow = TRUE, nrow = 2)
-
-set.seed(100)
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
-
-
-set.seed(100)
-gp1 <- rmvnorm(100, mean = c(1, 1))
-gp2 <- rmvnorm(100, mean = c(3, 3))
-
-d <- data.frame(rbind(gp1, gp2), grp = rep(1:2, each = 100))
-colnames(d)[1:2] <- c("DV1", "DV2")
-```
-
-```{r hotelling, exercise = TRUE}
+```{r intercept, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r hotelling-solution}
-# centroid
-centroid <- colMeans(bivar_norm)
+```{r intercept-solution}
+lmm.res <- lme(y ~ x, random = ~1|Levels, data = d)
 
-plot(bivar_norm)
-points(centroid[1], centroid[2], pch = 16, col = "red", cex = 2)
+summary(lmm.res)
 
-# Hotelling's T2
-anova(manova(as.matrix(d[, c("DV1", "DV2")]) ~ d$grp))
+ranef(lmm.res)
 
-anova(manova(cbind(DV1, DV2) ~ grp, data =d)) # also works if you use cbind() to create the matrix
+hist(ranef(lmm.res)[, 1])
+
+mean(ranef(lmm.res)[, 1])
+sd(ranef(lmm.res)[, 1])
 ```
 
-Now let's conduct a Hotelling's *T*^2^ on the data in the plot below.
-There are two groups (`grp`), each of which has two DVs (`DV1`, `DV2`).
-The two groups are represented by different colors, with centroids as solid points.
-The data are found in the dataframe, `d`.
+Now fit a LMM to the data.
+This is done using `lme()` from the `nlme` package.
+The proper line of code is `lmm.res <- lme(y ~ x, random = ~1|Levels, data = d)`.
+The `random = ~1|Levels` tells R that we want to estimate the SD of intercepts (`~1`) across levels within the factor `Levels`.
+Enter the code above. 
 
-```{r echo=FALSE}
-set.seed(100)
-gp1 <- rmvnorm(100, mean = c(1, 1))
-gp2 <- rmvnorm(100, mean = c(3, 3))
+Now enter `summary(lmm.res)` to see the full suite of results.
+First you'll see that the estimated SD for the intercept is 0.5, precisely what we set the population SD to be.
+The Residual SD is 0.24, close to the 0.25 we specified.
+The intercept and slope are 1.9 and 0.53, close to the values we picked.
+And lastly, you can see that the fixed effects (intercept and slope) are significant; we can get P-values for simple LMMs like this one but not for more complicated LMMs (which can't be run using `lme()`). 
 
-plot(gp1, xlim = range(c(gp1[,1], gp2[,1])), ylim = range(c(gp1[,2], gp2[,2])), col = "blue", xlab="DV1", ylab="DV2")
+**NB:** A P-value can be vanishingly small but can never be zero.
+Zero in this case is synonymous with a very, very, very small number.
 
-points(gp2, col="red")
+We can also get out the deviations (from the main intercept) for each observed level sampled from the population.
+This is done with `ranef(lmm.res)`, which returns the result as a data frame (this is also how you plot each level's fitted lines on a scatter plot).
+Enter `hist(ranef(lmm.res)[, 1])` to see the distribution sampled from the population.
+Because we have 100 levels, a sizable sample size, the mean and SD of `ranef(lmm.res)[, 1]` should be very close to the population mean and SD (0 and 0.5, respectively).
 
-points(mean(gp1[,1]), mean(gp1[,2]), pch=21, bg="blue", cex=2, col="gray")
+### Random intercept and slope model
 
-points(mean(gp2[,1]), mean(gp2[,2]), pch=21, bg="red", cex=2, col = "gray")
+To finish out this section, we will simulate another set of data, this time for a random intercept *and* slope model.
+This equation is now:
+
+\begin{align}
+  Y = \beta_0 + \alpha_0 + (\beta_1 + \alpha_1) X + \epsilon, 
+\end{align}
+
+where $\alpha_0 \sim N(0, \tau_0)$ and $\alpha_1 \sim N(0, \tau_1)$. 
+$\alpha_0$ and $\tau_0$ are $\alpha$ and $\tau$ from above, respectively, and $\alpha_1$ is a random factor that is normally distributed with mean zero and SD equal to $\tau_1$.
+$\alpha_1$ is the population of each level's deviation from the fixed slope effect, $\beta_1$.
+
+Below is the proper code with comments.
+Review it and then copy and paste it into the console below.
+
+```{r eval=FALSE}
+intercept_SD <- 0.75 # setting SD of population of intercept deviations
+slope_SD <- 0.25 # setting SD of population of slope deviations
+e_SD <- 0.25 # setting SD of population of error terms
+
+set.seed(1234) # to make simulations replicable
+Nlevels <- 100 # number of levels within the random factor
+NperLevel <- 5 # number of observations per level
+N <- Nlevels * NperLevel # total number of observations
+Levels <- factor(rep(1:Nlevels, each = NperLevel)) # create factor level associated with each observation
+a_0 <- rnorm(Nlevels * NperLevel, sd = intercept_SD) # simulate random draws from normal distribution of intercepts (specifically, deviations from main intercept)
+a_1 <- rnorm(Nlevels * NperLevel, sd = slope_SD) # simulate random draws from normal distribution of slopes (specifically, deviations from main slope)
+e <- rnorm(N, sd = e_SD) # simulate error terms
+x <- runif(N) # simulate IV
+y <- (2 + a_0[Levels]) + (.5 + a_1[Levels]) * x + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random factors, and add error terms
+
+d <- data.frame(x, y, Levels) # combine everything into one data frame
 ```
 
-We use Hotelling's *T*^2^ to assess whether the two groups' centroids are significantly different by modeling the two DVs as a function of the binomial IV.
-First recall that an ANOVA done on two groups (i.e., a binomial IV) is the same as a t-test.
-This also applies to multivariate models, so we can use the `manova()` function to conduct a Hotelling's *T*^2^ test.
-`manova()` uses formula notation, where the DV must be a matrix, whose columns are the individual variables (can use `as.matrix()` or `cbind()`).
-Wrap `anova()` around the `manova()` function to get the ANOVA table.
-
-As you can see, the two groups' centroids are significantly different (the P-value of interest is the one associated with the categorical IV).
-The test statistic used for calculating the P-value is Pillai's trace, which is fairly forgiving when it comes to the assumption of multivariate normality.
-
-
-## Multivariate analysis of variance (MANOVA)
-
-A multivariate analysis of variance (MANOVA) is the multivariate extension of an ANOVA: it model multiple DVs as a function of one or more categorical IVs.
-We will specifically look at a one-way MANOVA, which models multiple DVs as a function of one categorical IV.
-
-For this topic, we will analyze the example I looked at in class: we have two DVs, which are student satisfaction (`Satisfaction`) and test scores (`Test`), as a function of one categorical IV, which is three different teaching methods (`Method`).
-The data are found in the dataframe, `teach`, and are plotted below (triangles represent centroids).
-
-```{r echo=FALSE}
-man_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/MANOVA_example.csv")
-teach <- read.csv(text = man_url)
-
-plot(teach$Satisfaction, teach$Test, type = "n", xlab = "Student satisfaction scores", ylab = "Test scores")
-
-points(teach$Satisfaction[teach$Method==1], teach$Test[teach$Method==1], pch=16)
-
-points(mean(teach$Satisfaction[teach$Method==1]), mean(teach$Test[teach$Method==1]), pch=24, cex=2, bg="black", col="gray")
-
-points(teach$Satisfaction[teach$Method==2], teach$Test[teach$Method==2], pch=16, col = "red")
-
-points(mean(teach$Satisfaction[teach$Method==2]), mean(teach$Test[teach$Method==2]), pch=24, cex=2, bg="red", col="gray")
-
-points(teach$Satisfaction[teach$Method==3], teach$Test[teach$Method==3], pch=16, col = "blue")
-
-points(mean(teach$Satisfaction[teach$Method==3]), mean(teach$Test[teach$Method==3]), pch=24, cex=2, bg="blue", col="gray")
-
-legend("bottomright", c("Method 1", "Method 2", "Method 3"), pch=c(16,16,16), col=c("black", "red", "blue"))
-```
-
-We will specifically analyze this dataset to see how multivariate models can reveal differences between groups that are undetected using multiple univariate models.
-This is because multivariate models incorporate information on the relationships between DVs when determining whether groups' centroids are significantly different (the same is true of Hotelling's *T*^2^ vs. a t-test). 
-
-```{r man-setup, echo = FALSE, message = FALSE}
-man_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/MANOVA_example.csv")
-teach <- read.csv(text = man_url)
-```
-
-First, run two separate one-way ANOVAs, each testing whether student satisfaction or test scores are significantly different across teaching methods (you can create box plots to visualize the data).
-
-```{r man, exercise = TRUE}
+```{r slope, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r man-solution}
-# box plots
-boxplot(Satisfaction ~ Method, data = teach)
-boxplot(Test ~ Method, data = teach)
+```{r slope-solution}
+lmm.res1 <- lme(y ~ x, random = ~x | Levels, data = d)
 
-# ANOVAs
-anova(aov(Satisfaction ~ Method, data = teach))
-anova(aov(Test ~ Method, data = teach))
-
-# MANOVA
-anova(manova(as.matrix(teach[, c("Test", "Satisfaction")]) ~ teach$Method))
-anova(manova(cbind(Test, Satisfaction) ~ Method, data = teach)) # also works
+ranef(lmm.res1)
 ```
 
-As you can see, neither of the one-way ANOVAs are significant (though this is likely due to small sample sizes, as `Test` looks like it varies across `Method` according to a box plot).
+Fit the LMM with `lmm.res1 <- lme(y ~ x, random = ~x | Levels, data = d)`.
+The `random = ~x | Levels` tells R that we want to estimate the SD of deviations for the slope across the factor `Levels` (the intercept is implied, just like it is when you use `lm()`).
 
-Now use `manova()` to run a one-way MANOVA with the DVs `Test` and `Satisfaction` as a function of `Method`.
-Wrap `anova()` around `manova()` to get the ANOVA table and P-value.
-We now have a significant result!
-This result illustrates that MANOVAs have greater statistical power and are able to detect smaller effects than individual univariate ANOVAs.
-You can think of this as MANOVA incorporating and leveraging more information (i.e., the correlation between DVs) than ANOVAs.
-Indeed, you can see in the plot that the diagonal ellipse of blue points is separate from the red and black points when the DVs are plotted against each other in two dimensions.
-That is, blue has a larger test score for a given satisfaction score when compared to red and black.
+Compare the estimated parameters with those you specified (i.e., main intercept, main slope, intercept SD, slope SD, and residual SD). 
+
+As before, you can get out each level's deviations for the intercept and slope using `ranef()`.
+
+**NB:** I don't go over how to do this, but you can fit *generalized linear mixed models* using `glmer()` in the `lme4` package.
+There is just one extra argument, `family = `, which you use to specify the error distribution (e.g., `family = "binomial"` would fit a logistic regression mixed model). 
+
+
+## Comparing ANCOVA and LMM
+
+Comparing the goals and results of ANCOVA to LMM will also make clearer when one would make a factor random rather than fixed.
+
+For this section, we will use the `sleepstudy` dataset in the `lme4` package.
+Enter `?sleepstudy` to get an idea of what the dataset and variables therein are.
+
+Let's fit an ANCOVA with an interaction term to see see how the intercept and slope of `Reaction ~ Days` change as a function of the levels within `Subject`.
+
+```{r ancova, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r ancova-solution}
+ancova.res <- lm(Reaction ~ Days * Subject, data = sleepstudy)
+
+# number of estimated coefficients
+length(ancova.res$coefficients) 
+
+lmm.res <- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)
+```
+
+As you can see, a total of 36 coefficients were estimated, two for each subject (intercept and slope)!
+This would be fine if the subjects were of interest for whatever reason, and we wanted to know what their estimated intercepts and slopes were.
+But, we have 180 data points only, which means we have 5 data points per estimated coefficient (we are definitely overfitting the data!).
+
+A LMM, on the other hand, would estimate only two fixed effects (intercept and slope) and two other parameters (one SD each for the populations of intercept and slope deviations).
+Go ahead and fit the LMM.
+
+### Shrinkage/regularization
+
+At this point, feel free to compare the estimated slope and intercept for each level for an ANCOVA vs. a LMM (you can do this for a few subjects; I present code for doing this for all subjects in "Solution").
+Remember that each level's intercept in an ANCOVA is obtained by adding the baseline intercept to that level's main effect (e.g., to get the intercept for `Subject309`, add the main intercept, `244.193`, with the coefficient `Subject309`,  `-39.138`).
+To get the level's slope, add the baseline slope to that subject's interaction term (e.g., to get the slope for `Subject309`, add `21.765` with `-19.503`).
+To get a level's intercept and slope from a LMM, you just add the deviation to its respective fixed effect (`Subject309`'s intercept is the fixed intercept effect, `251.405`, plus the intercept deviation, `-40.398`).
+Recall that you extract the deviations using `ranef(lmm.res)` (though I present another way of extracting deviations in "Solution").
+
+```{r shrink, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r shrink-solution}
+# ANCOVA
+ancova.res <- lm(Reaction ~ Days * Subject, data = sleepstudy)
+ancova.coef <- ancova.res$coefficients
+
+# intercepts
+c(ancova.coef["(Intercept)"], ancova.coef["(Intercept)"] + ancova.coef[grep("Days", names(ancova.coef), invert = TRUE)[-1]])
+
+# slopes
+c(ancova.coef["Days"], ancova.coef["Days"] + ancova.coef[grep("Days", names(ancova.coef))[-1]])
+
+
+# LMM
+lmm.res <- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)
+
+# intercepts
+lmm.res$coefficients$fixed["(Intercept)"] + lmm.res$coefficients$random$Subject[, "(Intercept)"]
+
+# slopes
+lmm.res$coefficients$fixed["Days"] + lmm.res$coefficients$random$Subject[, "Days"]
+```
+
+As you'll see, the LMM's intercept and slope will be closer to their fixed counterparts (i.e., their averages) than those from ANCOVA; recall that the LMM's fixed effects are the same as the intercept and slope for a linear model fit without `Subject` as a random factor.
+This phenomenon is know as **shrinkage**, **regularization**, or **partial pooling**.
+Because each level's intercept deviation, for example, is sampled from a population with mean 0, levels' intercepts are expected to be close to zero on average.
+Therefore, each level's deviation will be pulled towards zero (i.e., each level's intercept will be pulled towards the fixed intercept effect).
+If a level has few observations, its deviations will be pulled more towards zero (i.e., with little data, the best guess we can make is the average).
+Because of this shrinkage property, some researchers argue that one should *always* use a LMM as opposed to an ANCOVA, but this debate is beyond my pay grade. 
+
+!["No pooling" is the ANCOVA estimates, "Partial pooling" is the LMM estimates, and "Partial pooling (average)" is the fixed effect estimates. Model fit on `sleepstudy` dataset.](https://www.tjmahr.com/figs//2017-06-22-plotting-partial-pooling-in-mixed-effects-models/shrinkage-plot-1.png){width="75%"}
+
+### A note on blocking
+
+Multiple measurements were taken on each subject over time.
+This is known as a **repeated measures design**.
+Because of this, each subject's measurements are not independent.
+By including `Subject` as a random factor, however, we have effectively used this variable as a blocking factor.
+This accounts for the non-independent data for each subject.
+Fitting an ANCOVA does the same thing, but that's inappropriate here because we don't have a large enough sample size to match the large number of estimated coefficients.
+
+
+## Variance partitioning
+
+When one has multiple random factors within a LMM, one can do **variance partitioning** and see how much DV variation (not accounted for by the fixed effects) is attributable to each random factor.
+Perhaps more commonly, one can fit an intercept-only LMM and see how the DV variation is partitioned among the random factors.
+
+### Crossed random factors
+
+Random factors are **crossed** if each level within a factor is combined with each level from the other factor.
+We will analyze the crossed factors (`plate` and `sample`) from the `Penicillin` dataset from the package `lme4` for this section.
+
+Enter `?Penicillin` to get an idea of what the dataset and variables are.
+
+I entered the following code to make the summary plot from lecture (`dotplot()` is from the package `lattice`):
+
+```{r eval=FALSE}
+dotplot(
+  reorder(plate, diameter) ~ diameter, 
+  Penicillin, 
+  groups = sample, 
+  ylab = "Plate", 
+  xlab = "Diameter of growth inhibition zone (mm)", 
+  type = c("p", "a"), 
+  auto.key = list(
+    columns = 3, 
+    lines = TRUE, 
+    title = "Penicillin sample"
+    ), 
+  cex = 1.5
+  )
+```
+
+```{r cross, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r cross-solution}
+lmm.res <- lmer(diameter ~ 1 + (1 | plate) + (1 | sample), data = Penicillin)
+
+lmm.var <- as.data.frame(VarCorr(lmm.res))$vcov
+
+lmm.var / sum(lmm.var)
+```
+
+One can see that `diameter` varies a decent amount across plates (`plate`), but most of the variation is across penicillin samples (`sample`). 
+Let's fit an intercept-only LMM to quantify how much `diameter` variation is attributed to each random factor (i.e., `plate` and `sample`).
+
+Fitting a LMM with crossed random factors is difficult to do with `lme()`.
+This is where LMMs start to become complicated, and we have to switch to the `lmer()` function in the `lme4` package.
+To fit a LMM with crossed random factors using `lmer()`, enter `lmer(diameter ~ 1 + (1 | plate) + (1 | sample), data = Penicillin)`.
+The `(1 | plate) + (1 | sample)` is telling R that we want our intercept to vary across `plate` levels and `sample` levels.
+
+The main difference using `lmer()` is that no P-values are returned.
+This is not an accident, as P-values cannot be estimated accurately with complex LMMs (i.e., it is not clear how many degrees of freedom there are).
+
+We now need to get out the variances.
+This is done using `VarCorr()`, but the output is a bit annoying to work with.
+I find it's easier to transform the output using `as.data.frame()`, so enter `as.data.frame(VarCorr(lmm.res))`.
+The column we want is `vcov`.
+You can now interpret those variances as is, but I find it's more useful to transform them into proportion variance explained by dividing each element in the column by the column's sum.
+As we can see, the majority of the `diameter` variance is explained by `sample`, matching our intuition from the dot plot.
+
+### Nested random factors
+
+**Nested random factors** are those whose factors are nested within each other (like Russian nesting dolls).
+Examples include species nested within genera, hospitals nested within cities nested within states, etc.
+
+![](https://www.vermontcountrystore.com/ccstore/v1/images/?source=/file/v1572392947014410569/products/70072.main.png&height=700&width=450&outputFormat=JPEG&quality=0.8){width="40%"}
+
+For this section, we will use the `Pastes` dataset from the `lme4` package.
+See the help file for a description of the dataset.
+
+There are a total of 10 batches (`batch`), three casks (`cask`) per batch, and researchers tested the paste strength (`strength`) of two samples (`sample`) per cask.
+
+Here is a summary plot of the data (which I pulled from a paper, so no code): 
+
+![](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Pastes%20summary%20plot.jpg?raw=true){width="75%"}
+
+As you can see from the dataset and the figure, levels from `sample` are a combination of `batch` and `cask`.
+This is necessary so that we know, for example, that samples of `A:a` are associated with cask `a` from batch `A`, as opposed to batch `B`.
+
+A nested random factors LMM is fit using the same exact code as with crossed factors: `lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)`.
+This emphasizes how random factors' variances are calculated in the same exact way, regardless of whether the factors are crossed or nested.
+You can also do nested random factors using `lme()`: `lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)`.
+The `/` indicates that `sample` is nested within `batch` (this symbol also works for `lmer()`, e.g., `lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)`).
+
+
+```{r nest, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r nest-solution}
+lmm.res <- lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)
+# or
+lmm.res <- lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)
+
+as.data.frame(VarCorr(lmm.res))$vcov
+
+
+lmm.res1 <- lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)
+
+varcomp(lmm.res1, scale = TRUE)
+```
+
+The variance components are pulled out in the same exact way as before when using `lmer()`.
+Variance components can be extracted from an `lme()` result using `varcomp` in the package `ape` (so many different packages in this tutorial!).
+Enter `varcomp(lme.res)` to try it out.
+You can also set argument `scale = TRUE` to get out proportion variance explained.
+As you can see, most of the variance in `strength` is among casks (`sample`), rather than among `batch` or within `sample`.
 
 
 ## Exercise 1
 
-We will analyze the `iris` dataset for these questions.
+1. We're going to use the `gpa` dataset, which I've pre-loaded for you.
+I want to know the SD of the intercept and slope of GPA (`gpa`) as a function of semester (`occasion`) across levels within `student`.
+Fit the appropriate LMM. 
 
-1. I wonder if overall petal morphology (i.e., length and width) is significantly different between the `setosa` and `versicolor` species.
-First plot `Petal.Width` as a function of `Petal.Length` and color code the points by `Species`.
-Then plot the centroids for each `Species`.
-Finally, run a Hotelling's *T*^2^ to test if the centroids of the two petal variables are significantly different between `setosa` and `versicolor`.
-
-2. Run a one-way MANOVA testing if the centroids of all four `iris` measurements (`Sepal.Length`, `Sepal.Width`, `Petal.Length`, `Petal.Width`) are significantly different across all three species.
-As you can imagine, this would be *very* difficult to plot.
+2. We're going to analyze the `nurses` dataset, which I've pre-loaded for you.
+I want to know how the variance in nurses' stress (`stress`) is partitioned among `wardid`, which is nested within `hospital`.
+Get out the variance components to see if variation in stress is mostly explained by variation between hospitals, between wards, or within wards.
 
 ```{r exer1, exercise = TRUE}
 # Click "Solution" button when done
 ```
 
+```{r exer1-setup, message = FALSE, echo = FALSE}
+gpa_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/gpa.csv")
+gpa <- read.csv(text = gpa_url)
+
+nurses_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/nurses.csv")
+nurses <- read.csv(text = nurses_url)
+```
+
 ```{r exer1-solution}
 # Q1
-iris1 <- iris[iris$Species != "virginica", ] # remove virginica
-
-plot(iris1$Petal.Width ~ iris1$Petal.Length, type = "n")
-
-points(iris1$Petal.Width[iris1$Species == "setosa"] ~ iris1$Petal.Length[iris1$Species == "setosa"], col = "red")
-points(iris1$Petal.Width[iris1$Species == "versicolor"] ~ iris1$Petal.Length[iris1$Species == "versicolor"], col = "blue")
-
-points(mean(iris1$Petal.Length[iris1$Species == "setosa"]), mean(iris1$Petal.Width[iris1$Species == "setosa"]), pch = 16, col = "red", cex = 2)
-points(mean(iris1$Petal.Length[iris1$Species == "versicolor"]), mean(iris1$Petal.Width[iris1$Species == "versicolor"]), pch = 16, col = "blue", cex = 2)
-
-legend("topleft", c("setosa", "versicolor"), pch = c(16, 16), col = c("red", "blue"))
-
-anova(manova(cbind(Petal.Length, Petal.Width) ~ Species, data = iris1))
+gpa_lmm <-  lmer(gpa ~ occasion + (occasion | student), data = gpa)
+# or
+gpa_lmm1 <-  lme(gpa ~ occasion, random = ~occasion | student, data = gpa)
 
 # Q2
-iris_noSp <- subset(iris, select = -Species)
-anova(manova(as.matrix(iris_noSp) ~ iris$Species))
+nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)
+
+var.comp <- as.data.frame(VarCorr(nurses_nest))$vcov
+var.comp / sum(var.comp)
+# or
+nurses_nest1 <- lmer(stress ~ 1 + (1 | hospital / wardid), data = nurses)
+# use same VarCorr code as above
+# or 
+nurses_nest2 <- lme(stress ~ 1, random = ~ 1 | hospital / wardid, data = nurses)
+varcomp(nurses_nest2, scale = TRUE)
+# most variation between wards
 ```
 
 
-## Ordination
+## Decomposing a time series
 
-Ordinations are most commonly used to explore and visualize a multivariate dataset.
-The number of variables in one's dataset dictates the number of plot axes (e.g., visualizing `iris$Petal.Length` and `iris$Petal.Width` requires two plot axes).
-Therefore, it is impossible to plot more than three variables in a single plot.
-Ordination allows us to get around this problem by distilling multiple variables into a smaller number of composite variables.
-It does this by collapsing correlated variables into one (e.g., because `iris$Petal.Length` and `iris$Petal.Width` are strongly correlated, they offer redundant information and can be represented by one composite variable).
-This is why ordinations are known as **data reduction methods**.
+A **time series** is simply a vector of data points that are serially ordered in time.
 
-![](https://miro.medium.com/max/1619/0*5Iaw94wlYCTp0GuK.png){width="90%"}
+![](https://www.influxdata.com/wp-content/uploads/autocorrelation-in-time-series-data-figure-5.png){width="75%"}
 
-Different types of ordinations are used depending on the data type of one's variables.
-I will introduce ordination using principal components analysis, by far the most common ordination method, at least in anthropology.
+Time series, like spatial data, are made up of three additive components: trend, autocorrelated noise, and independent noise.
 
+We will simulate each of these components separately and then add them up to see how the three components additively combine to form a time series.
 
-## Principal components analysis
+### Simulations
 
-Principal components analysis (PCA) is an ordination method, used when all your variables are continuous.
-Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation ([see animation here](https://i.sstatic.net/lNHqt.gif); the specific line fitting method is called **major axis regression**).
-It then rotates the plot so this line (i.e., the first principal component or PC1) is now on the x-axis.
-Subsequent PCs are fit so that they're perpendicular to (and thus independent of) previous PCs.
-These subsequent PCs can be thought of as fitting the residual variation left over from previous PCs (this is also why they always explain less variation than previous PCs).
-Each PC represents a composite of the original variables, and this is how PCA condenses one's original variables into a few variables of interest (i.e., PCs).
-Note that you can only have as many PCs as you do variables, but it is usually the case that only the first several PCs are important (importance based on amount of variance in data explained).
+Let's simulate a time series with 100 data points.
+Independent noise (i.e., **white noise**) is just uncorrelated errors sampled from a normal distribution with `mean = 0` and `sd = ` whichever number you'd like.
+Use `rnorm()` to do this.
+We will simulate autocorrelated noise (i.e., **red noise**) with `arima.sim(list(ar1 = 0.8), n = 100)`, where 0.8 is the strength of autocorrelation when lag = 1 (pick whichever numbers you want).
+And lastly, the trend is just a linear model with no noise with some intercept and slope values (the independent variable is `1:n`).
+You can plot each component with `plot(time_series_object, type = "l")`.
+To combine the components for the full time series, just add the three components together!
 
-Because PCA works by fitting PCs through axes of greatest variation, variables with more variation will strongly influence how PCs are fit to the data.
-This is fine when the variation in one's multivariate dataset is of interest itself, but this can be a problem when variables are more variable just because, for example, they're in different units.
-Therefore, it is common practice to scale each variable before running a PCA.
-
-### Doing a PCA in R
-
-This is done using the `prcomp()` function.
-We only need to enter in one argument, which is the multivariate dataset, where each variable is a column and each observation is a row.
-Note that `prcomp()` will automatically center each variable for you.
-Instead of scaling each variable yourself, `prcomp()` can do it for you if you set the argument `scale = TRUE`.
-
-Let's try fitting a PCA to the four measurements in the `iris` dataset.
-Because all measurements are all in centimeters and are of the same order of magnitude, scaling is not necessary here.
-
-```{r pca, exercise = TRUE}
+```{r ts, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r pca-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
+```{r ts-solution}
+n <- 100
 
-plot(iris.pca$x[, 1:2], type = "n")
+set.seed(100)
+independ_noise <- rnorm(100) # can pick whichever SD you want, but mean must equal 0
+autocorr_noise <- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
+trend <- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
 
-# you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
-points(iris.pca$x[iris$Species == "setosa", 1:2], pch = 16)
-points(iris.pca$x[iris$Species == "versicolor", 1:2], pch = 16, col = "blue")
-points(iris.pca$x[iris$Species == "virginica", 1:2], pch = 16, col = "red")
-
-legend("topright", legend = unique(iris$Species), pch = c(16, 16, 16), col = c("black", "blue", "red"))
+ts_comb <- independ_noise + autocorr_noise + trend # combine the three components
+plot(ts_comb, type = "l") # plot with one variable just plots the data w/in that variable in order, which is fine in this case since the order is time 
 ```
 
-You can get out the PCA **scores** (i.e., the coordinates of each observation in PCA space) with `iris.pca$x` (assuming you called your PCA results `iris.pca`).
-Plot the scores of the first two axes in a scatter plot.
-You can even color-code the points by species if you want!
-Points that are closer in PCA space are more similar when it comes to petal and sepal morphology (as determined by the four measurements in `iris`).
-
-To understand what each PC means and represents, we have to turn to the concepts of eigenvalues and eigenvectors.
+These three components are also found in spatial data, but the code for simulating them is much more complicated.
+So I won't go over spatial data here.
 
 
-## Eigenvalues
+## Detrending a time series & correlograms
 
-An **eigenvalue** is the amount of variance explained by each PC.
-Therefore, you have as many eigenvalues as you do PCs.
-To get out the eigenvalues from `iris.pca`, enter `iris.pca$sdev`.
-Note that this code returns eigenvalues as standard deviations.
-To get variances, simply square `iris.pca$sdev`.
-Note that variance decreases as you progress to higher PCs; this is always the case.
+We will analyze your simulated, combined time series from the previous topic (copy and paste your code below! Or you can just use my code, which I've put in the console).
+This time series is strongly trended because we simulated it to have a trend.
+Let's remove the trend (i.e., **detrend** the time series), so we're left with only autocorrelated and independent noise (the sum of which should still have autocorrelation).
 
-```{r eigenvalue, exercise = TRUE}
+There are two ways to detrend a time series: (1) first differencing and (2) fitting a trend and taking the residuals.
+**First differencing** is done easily using `diff()`, though it should be noted that this method removes both trend and also some autocorrelation (we'll see this below).
+The second method is done by fitting a trend to the time series and taking residuals (e.g., `lm(ts_comb ~ c(1:100))$residuals)`.
+If the trend is more complicated (e.g., non-linear), we can fit a loess curve (using `loess.smooth()`) and then take residuals.
+
+Try out both methods of detrending on your simulated time series below. 
+
+```{r detrend, exercise = TRUE}
+n <- 100
+
+set.seed(100)
+independ_noise <- rnorm(100) # can pick whichever SD you want, but mean must equal 0
+autocorr_noise <- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
+trend <- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
+
+ts_comb <- independ_noise + autocorr_noise + trend # combine the three components
+```
+
+```{r detrend-solution}
+# first differencing
+first.diff <- diff(ts_comb)
+
+# taking residuals of fitted trend
+lm.resid <- lm(ts_comb ~ c(1:100))$residuals # we need the c() or else R freaks out
+
+plot(ts_comb, type = "l")
+plot(first.diff, type = "l")
+plot(lm.resid, type = "l")
+```
+
+You can compare the detrended time series to the original, using `plot(ts, type = "l")`.
+
+Note that these two methods of detrending also apply to spatial data when it is strongly trended.
+
+### Autocorrelation function
+
+The **autocorrelation function** (ACF) is a type of correlogram where correlations are calculated for a time series against itself at different time lags.
+Now, let's get the ACF plot for each detrended time series to examine the autocorrelated noise structure.
+To produce the ACF plot, simply wrap `acf()` around the detrended time series.
+If you save this to an object, you can enter the object name to bring up the actual ACF values for each time lag.
+
+```{r acf, exercise = TRUE}
+n <- 100
+
+set.seed(100)
+independ_noise <- rnorm(100) # can pick whichever SD you want, but mean must equal 0
+autocorr_noise <- arima.sim(list(ar1 = 0.8), n = n) # pick whichever autocorrelation strength you want
+trend <- 2 + 0.05 * 1:n # my intercept is 2 and slope is 0.05 (pick whichever coefficients you want)
+
+ts_comb <- independ_noise + autocorr_noise + trend # combine the three components
+```
+
+```{r acf-solution}
+acf(diff(ts_comb))
+
+acf(lm(ts_comb ~ c(1:100))$residuals)
+
+acf(autocorr_noise)
+
+acf(presidents)
+```
+
+Note that first differencing removed the positive autocorrelated noise structure (in fact it was so aggressive that there is now *negative* autocorrelation at lag = 1).
+Fitting a trend and taking residuals does not remove autocorrelation (unlike first differencing), so we still see (significant) positive autocorrelation up to lag = 2.
+Remember that this autocorrelated noise structure is combined with the independent noise component, so the autocorrelation is attenuated (compare this ACF to one done on just the autocorrelated noise component from your simulations).
+
+If you want to use `acf()` on real data, enter `acf(presidents)` to get the ACF for the time series of US president quarterly approval ratings (what I showed in lecture). 
+
+### Spatial correlogram
+
+Really quickly, let's create a spatial correlogram for spatial data, so you can see what the code looks like.
+
+Below is autocorrelated noise I've simulated for you (same as in lecture).
+
+```{r echo = FALSE, results = "hide"}
+xy <- expand.grid(1:100, 1:100)
+names(xy) <- c("x", "y")
+
+# red noise
+g.red <- gstat(formula = z ~ 1, locations = ~x + y, dummy = TRUE, beta = 0, model = vgm(psill = 0.025, range = 15, model = "Exp"), nmax = 20)
+
+set.seed(100)
+y.red <- predict(g.red, newdata = xy, nsim = 1)
+
+gridded(y.red) = ~x+y
+
+spplot(obj = y.red, main = "Autocorrelated noise only")
+```
+
+```{r spat_corr-setup, echo = FALSE, message = FALSE, results = "hide"}
+xy <- expand.grid(1:100, 1:100)
+names(xy) <- c('x','y')
+
+# red noise
+g.red <- gstat(formula=z~1, locations=~x + y, dummy=T, beta=0, model=vgm(psill = 0.025, range = 15, model='Exp'), nmax=20)
+
+set.seed(100)
+y.red <- predict(g.red, newdata=xy, nsim=1)
+
+gridded(y.red) = ~x+y
+```
+
+All the relevant data is in the `y.red` data frame, wherein the x- and y-coordinates and variable values are `x`, `y`, and `sim1`, respectively.
+The code, then, for creating a correlogram is: `correlogram(krig = surf.ls(np = 0, x = y.red$x, y= y.red$y, z=y.red$sim1), nint = 100)`.
+Without going into details, this correlogram uses a trend surface (which we've designated as flat with `np = 0`), and `nint = ` tells R how many distance bins to use.
+If you save the code to an object, you can use the object name to bring up correlogram values to have more control over plotting.
+
+```{r spat_corr, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r eigenvalue-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-
-eigenvalues <- iris.pca$sdev ^ 2
-
-barplot(eigenvalues, ylab = "Variance", names.arg = c("PC1", "PC2", "PC3", "PC4"))
-
-perc_explain <- eigenvalues / sum(eigenvalues) * 100
-
-# compare eigenvalues and variance in original dataset
-sum(eigenvalues)
-sum(apply(subset(iris, select = -Species), 2, var))
+```{r spat_corr-solution}
+correlogram(
+  krig = surf.ls(
+    np = 0, 
+    x = y.red$x, 
+    y = y.red$y, 
+    z = y.red$sim1
+    ), 
+  nint = 100
+  )
 ```
 
-A common way to plot eigenvalues is to create a bar plot.
-This is known as a **scree plot**, which mimics the profile of a mountainside where rubble has fallen (i.e., a scree slope; see image below).
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Yamnuska_bottom_cliff.jpg/1024px-Yamnuska_bottom_cliff.jpg){width="30%"}
+## Cross-correlograms
 
-Now we can get the percentage of variance in the multivariate dataset explained by each PC.
-This is done by simply dividing each eigenvalue by the sum of all eigenvalues and then multiplying this by 100.
-Do this in the console above.
+The **cross-correlation function** (CCF) is a type of cross-correlogram that quantifies how two time series are correlated with each other at different lags.
+We will analyze the dataset I used in class: climate variability vs. mammalian extinction rates from the Plio-Pleistocene of eastern Africa.
+The data frame is called `d`, and it contains the age (`age_Ma`), climate variability measure (`clim.var`), and extinction rates (`ext.rates`).
+You can plot both time series below if you'd like.
 
-We can see that PC1 explains over 92% of the variation in the data, and PC2 explains a measly 5%.
-Therefore, if I were to subsequently analyze the PCs (e.g., for hypothesis testing), I would just analyze PC1, which does more than a good job of capturing the variation in the four `iris` variables.
+```{r cross_corr-setup, echo=FALSE}
+clim_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/climVar_extRates.csv")
+d <- read.csv(text = clim_url)
+```
 
-To interpret what eigenvalues mean in the context of the original variables, we can see that the sum of all eigenvalues equals the sum of the variances of all your original variables (check this in the console above). 
-This demonstrates that the original variance in your dataset is preserved in PCA and that all PCA is doing is rotating and reorienting your original data.
-
-### Singular value decomposition
-
-**NB**: This section goes into brief detail about what PCA is actually doing underneath the hood.
-It is not necessary to know for the exercises or HW.
-
-I explained how PCA conceptually works above, but what it's *actually* doing underneath the hood is a **singular value decomposition** (SVD) of the variance-covariance matrix of the original variables.
-SVD will return the eigenvalues and eigenvectors (covered in the next topic) from the variance-covariance matrix.
-
-All this is easy to do in R.
-First, create the variance-covariance matrix of the dataset by entering `iris.vcov <- cov(subset(iris, select = -Species))`.
-Then, use the `svd()` function to do an SVD of the variance-covariance matrix: `iris.svd <- svd(iris.vcov)`.
-`iris.svd$d` returns the eigenvalues from the SVD for each PC. 
-`iris.svd$u` returns the eigenvectors, from which one can calculate PC scores (see next section). 
-
-
-## Eigenvectors
-
-**Eigenvectors** tell us how each PC is related to the original variables.
-Each PC has one eigenvector, and the elements within each eigenvector are called **loadings** because they tell us how each of the original variables "loads" on each PC.
-Loadings range from -1 to 1, where the sign indicates the direction of the relationship between the variable and PC, and the magnitude indicates how much each variable contributes to the PC (also how tightly the two are correlated).
-For example, a PC1 loading of 0.86 for `iris$Petal.Length` tells us that as PC1 increases, `Petal.Length` increases, and vice versa (i.e., the two are positively correlated).
-0.86 is a large value, indicating that `Petal.Length` contributes a lot to and is strongly correlated with PC1.
-On the other hand, a PC1 loading of -0.08 for `Sepal.Width` indicates that as PC1 increases, `Sepal.Width` decreases—but this relationship is noisy—and `Sepal.Width` doesn't contribute much to PC1.
-
-To get out the loadings in R, enter `iris.pca$rotation`.
-If you did SVD in the last topic, you can get out the loadings with `iris.svd$u`.
-Note that some of the loading signs might be switched between `iris.pca$rotation` and `iris.svd$u`.
-The signs of the loadings are arbitrary and are a function of how each PC is fit through the data.
-What is important are the loading magnitudes and the fact that the directions of loadings for each PC are internally consistent.
-For example, `iris.pca$rotation` returns PC1 loadings that are positive for `Sepal.Length`, `Petal.Length`, and `Petal.Width` and negative for `Sepal.Width`.
-This means that the first three variables are positively correlated with each other (ignoring the strength of correlation for now) and are each negatively correlated with `Sepal.Width`.
-`iris.svd$u` returns PC1 loadings that are negative for `Sepal.Length`, `Petal.Length`, and `Petal.Width` and positive for `Sepal.Width`.
-As with `iris.pca$rotation`, these results tell us `Sepal.Length`, `Petal.Length`, and `Petal.Width` are positively correlated with each other, and each is negatively correlated with `Sepal.Width`.
-
-```{r eigenvector, exercise = TRUE}
+```{r cross_corr, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r eigenvector-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-iris.pca$rotation
+```{r cross_corr-solution}
+plot(d$age_Ma, d$clim.var, type = "l", xlim = rev(range(d$age_Ma)))
 
-iris.vcov <- cov(subset(iris, select = -Species))
-iris.svd <- svd(iris.vcov)
-iris.svd$u
+plot(d$age_Ma, d$ext.rates, type = "l", xlim = rev(range(d$age_Ma)))
 
-biplot(iris.pca)
+ccf(d$clim.var, d$ext.rates)
 ```
 
-One way to graphically portray loadings is as arrows on a PCA scatter plot.
-This is easily done in R with the `biplot()` function, where the only argument is the PCA results object (e.g., `biplot(iris.pca)`).
-Try it out above.
+To create a CCF, simply enter `ccf(d$clim.var, d$ext.rates)`.
+Negative lags are where climate variability is older, and positive lags are the opposite.
+As before, you can save the `ccf()` results to an object to get the actual CCF estimates.
 
-As you can see, for example, the arrow for `Petal.Length` is long and pointing to the right in an almost horizontal fashion.
-This means `Petal.Length` has a large (long arrow) and positive loading for PC1 (pointing to the right along the PC1 axis).
-The arrow for `Sepal.Length` is moderately long and points to the bottom right.
-This means this variable has a moderate-magnitude loading that is positive for PC1 (points to the right) and negative for PC2 (points downward).
-Compare the arrow patterns to the actual loadings to get a feel for how the arrows graphically portray each variable's loading.
+### Spatial cross-correlogram
 
-### Transforming original data to PCA scores
+As with the previous topic, I will quickly go over the spatial counter part of cross-correlograms, just to show you the code.
 
-Eigenvectors also tell us how to transform data from the original variable coordinate system to PCA space and back.
-Let's see how this is done with a specific example, i.e., Plant #1 from the `iris` dataset.
-First, remove `Species` from `iris` and then center each variable, using `scale(iris1, scale = FALSE)` (R will apply `scale()` to each column in the dataset).
-Next, subset out the first row of your new dataset (this is Plant #1).
-To get out the PC1 score for Plant #1, we multiply each of Plant #1's measurements by its corresponding PC1 loading (according to variable), and then sum everything.
-That is, `sum(plant1 * iris.pca$rotation[, "PC1"])`.
-Compare the result to `iris.pca$x[1, "PC1"]`; they should be the same.
+Below are maps of samples taken from the floodplain of the Meuse River in the Netherlands.
+Each sample has a measured organic matter and cadmium level.
 
-```{r transform, exercise = TRUE}
+```{r echo = FALSE}
+rbPal <- colorRampPalette(c('blue','red'))
+
+data(meuse)
+
+meuse1 <- meuse[!is.na(meuse$om), ]
+
+col.om <- rbPal(10)[as.numeric(cut(meuse1$om,breaks = 10))]
+
+col.cad <- rbPal(10)[as.numeric(cut(meuse1$cad,breaks = 10))]
+
+plot(meuse1$x, meuse1$y, col = col.om, pch=16, cex = 1.5, xlab = "X coordinates", ylab = "Y coordinates", cex.axis=1.5, cex.lab=1.5, main = "Organic matter level", cex.main=1.5)
+
+legend("topleft", c("Less", "More"), pch=c(16, 16), col=c("blue", "Red"), pt.cex=2, cex=1.5)
+
+plot(meuse1$x, meuse1$y, col = col.cad, pch=16, cex = 1.5, xlab = "X coordinates", ylab = "Y coordinates", cex.axis=1.5, cex.lab=1.5, main = "Cadmium level", cex.main=1.5)
+```
+
+To create the cross-correlogram, I've included the proper code in the console below (this might take a little bit depending on how fast your computer is).
+Within the `correlog()` function, `x` and `y` are the coordinates, `om` and `cadmium` are organic matter and cadmium levels, and `increment = ` tells R how many distance bins to use.
+You can add a solid horizontal line at zero with `abline(h = 0)`.
+
+```{r spat_cross-setup}
+data(meuse)
+```
+
+```{r spat_cross, exercise = TRUE}
+plot(correlog(x = meuse$x, y = meuse$y, z = meuse$om, w = meuse$cadmium, increment = 100, na.rm = TRUE))
+
+abline(h = 0)
+```
+
+
+## Generalized least squares
+
+**Generalized least squares** (GLS) models a DV as a linear function of one or more IVs, while relaxing the independent errors assumption of GLMs. 
+It relaxes this assumption by explicitly modeling the non-independent error structure with one or more estimated parameters.
+All parameters are estimated using maximum likelihood.
+
+We will analyze the `hawaii` dataset, which I've pre-loaded.
+Specifically, we will model the square-root transformed abundance of `Moorhen.Kauai` as a function of `Year` and `Rainfall` (no interaction).
+`sqrt(Moorhen.Kauai) ~ Year` assesses whether abundance changes linearly through time, while `sqrt(Moorhen.Kauai) ~ Rainfall` assesses whether abundance changes as a linear function of rainfall.
+Feel free to plot the data (e.g., as time series, scatter plots) to see what it looks like. 
+
+```{r gls-setup}
+hawaii_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Hawaii.txt")
+hawaii <- read.table(text = hawaii_url, header = TRUE, sep = "\t")
+```
+
+We will compare the results using `lm()` vs. `gls()`.
+So go ahead and fit a multiple regression using `lm()`.
+Then do the same using `gls()`.
+This function requires two additional arguments: `correlation = corAR1(form = ~Year)` and `na.action = na.omit`.
+The first argument tells R to model the autocorrelated errors using an AR1 structure (`form = ~Year` tells R that `Year` is a time IV; otherwise, time would correspond to the order of observations).
+That is, `gls()` will estimate a parameter, $\rho$, which is the correlation between errors one time step apart.
+$\rho ^ 2$ is the correlation between errors two time steps apart, $\rho ^ 3$ is the correlation between errors three time steps apart, etc.
+The second argument in `gls()` tells R to delete `NA`, something `lm()` does automatically.
+
+```{r gls, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r transform-solution}
-iris1 <- subset(iris, select = -Species)
-iris.center <- scale(iris1, scale = FALSE)
+```{r gls-solution}
+plot(hawaii$Year, hawaii$Rainfall, type = "l")
 
-plant1 <- iris.center[1, ]
+plot(hawaii$Year, sqrt(hawaii$Moorhen.Kauai), type = "l")
 
-iris.pca <- prcomp(iris1)
+plot(hawaii$Rainfall, sqrt(hawaii$Moorhen.Kauai))
 
-# compare the two
-sum(plant1 * iris.pca$rotation[, "PC1"])
-iris.pca$x[1, 1]
 
-# compare the two
-iris.center %*% iris.pca$rotation
-iris.pca$x
+lm.res <- lm(sqrt(Moorhen.Kauai) ~ Year + Rainfall, data = hawaii)
+
+gls.res <- gls(sqrt(Moorhen.Kauai) ~ Year + Rainfall, data = hawaii, correlation = corAR1(form = ~Year), na.action = na.omit)
+
+lm.res$coefficients
+gls.res$coefficients
+
+summary(lm.res)$coefficients[, "Pr(>|t|)"]
+summary(gls.res)$tTable[, "p-value"]
+
+acf(lm.res$residuals)
+acf(resid(gls.res, type = "normalized"))
 ```
 
-This exercise emphasizes how PC loadings are also interpreted as how much each variable contributes to a PC.
-That is, in this case, the PC1 score for Plant #1 is the sum of of its variables weighted by the PC1 loadings.
-The larger magnitude the loading, the more that variable contributes to the final PC score.
-Conversely, if a loading is near zero, it will essentially "negate" its corresponding variable (because the resulting product will be near zero), thus contributing very little to the final PC score.
+First note the high value for estimated $\rho$, illustrating that there's strong autocorrelation in the errors (`Phi1` is equal to $\rho$).
 
-One can also use matrix algebra to get the PC scores for all observations and PCs.
-You do this by multiplying the matrix of centered `iris` variables by the matrix of PCA loadings: `iris.center %*% iris.pca$rotation` (see pgs. 525-526 in Gotelli & Ellison to learn how to multiply two matrices together).
+Now compare the coefficients and P-values between GLM and GLS.
+As you can see, the coefficients are fairly similar, and the significant P-values in GLM are smaller than their counterparts in GLS. 
+This is to be expected: the non-independent errors will decrease P-values and increase Type I error rate in GLM.
+When the non-independent errors are accounted for, the P-values will increase to their "proper" values, though they're still significant in this case.
+The takeaway here is that GLM coefficient estimates are unbiased, even in the face of autocorrelated errors.
+So if you care only about coefficient estimates and not P-values, just go ahead and use `lm()`!
+
+Now plot the ACFs of the residuals from both models.
+For the `gls()` results, you have to extract residuals using `resid()` with argument `type = "normalized"`.
+Otherwise, the residuals will not be corrected using the estimated $\rho$ parameter.
+
+As you can see, the GLM residuals still show (significant) positive autocorrelation at lag = 1.
+This autocorrelation disappears in GLS, as to be expected (since the autocorrelation is modeled and removed).
+
+For spatial data, errors are modeled using five models:
+
+1. Exponential (`corExp`)
+2. Gaussian (`corGaus`)
+3. Linear (`corLin`)
+4. Rational quadratic (`corRatio`)
+5. Spherical (`corSpher`)
+
+![The five common spatial autocorrelation error models. Different parameterizations will change each model's curve slightly. Ignore the vertical lines and x's.](https://github.com/andrewdu1/ANTH674/blob/master/Datasets/Spatial%20autocorrelation%20error%20models.jpg?raw=true){width="75%"}
+
+These models are entered into the `correlation = ` argument in `gls()`, just like we did with `corAR1`.
 
 
-## Hypothesis testing with PCA
+## Accounting for autocorrelated errors using an IV
 
-PCA in itself is not used for hypothesis testing, but the resulting PCA scores can be used for such purposes.
-For example, a PCA of the `iris` variables shows that PC1 is strongly positively correlated with `Petal.Length`, and more moderately positively correlated with `Sepal.Length` and `Petal.Width`; `Sepal.Width` does not really contribute to PC1.
-Therefore, PC1 is a composite of mostly `Petal.Length` and some `Sepal.Length` and `Petal.Width`.
-We can use an ANOVA to test if this composite variable is significant different across `iris$Species`.
-This is done by fitting an ANOVA, where PC1 scores is the DV and `Species` is the IV.
-Try this out below.
+Autocorrelated errors can be accounted for by including an IV that has the same autocorrelation structure.
+In other words, the autocorrelation in the errors can be modeled by the IV, thereby removing autocorrelation from the residuals.
+For example, an herbivore species' abundance is autocorrelated because it follows plant distribution, which itself is autocorrelated; if one models herbivore abundance as a function of plant distribution, then the autocorrelation in herbivore is explained by plant, thus producing independent errors.
+If model errors are independent, then this GLM assumption is satisfied, and P-values will be "normal" (no need for any correction!).
 
-```{r hypo, exercise = TRUE}
+Let's see an example of this, using the example I used in lecture.
+Below are spatial correlograms for an index of wetness and number of boreal tree species.
+As you can see, the autocorrelation structures are very similar, implying that spatial distribution of wetness affects distribution of boreal species (or both are affected by some third variable).
+
+```{r echo = FALSE}
+boreal_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Boreality.txt")
+Boreality <- read.table(text = boreal_url, header = TRUE, sep = "\t")
+
+bor<-surf.ls(0,Boreality$x,Boreality$y,Boreality$boreal)
+wet <- surf.ls(0,Boreality$x,Boreality$y,Boreality$Wet)
+
+wet.corr <- correlogram(wet, 300, plotit=FALSE)
+bor.corr <- correlogram(bor, 300, plotit=FALSE)
+
+plot(wet.corr$x, wet.corr$y, xlab="Distance", ylab="Autocorrelation", main = "Wetness")
+abline(h=0, col="red", lwd=3)
+
+plot(bor.corr$x, bor.corr$y, xlab="Distance", ylab="Autocorrelation", main = "# boreal species")
+abline(h=0, col="red", lwd=3)
+```
+
+Now create a linear model, using `lm()`, where `boreal ~ Wet` (the data frame is called `Boreality`).
+Then create a spatial correlogram of the residuals, using `correlogram(surf.ls(0, Boreality$x, Boreality$y, lm.res$residuals), nint = 300)`.
+
+```{r bor-setup}
+boreal_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Boreality.txt")
+Boreality <- read.table(text = boreal_url, header = TRUE, sep = "\t")
+```
+
+```{r bor, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r hypo-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
+```{r bor-solution}
+lm.res <- lm(boreal ~ Wet, data = Boreality)
 
-anova(aov(iris.pca$x[, "PC1"] ~ iris$Species))
+correlogram(surf.ls(0, Boreality$x, Boreality$y, lm.res$residuals), nint = 300)
 ```
 
-As you can see, the means of this composite PC1 variable is significantly different across `Species`.
-
-If one had a separately measured IV (e.g., nitrogen levels for each plant), one could model PC1 scores as a function of that.
-One can also distill collinear IVs using PCA: fit a PCA to the collinear variables and use the PC1 scores as the new composite IV that represents the previous IVs. 
+As you can see, there is still some leftover positive autocorrelation in the residuals, but the distance at which autocorrelation persists has drastically decreased.
+Moreover, the new correlogram appears flatter and "hugs" zero more, indicating less autocorrelation at all lags. 
+Thus, the autocorrelation in `boreal` has been mostly accounted for by the similar autocorrelation structure in `Wet`, leaving less autocorrelation in the `lm()` residuals.
 
 
 ## Exercise 2
 
-We will analyze the `mtcars` dataset for the following questions.
+1. For this question, we will work with the `co2` time series (see the help file for more details).
+First plot the time series with `plot(co2)`.
+Then detrend the data by fitting a linear model and then taking residuals (because the time series has equally spaced data points, you can transform this into a `numeric` class first and then model it as a function of `c(1:length(co2))`).
+Lastly, create an autocorrelation function plot of the detrended time series.
 
-1. First subset out the continuous variables from `mtcars` (i.e., `mpg`, `disp`, `hp`, `drat`, `wt`, and `qsec`).
-Next, fit a PCA to the subsetted variables.
-Should the variables be scaled first?
+2. Now we will work with two time series: `mdeaths` and `fdeaths` (see their help file for more info about the data).
+First plot each time series.
+Then create a cross-correlation function plot.
 
-2. Create a scatter plot for the car models, where the x-axis is PC1 and the y-axis is PC2.
+3. Let's analyze the `hawaii` dataset again and see if another bird species shows a more noticeable relationship with `rainfall`.
+Fit a generalized least squares model with `sqrt(sqrt(Stilt.Maui))` (i.e., a double square-root transformation) as a function of `Year` and `Rainfall` (no interaction).
+Make sure to specify that the autocorrelation structure is `corAR1()` as a function of `Year`.
+Then create a ACF plot of the residuals, making sure to use the residuals that have been GLS-corrected for autocorrelation.
 
-3. Create a scree plot, showing how much variance is explained by each PC.
-Then calculate the percentage of variance explained by PC1 and PC2.
-
-4. Look at the PC1 loadings.
-Which variables contribute most to PC1 and in what fashion?
+```{r exer2-setup}
+hawaii_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/Hawaii.txt")
+hawaii <- read.table(text = hawaii_url, header = TRUE, sep = "\t")
+```
 
 ```{r exer2, exercise = TRUE}
 # Click "Solution" button when done
@@ -564,47 +830,42 @@ Which variables contribute most to PC1 and in what fashion?
 
 ```{r exer2-solution}
 # Q1
-mtcars1 <- subset(mtcars, select = c(mpg, disp, hp, drat, wt, qsec))
-
-mtcars.pca <- prcomp(mtcars1, scale = TRUE) # yes, scale the variables since they're in different units
+plot(co2)
+lm.res <- lm(as.numeric(co2) ~ c(1:length(co2)))
+acf(lm.res$residuals)
+# there is strong positive autocorrelation and cyclicity in the data (as can be seen in the original time series)
 
 # Q2
-plot(mtcars.pca$x[, c("PC1", "PC2")])
+plot(mdeaths)
+plot(fdeaths)
+ccf(mdeaths, fdeaths) # there is strong cyclicity as to be expected from the original time series. Also, the time series are in phase at lags of -1, 0, and 1, and out of phase at lags of -0.5 and 0.5
 
 # Q3
-eigenvalues <- mtcars.pca$sdev ^ 2
-
-barplot(eigenvalues, ylab = "Variance", names.arg = paste0("PC", 1:6)) # paste0() tells R to concatenate "PC" to each number within 1:6 with no spaces in between
-
-eigenvalues / sum(eigenvalues) * 100 # PC1 explains 70%, and PC2 explains 19%. Together they explain 89%, a good amount of the total variance
-
-# Q4
-mtcars.pca$rotation
-
-# no one variable dominates PC1. The most important variables are mpg (negative), disp (positive), hp (positive), and wt (positive). drat is slightly less important and negative. qsec is negative and least important, though its loading is non-negligible 
+gls.res <- gls(sqrt(sqrt(Stilt.Maui)) ~ Year + Rainfall, data = hawaii, correlation = corAR1(form = ~Year))
+acf(resid(gls.res, type = "normalized"))
 ```
 
 
 ## Conclusion
 
-This tutorial introduced you to multivariate statistics with multivariate models and ordination.
-Many research questions require the analysis of a multivariate DV (e.g., the human skull example in *Multivariate models*).
-It is better to fit one's analysis to the research question instead of the other way around (the research question always rules!).
-Sticking with our skull example, we should treat the many linear measurements as a multivariate DV instead of analyzing them separately as univariate DVs (the latter asks a different research question).
-This is why it is important to have a fundamental understanding of the many statistical methods out there, so you can pick the one most appropriate for your research question.
+We took a leap into some fairly complicated concepts and methods this week, so if you understood at least 50% of the lecture and tutorial material, you should feel very proud!
 
-Multivariate models are used to assess how a multivariate DV varies as a function of one or more IV.
-This week, we focused only on those multivariate models that have one categorical IV (i.e., Hotelling's *T*^2^ and one-way MANOVA).
-Next week, we will briefly cover those multivariate models that have a continuous IV.
-As alluded to in the previous paragraph, multivariate models ask a different research question than multiple univariate models by jointly analyzing multiple DVs together.
-This also has the advantage of incorporating more information into the analysis (i.e., the correlations between DVs), with the result that multivariate models are able to detect differences that are missed with multiple univariate models (e.g., our teaching method example).
+Linear mixed models are becoming more common in (biological) anthropology, though there's a good chance they're misused and misunderstood.
+Here, we covered the fundamentals of LMMs and learned what random factors are and when to use them:
 
-Ordinations are used to condense multiple variables into a few important ones.
-The main purpose of this is exploratory: ordination allows one to plot many variables in two- or three-dimensional space, while still accounting for most of the variation in one's multivariate dataset.
-We went over principal components analysis, by far the most common ordination method, at least in anthropology.
-PCA is done only on continuous variables.
-We learned what PCA is doing "underneath the hood", as well as what all the outputs are and how to interpret them (i.e., scores, eigenvalues, eigenvectors/loadings).
-PCA can be used for hypothesis testing by treating PC scores as composites of the original variables, which can then be entered as a DV or IV in other models (you can understand how the original variables contribute to each PC using the loadings).
+1. if we're interested in estimating the SD of intercepts and/or slopes across levels
+2. if our sample size is too small relative to the number of estimated coefficients needed if using fixed factors
+3. if we want to use shrinkage/regularization to shrink estimates towards the population mean
+4. if we want to account for non-independence using blocking
+5. if we want to partition variance among the random factors.
 
-This week's lecture and tutorial provided you with the basic skillset and know-how for conducting multivariate analyses in R.
-The hope is that you are now able to carry out multivariate statistics for your own research if your research question requires it.
+We then learned about non-independence (i.e., autocorrelation) in a more nuanced way.
+Autocorrelation is often thought of as a nuisance that needs to be corrected for in statistics.
+I, however, prefer to think of autocorrelation as interesting structure in the data that can tell us something about the processes that generated the observed patterns.
+We can measure and quantify autocorrelation using correlograms (for temporal, spatial, and even phylogenetic data).
+We then learned how to quantify the association between two variables in time and space using cross-correlograms (cf. correlation) and generalized least squares (cf. linear models).
+It is important to keep in mind that autocorrelated model errors can be eliminated by including the proper IV.
+And even if errors are autocorrelated, coefficient estimates are unbiased and only P-values are affected (they're biased downward).
+
+Hopefully, this week's lecture and tutorial have given you enough fundamentals, so you can begin to explore LMMs and autocorrelation in your own research.
+We have only scratched the surface, so there's much more to learn on your own!
