@@ -9,6 +9,7 @@ runtime: shiny_prerendered
 ```{r setup, include = FALSE}
 library(learnr)
 library(knitr)
+library(kableExtra)
 ```
 
 # **Week 3:** Plots, summary statistics, & data transformations
@@ -154,7 +155,8 @@ plot.arg <- data.frame(Argument = c(
     "cex.axis = 0.5  # tick labels 50% smaller"
     ))
 
-kable(plot.arg)
+kbl(plot.arg) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 [Here is a link for all the different color options R has](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf).

@@ -10,6 +10,7 @@ runtime: shiny_prerendered
 ```{r setup, include = FALSE}
 library(learnr)
 library(knitr)
+library(kableExtra)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -543,7 +544,8 @@ This is what your contingency table should look like:
 ```{r echo = FALSE}
 x <- HairEyeColor[, , "Male"]
 
-kable(x)
+kbl(x) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 The columns are eye color and the rows are hair color (so we are implicitly saying that eye color is the IV and hair color is the DV, though we are analyzing this dataset for illustrative purposes only).

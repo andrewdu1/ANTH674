@@ -9,6 +9,7 @@ runtime: shiny_prerendered
 ```{r setup, include = FALSE}
 library(learnr)
 library(knitr)
+library(kableExtra)
 ```
 
 # **Week 1:** Introduction to R
@@ -96,17 +97,19 @@ What do you think you'll get in return?
 R can carry out all your standard arithmetic operators. 
 
 ```{r, echo = FALSE}
-arith <- data.frame(symb = c("+", 
-                             "-", 
-                             "*", 
+arith <- data.frame(symb = c("\\+", 
+                             "\\-", 
+                             "\\*", 
                              "/", 
-                             "^"), def = c("addition", 
-                                           "subtraction", 
-                                           "multiplication", 
-                                           "division", 
-                                           "exponent"))
+                             "^"), 
+                    def = c("addition", 
+                            "subtraction", 
+                            "multiplication", 
+                            "division", 
+                            "exponent"))
 
-kable(arith, col.names = c("R symbol", "Arithmetic operator"))
+kbl(arith, col.names = c("R symbol", "Arithmetic operator")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 Note that R follows order of operations (PEMDAS: parentheses, exponents, multiplication and division, addition and subtraction).
@@ -150,12 +153,14 @@ These are summarized in the table below.
 variables <- data.frame(Mode = c("numeric",
                                  "character",
                                  "logical",
-                                 "factor"), Example = c("5, 2.3", 
-                                                        "\"tooth\", \"Andrew\"",
-                                                        "TRUE, FALSE",
-                                                        "{explained later}"))
+                                 "factor"), 
+                        Example = c("5, 2.3", 
+                                    "\"tooth\", \"Andrew\"",
+                                    "TRUE, FALSE",
+                                    "{explained later}"))
                                  
-kable(variables)
+kbl(variables) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 The significance of these different types of variables might not be apparent now, but they will be later.
@@ -359,11 +364,13 @@ Here are some useful functions for seeing how large your matrix is.
 ```{r, echo = FALSE}
 mat.df <- data.frame(func = c("nrow()",
                        "ncol()",
-                       "dim()"), purp = c("number of rows",
-                                          "number of columns",
-                                          "dimensions = c(nrow, ncol)"))
+                       "dim()"), 
+                     purp = c("number of rows",
+                              "number of columns",
+                              "dimensions = c(nrow, ncol)"))
 
-kable(mat.df, col.names = c("Function name", "What it does"))
+kbl(mat.df, col.names = c("Function name", "What it does")) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 You can also use the `array()` function to create an array with however many dimensions you want.
@@ -412,7 +419,8 @@ exer.df <- data.frame(Action = c(
     "X[, 4]  # entire 4th column"
   ))
 
-kable(exer.df)
+kbl(exer.df) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 1. Create a matrix, `XX`, with 3 rows and 4 columns, containing the numbers 1 through 12. Take the 3rd row of this matrix, and assign it to a new variable `y`.
@@ -466,7 +474,8 @@ Try out `head(iris)`.
 This is what you should see:
 
 ```{r, echo = FALSE}
-kable(head(iris))
+kbl(head(iris)) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 You can immediately see that the first four columns are numbers, and the last one is comprised of names, indicating which species is being measured.
@@ -585,7 +594,8 @@ relation.df <- data.frame(Symbol = c(
     "AND, OR"
   ))
 
-kable(relation.df)
+kbl(relation.df) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 `&` and `|` are used for testing compound relationships, i.e., two or more stated relationships.
@@ -659,7 +669,8 @@ relation.df <- data.frame(Symbol = c(
     "AND, OR"
   ))
 
-kable(relation.df)
+kbl(relation.df) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE, position = "left")
 ```
 
 Let's use the `mtcars` dataset again.
