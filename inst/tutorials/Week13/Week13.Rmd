@@ -1,5 +1,5 @@
 ---
-title: "Multivariate models & principal components analysis"
+title: "Ordination continued & cluster analysis"
 output: 
   learnr::tutorial:
     progresive: true
@@ -11,13 +11,17 @@ runtime: shiny_prerendered
 library(learnr)
 library(knitr)
 
-library(mvtnorm)
-library(RCurl)
+library(analogue)
+library(vcd)
+library(vegan)
+library(ca)
+library(MASS)
+library(cluster)
 
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# **Week 13:** Multivariate models & principal components analysis
+# **Week 13:** Ordination continued & cluster analysis
 
 #### ANTH 674: Research Design and Analysis in Anthropology
 #### Professor Andrew Du
@@ -25,266 +29,588 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Introduction
 
-Thus far, we have learned only about models where there is one dependent variable (DV) involved (i.e., univariate statistics).
-But many times, we have multiple variables we want to model as the DV, or we're interested in the structure and visualization of our multivariate dataset.
-These questions are addressed in the branch of statistics known as **multivariate statistics**.
+This week, we finished learning about multivariate statistics, which is the study and analysis of multiple variables.
+We first learned about **distance matrices**, which are the foundation for many multivariate methods.
+We learned how distance matrices play a key role in two new ordination methods: **principal coordinates analysis** and **non-metric multidimensional scaling**.
+We then learned how distance matrices can be analyzed using **cluster analysis** to produce **dendrograms**, an effective way to visualize how similar data points are in terms of their variables.
+I finally very briefly covered non-hierarchical clustering techniques (e.g., *K*-means clustering, discriminant analysis) and multivariate regression (e.g., redundancy analysis).
+In this tutorial, we will learn how to conduct all these analyses in R, and by doing so, better learn what the methods are doing "underneath the hood".
 
-![](https://d2mvzyuse3lwjc.cloudfront.net/doc/en/Tutorial/images/Transparent_Parametric_Surfaces_combined_with_Scatter_Plot/Transparent_Parametric_Surfaces_01.png?v=47975){width="50%"}
+![](https://www.researchgate.net/profile/Seo-Min-Ho/publication/264786798/figure/fig9/AS:392334660390915@1470551280938/Dendrogram-for-hierarchical-clustering-and-nMDS-ordination-plot-for-mesozooplankton_W640.jpg){width="100%"}
 
-This tutorial will teach you multivariate statistics in two main parts:
-
-1. Fitting and interpreting **multivariate models**, where there is more than one DV and one categorical independent variable (IV).
-2. Condensing multiple variables into fewer composite variables for visualization purposes (i.e., **ordination**).
-
-I rarely see multivariate models in (biological) anthropology, but ordination is *extremely* common, especially principal components analysis.
-This tutorial will teach you how to execute these multivariate methods in R, focusing on continuous variables only.
-By the end of this tutorial, you should be able to conduct basic multivariate statistics for your own research, if your research questions demand it.
+My hope is that between the lecture and this tutorial, you will not only know what these methods are used for but also how they work (at least conceptually).
+As your textbook says (pgs. 427-428), many statistical programs (including R) automate these methods, such that many researchers do not know the assumptions and mechanics of these techniques.
+This can lead to abuse and misuse of these methods.
+While these multivariate methods are best learned through the framework of matrix algebra (something I don't know very well), I have done my best to teach you these techniques conceptually.
+That is, I have taught you what these methods are used for, when to use them, what is going on "underneath the hood", and how to interpret the output.
+After absorbing the lecture and tutorial material, you should have a solid enough foundation to carry out these methods for your own research, or at least have the knowledge base to learn more about these methods on your own.
 
 
 ## Goals for this tutorial
 
 #### 1) Continue the never-ending journey of familiarizing yourself with R.
-#### 2) Learn what multivariate models and their advantages are.
-#### 3) Learn how to fit multivariate models with one categorical independent variable (i.e., Hotelling's *T*^2^ and MANOVA).
-#### 4) Learn what a principal components analysis (PCA) is and what it does.
-#### 5) Learn how to fit a PCA to data in R. 
-#### 6) Learn how to extract eigenvalues and eigenvectors from a multivariate dataset and understand what their roles are in PCA.
+#### 2) Learn what distance matrices are and how to calculate them in R.
+#### 3) Learn about principal coordinates analysis and its connection to principal components analysis and correspondence analysis.
+#### 4) Learn what non-metric multidimensional scaling is and how to do it in R.
+#### 5) Learn how to run a cluster analysis in R. 
+#### 6) Be exposed to R code for *K*-means clustering, discriminant analysis, and redundancy analysis.
 
 
-## Multivariate models
+## Distance matrices
 
-Multivariate models are those where more than one DV are modeled as a function of one or more IVs.
-I will illustrate why we would want to do this with an example.
-Imagine I'm interested in how skull morphology varies across certain groups of humans.
-I've taken a bunch of linear measurements, connecting osteometric points on each skull (see figure below).
-Instead of testing each linear measurement separately as a function of group, I can analyze all linear measurements together, which is a true test of overall skull morphology as a function of group (it also means less P-values calculated!).
-That is, fitting a multivariate model instead of multiple univariate models asks a different research question!
-
-![](http://people.wku.edu/darlene.applegate/forensic/lab9/skullpts1.gif){width="35%"}
-
-The main advantage of multivariate models is that they can account for the correlation between DVs, which may reveal differences between groups that are undetectable when using univariate methods to analyze each DV separately.
-This tutorial will cover only those multivariate models where multiple DVs are modeled as a function of one categorical IV.
-Next week's lecture and tutorial will briefly cover multivariate models with a continuous IV.
-
-### Multivariate normal distributions
-
-**NB:** I didn't really cover this topic in class, so feel free to skim this section (it's not necessary to complete the exercises or HW).
-
-Multivariate models assume that the dependent variables are **multivariate normally distributed**.
-That is, each variable is normally distributed and possibly correlated with each other. 
-Let's illustrate this concept by simulating a multivariate normal distribution, focusing on two variables for simplicity's and visualization's sake (i.e., the bivariate normal distribution).
-
-A bivariate normal distribution is an extension of the univariate normal to two variables.
-Whereas the univariate normal distribution has a single mean and SD (or its square: variance), the bivariate normal distribution has a vector of two means (one for each variable) and a **variance-covariance matrix**.
-The variance-covariance matrix for a bivariate normal distribution is a 2x2 square matrix, where each **diagonal** element is the variance for one of the variable's normal distributions (these two numbers can be different), and the **off-diagonal** elements are the **covariance** between the two variables (the off-diagonal elements must be the same).
-The covariance is basically an unstandardized correlation (a correlation is standardized to be between -1 and 1).
+**Distance matrices** are matrices that summarize how (dis)similar observations/variables are when compared in a pairwise fashion.
+They have $n$ rows and $n$ columns (i.e., a square matrix), where $n$ is the number of analyzed variables.
+The variable names are the row and column names, and the element at the intersection of one variable (row) and another (column) tells you what the calculated distance is for those two variables (much like interpreting a scatter plot matrix).
+The diagonals (see figure below) are always zero because those elements are comparing one variable with itself: the variables are identical, so the distance is zero.
+The off-diagonals are almost always greater than zero, with larger numbers indicating more dissimilar variables.
+The best way to learn about distance matrices is by example, so let's do that below.
 
 ![Gray squares are the diagonal elements, while red squares are the off-diagonal elements.](https://www.mathdoubts.com/imgs/matrix/non-diagonal-elements.png){wwidth="40%"}
 
-I have provided code in the console below for simulating a bivariate normal distribution.
-Each variable will have 100 data points, a mean of 1, and a variance of 2.
-The zeroes in the off-diagonals mean that the two variables are uncorrelated.
-Go ahead and run the code (see what the output `bivar_norm` is and why `plot(bivar_norm)` works).
+### Euclidean distance
 
-```{r bivar, exercise = TRUE}
-n <- 100
-means <- c(1, 1)
-varcov <- matrix(
-  c(2, 0,
-    0, 2), 
-  byrow = TRUE, 
-  nrow = 2)
+Let's calculate a distance matrix for the `iris` dataset.
+This is done using the `dist()` function, where the default calculated distance is the **Euclidean distance**.
+In R, the variables to be compared in the distance matrix are formatted as rows, so `dist(iris[, -5])` will generate a distance matrix comparing observations (e.g., individual plants) to each other.
+In this case, the more dissimilar two plants' petal and sepal measurements, the larger the distance.
+If we wanted to create a distance matrix comparing each pair of petal/sepal measurements to each other, we would have to transpose the dataset first, using `t()`.
+This type of distance matrix will calculate the distance between each pair of petal/sepal variables according to how (dis)similar each variable's measurements on all plants are. 
 
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Euclidean_distance_2d.svg/2560px-Euclidean_distance_2d.svg.png){width="60%"}
 
-plot(bivar_norm)
-```
+Because the `iris` measurements are continuous, we can use Euclidean distances for our distance matrix.
+Enter `dist(iris[, -5])` below and compare it to `dist(t(iris[, -5]))`.
 
-```{r bivar-solution}
-hist(bivar_norm[, 1])
-hist(bivar_norm[, 2])
-
-colMeans(bivar_norm) # mean of each variable
-apply(bivar_norm, 2, var) # variance of each variable
-
-# trying out different variance and covariance values
-varcov <- matrix(
-  c(5, 3,
-    3, 5), 
-  byrow = TRUE, 
-  nrow = 2)
-
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
-
-plot(bivar_norm)
-```
-
-Try plotting histograms of each of the variables separately (they should be normally distributed).
-Does the mean of each variable closely match our prespecified number (i.e., 1)?
-What about the variance for each variable?
-If you increase the diagonal elements, the variance of each variable should increase (and vice versa).
-If the off-diagonals are non-zero, the variables will be correlated (positive off-diagonals will generate a positive correlation, while negative off-diagonals will create negative correlations).
-Go ahead and try out different values for the means, variances, and covariances.
-
-In the next topic, we will conduct a Hotelling's *T*^2^ test on data simulated from a bivariate normal distribution. 
-
-
-## Hotelling's *T*^2^
-
-**Hotelling's *T*^2^** models more than one DV as a function of one categorical IV with two levels (i.e., the IV is binomial).
-It is the multivariate extension of the t-test.
-Whereas the t-test tests if two groups' means are significantly different, Hotelling's *T*^2^ tests if two groups' centroids are significantly different.
-A **centroid** is a measure of central tendency for more than one variable.
-It can be thought of as the central tendency of a cloud of points in *n* dimensions, where *n* is the number of variables involved.
-It is calculated simply as the mean of each variable, which gives its coordinates.
-
-I have simulated two DVs for you (using the code from the previous topic), and they are saved as two columns in the matrix, `bivar_norm`.
-Go ahead and calculate the centroid of the two variables.
-You can create a scatter plot of the two DVs against each other with `plot(bivar_norm)`, and then add the centroid to the plot using `points()`.
-
-```{r hotelling-setup, echo = FALSE}
-n <- 100
-means <- c(1, 1)
-varcov <- matrix(c(2, 0,
-                   0, 2), byrow = TRUE, nrow = 2)
-
-set.seed(100)
-bivar_norm <- rmvnorm(n, mean = means, sigma = varcov)
-
-
-set.seed(100)
-gp1 <- rmvnorm(100, mean = c(1, 1))
-gp2 <- rmvnorm(100, mean = c(3, 3))
-
-d <- data.frame(rbind(gp1, gp2), grp = rep(1:2, each = 100))
-colnames(d)[1:2] <- c("DV1", "DV2")
-```
-
-```{r hotelling, exercise = TRUE}
+```{r dist, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r hotelling-solution}
-# centroid
-centroid <- colMeans(bivar_norm)
+```{r dist-solution}
+dist(iris[, -5])
+dist(t(iris[, -5]))
 
-plot(bivar_norm)
-points(centroid[1], centroid[2], pch = 16, col = "red", cex = 2)
+iris_euc <- dist(iris[, -5])
 
-# Hotelling's T2
-anova(manova(as.matrix(d[, c("DV1", "DV2")]) ~ d$grp))
+x <- iris[1, -5]
+y <- iris[2, -5]
 
-anova(manova(cbind(DV1, DV2) ~ grp, data =d)) # also works if you use cbind() to create the matrix
+sqrt(sum((x - y) ^ 2))
 ```
 
-Now let's conduct a Hotelling's *T*^2^ on the data in the plot below.
-There are two groups (`grp`), each of which has two DVs (`DV1`, `DV2`).
-The two groups are represented by different colors, with centroids as solid points.
-The data are found in the dataframe, `d`.
 
-```{r echo=FALSE}
-set.seed(100)
-gp1 <- rmvnorm(100, mean = c(1, 1))
-gp2 <- rmvnorm(100, mean = c(3, 3))
+Let's work with the first distance matrix, so save it to an object (e.g., `iris_euc`).
+I actually find distance matrices in R kind of annoying to work with.
+They should have a set number of rows and columns (which should be equal), but `dim()` does not work on them (they're more like vectors than matrices in R). 
+`head()` returns only the first six elements of the matrix.
+I find it easier to visualize distance matrices by transforming them to a matrix class first, using `as.matrix()` (distance matrices are `dist` class in R).
+Let's look at the first five plants in our distance matrix using `as.matrix(iris_euc)[1:5, 1:5]`.
+As you can see, the diagonals are all zero, and the matrix is symmetrical: the lower triangle matches the upper triangle.
+This makes sense as the distance between Plants 1 and 2 is the same as that between Plants 2 and 1.
 
-plot(gp1, xlim = range(c(gp1[,1], gp2[,1])), ylim = range(c(gp1[,2], gp2[,2])), col = "blue", xlab="DV1", ylab="DV2")
+Plants 1 and 2 have a Euclidean distance of 0.54.
+Let's calculate the Euclidean distance of these two plants "by hand", and see if we get 0.54.
+The formula for calculating the Euclidean distance between the $i$th and $j$th observation is:
 
-points(gp2, col="red")
+\begin{align}
+  d_{i, j} = \sqrt{\sum_{k=1}^{n}(y_{i,k} - y_{j,k})^2},
+\end{align}
 
-points(mean(gp1[,1]), mean(gp1[,2]), pch=21, bg="blue", cex=2, col="gray")
+where $y_{i,k}$ is the measurement for the $i$th observation and the $k$th variable, and $n$ is the total number of variables.
+In English, this is basically saying subtract one observation's variables from the other, square the differences, sum them up, and take the square root.
+See if you can code the Euclidean distance for the first and second plant in `iris` (i.e., the first two rows).
+You can click the "Solution" button in the above console if you get stuck.
 
-points(mean(gp2[,1]), mean(gp2[,2]), pch=21, bg="red", cex=2, col = "gray")
-```
+The value you get should be the same exact one in your distance matrix (`iris_euc[1]`).
+We could do this for every pairwise combination of plants in `iris`.
+Or we could just use `dist()`.
 
-We use Hotelling's *T*^2^ to assess whether the two groups' centroids are significantly different by modeling the two DVs as a function of the binomial IV.
-First recall that an ANOVA done on two groups (i.e., a binomial IV) is the same as a t-test.
-This also applies to multivariate models, so we can use the `manova()` function to conduct a Hotelling's *T*^2^ test.
-`manova()` uses formula notation, where the DV must be a matrix, whose columns are the individual variables (can use `as.matrix()` or `cbind()`).
-Wrap `anova()` around the `manova()` function to get the ANOVA table.
+### Other distance metrics
 
-As you can see, the two groups' centroids are significantly different (the P-value of interest is the one associated with the categorical IV).
-The test statistic used for calculating the P-value is Pillai's trace, which is fairly forgiving when it comes to the assumption of multivariate normality.
+As I alluded to earlier, Euclidean distances are best for continuous variables.
+If at least one variable is not continuous, one has to choose a different distance metric.
+Some common ones are Jaccard and Sørensen for variables with binary outcomes (e.g., 0s and 1s), chi-square and Bray-Curtis for frequencies of categorical data, and Gower for mixed continuous and categorical data (see pg. 404 in your textbook for more distance metrics, though there are even more than that!).
 
+Let's calculate a chi-square distance matrix for the `HairEyeColor` dataset.
+This dataset is a contingency table of the number of individuals with a given hair and eye color, so the chi-square metric is appropriate here.
+First enter `haireye <- margin.table(HairEyeColor, 1:2)` to add male and female frequencies together.
+Enter `haireye` and see what comes out.
 
-## Multivariate analysis of variance (MANOVA)
-
-A multivariate analysis of variance (MANOVA) is the multivariate extension of an ANOVA: it model multiple DVs as a function of one or more categorical IVs.
-We will specifically look at a one-way MANOVA, which models multiple DVs as a function of one categorical IV.
-
-For this topic, we will analyze the example I looked at in class: we have two DVs, which are student satisfaction (`Satisfaction`) and test scores (`Test`), as a function of one categorical IV, which is three different teaching methods (`Method`).
-The data are found in the dataframe, `teach`, and are plotted below (triangles represent centroids).
-
-```{r echo=FALSE}
-man_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/MANOVA_example.csv")
-teach <- read.csv(text = man_url)
-
-plot(teach$Satisfaction, teach$Test, type = "n", xlab = "Student satisfaction scores", ylab = "Test scores")
-
-points(teach$Satisfaction[teach$Method==1], teach$Test[teach$Method==1], pch=16)
-
-points(mean(teach$Satisfaction[teach$Method==1]), mean(teach$Test[teach$Method==1]), pch=24, cex=2, bg="black", col="gray")
-
-points(teach$Satisfaction[teach$Method==2], teach$Test[teach$Method==2], pch=16, col = "red")
-
-points(mean(teach$Satisfaction[teach$Method==2]), mean(teach$Test[teach$Method==2]), pch=24, cex=2, bg="red", col="gray")
-
-points(teach$Satisfaction[teach$Method==3], teach$Test[teach$Method==3], pch=16, col = "blue")
-
-points(mean(teach$Satisfaction[teach$Method==3]), mean(teach$Test[teach$Method==3]), pch=24, cex=2, bg="blue", col="gray")
-
-legend("bottomright", c("Method 1", "Method 2", "Method 3"), pch=c(16,16,16), col=c("black", "red", "blue"))
-```
-
-We will specifically analyze this dataset to see how multivariate models can reveal differences between groups that are undetected using multiple univariate models.
-This is because multivariate models incorporate information on the relationships between DVs when determining whether groups' centroids are significantly different (the same is true of Hotelling's *T*^2^ vs. a t-test). 
-
-```{r man-setup, echo = FALSE, message = FALSE}
-man_url <- RCurl::getURL("https://raw.githubusercontent.com/andrewdu1/ANTH674/master/Datasets/MANOVA_example.csv")
-teach <- read.csv(text = man_url)
-```
-
-First, run two separate one-way ANOVAs, each testing whether student satisfaction or test scores are significantly different across teaching methods (you can create box plots to visualize the data).
-
-```{r man, exercise = TRUE}
+```{r chi, exercise = TRUE}
 # Click "Solution" button if stuck
 ```
 
-```{r man-solution}
-# box plots
-boxplot(Satisfaction ~ Method, data = teach)
-boxplot(Test ~ Method, data = teach)
+```{r chi-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
 
-# ANOVAs
-anova(aov(Satisfaction ~ Method, data = teach))
-anova(aov(Test ~ Method, data = teach))
+library(analogue)
+distance(haireye, method = "chi.distance", dist = TRUE)
 
-# MANOVA
-anova(manova(as.matrix(teach[, c("Test", "Satisfaction")]) ~ teach$Method))
-anova(manova(cbind(Test, Satisfaction) ~ Method, data = teach)) # also works
+distance(t(haireye), method = "chi.distance", dist = TRUE)
 ```
 
-As you can see, neither of the one-way ANOVAs are significant (though this is likely due to small sample sizes, as `Test` looks like it varies across `Method` according to a box plot).
+To calculate a chi-square distance matrix on this contingency table, we're going to use the `distance()` function in the `analogue` package.
+To do this, enter `distance(haireye, method = "chi.distance", dist = TRUE)`; the argument `dist = TRUE` returns a `dist` class object.
+This distance matrix is telling us how similar hair colors are to each other, in terms of the proportion of individuals with each eye color.
+What do you think you'll get if you transpose the table first?
+Test your intuition by trying it out above.
 
-Now use `manova()` to run a one-way MANOVA with the DVs `Test` and `Satisfaction` as a function of `Method`.
-Wrap `anova()` around `manova()` to get the ANOVA table and P-value.
-We now have a significant result!
-This result illustrates that MANOVAs have greater statistical power and are able to detect smaller effects than individual univariate ANOVAs.
-You can think of this as MANOVA incorporating and leveraging more information (i.e., the correlation between DVs) than ANOVAs.
-Indeed, you can see in the plot that the diagonal ellipse of blue points is separate from the red and black points when the DVs are plotted against each other in two dimensions.
-That is, blue has a larger test score for a given satisfaction score when compared to red and black.
+### Comparing PCA distance to Euclidean distance of original variables
+
+We are now in a position to see how well the Euclidean distances between `iris` variables corresponds to the Euclidean distances between points in PCA space. 
+First, create a PCA of the four `iris` variables, using `iris_pca <- prcomp(iris[, -5])`.
+You can get out the Euclidean distances between each point in PCA space with `dist(iris_pca$x)`.
+Plot these distances against the Euclidean distances of the original variables from above (`iris_euc`).
+You can do this with `plot(iris_euc, dist(iris_pca$x))`.
+You can add a 1:1 line with `abline(0, 1)`, where 0 is the intercept and 1 is the slope.
+This plot is known as a **Shepard diagram**.
+
+```{r compar, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r compar-solution}
+iris_pca <- prcomp(iris[, -5])
+
+pca.dist <- dist(iris_pca$x)
+iris_euc <- dist(iris[, -5])
+
+plot(pca.dist, iris_euc)
+abline(0, 1, col = "red")
+```
+
+As you can see, the Euclidean distances between plants in terms of their original variables are preserved *exactly* in PCA space.
+This illustrates how PCA is just a **rigid rotation** of the original data: PCA simply rotates the original data cloud so that the axes of greatest variation align with the PCs (making sure that the PCs are perpendicular and independent to each other).
+Euclidean distances will be identical only if all PCs are considered.
+If the data are scaled first, then PCA will preserve the Euclidean distance between the scaled versions of the variables.
+
+
+## Principal coordinates analysis
+
+I introduced ordination to you using PCA, which is sensible since it's by far the most common ordination method used by anthropologists.
+As a reminder, the main goals of ordination are (from your lecture):
+
+1. Distill multivariate data into fewer variables/dimensions for plotting or analytical purposes.
+2. Maintain as best as possible the distances between the original observations.
+3. Create new variables/axes, where the first one is fit through the axis of greatest variation in the multivariate data cloud, the second one is fit through the axis of greatest residual variation left over from the first axis, etc.
+4. Create new variables/axes that are perpendicular and independent to each other.
+
+PCA does all this, as does **principal coordinates analysis** (PCoA), which is also known as **metric multidimensional scaling**.
+I like to think of PCoA as the generalized, "jack-of-all-trades" ordination method.
+That is, PCoA is an ordination method that carries out **singular value decomposition** (SVD) on *any* distance matrix in order to reduce the data into fewer important variables.
+So, PCA can be considered a specialized form of PCoA, which is done on a Euclidean distance matrix.
+Likewise, correspondence analysis (to be covered later) is a specialized form of PCoA done on a chi-square distance matrix.
+
+PCoA is slightly different from PCA, however, in that it does SVD on a distance matrix, not the variance-covariance matrix of the variables.
+Analyzing the variance-covariance matrix, which quantifies how variables are correlated, is how PCA distills correlated variables into PCs.
+Instead, PCoA uses a distance matrix, which tells us how similar two observations are, to plot observations in PCoA space where closer points indicate that they are more similar in terms of their variables.
+This also means that PCoA does not distill variables into PCs and therefore does not compute loadings.
+
+### Comparing PCA & PCoA
+
+Let's calculate a PCoA using a Euclidean distance matrix to illustrate that this is identical to PCA.
+We will analyze the `iris` dataset again.
+First fit a PCA (`iris_pca <- prcomp(iris[, -5])`) and create a PCA scatter plot (`plot(iris_pca$x[, 1:2])`).
+You can color-code the points by species if you'd like.
+
+```{r pcoa, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r pcoa-solution}
+iris_pca <- prcomp(iris[, -5])
+
+plot(iris_pca$x[, 1:2], type = "n")
+points(iris_pca$x[iris$Species == "setosa", 1:2])
+points(iris_pca$x[iris$Species == "versicolor", 1:2], col = "red")
+points(iris_pca$x[iris$Species == "virginica", 1:2], col = "blue")
+
+iris_euc <- dist(iris[, -5])
+iris_pcoa <- cmdscale(iris_euc, k = 2, eig = TRUE)
+iris_pcoa$points[, 2] <- -1 * iris_pcoa$points[, 2]
+
+plot(iris_pcoa$points, type = "n")
+points(iris_pcoa$points[iris$Species == "setosa",])
+points(iris_pcoa$points[iris$Species == "versicolor",], col = "red")
+points(iris_pcoa$points[iris$Species == "virginica",], col = "blue")
+
+iris_pcoa1 <- cmdscale(iris_euc, k = nrow(iris) - 1, eig = TRUE)
+plot(iris_euc, dist(iris_pcoa1$points))
+abline(0, 1, col = "red")
+```
+
+To fit a PCoA to a Euclidean distance matrix, we need to first generate the matrix.
+This can be done using code from the previous topic: `iris_euc <- dist(iris[, -5])`.
+Now we use the function `cmdscale()` to carry out the PCoA analysis.
+This is done with `iris_pcoa <- cmdscale(iris_euc, k = 2, eig = TRUE)`.
+`k = 2` tells us that we only want the first two axes (i.e., **principal coordinates**), and `eig = TRUE` tells R to return the eigenvalues.
+Go ahead and create the PCoA plot with `plot(iris_pcoa$points)`.
+
+You'll notice that the axes in your PCoA might be flipped (my y-axis is flipped).
+Remember that the signs of PC or principal coordinate scores are arbitrary; what matters is that they're internally consistent (see the *Eigenvectors* topic in the Week 11 tutorial).
+This happens because signs depend on an arbitrary decision made during SVD.
+To fix my flipped y-axis, I simply multiplied all principal coordinate 2 scores by -1: `iris_pcoa$points[, 2] <- -1 * iris_pcoa$points[, 2]`. 
+Now the PCA and PCoA plots are identical.
+And because they're identical, I know a Shepard diagram of the PCoA points will perfectly preserve the Euclidean distances in original `iris` variable space (you can confirm this if you'd like, but you have to first change the `cmdscale()` argument to `k = nrow(iris) - 1`, the maximum number of principal coordinates allowed with 150 data points).
+
+My advice is if you want to do an ordination on continuous variables, use PCA over PCoA, since the former gives you loadings, which are very informative.
+
+### PCoA eigenvalues
+
+To get out percent variance explained by each principal coordinate, we need to get out the eigenvalues.
+This is done with `iris_pcoa$eig`.
+Divide each eigenvalue by the total and multiply by 100 to get percent variance explained by each principal coordinate.
+Try this out below (you can also create a scree plot if you want!).
+
+```{r perc_var, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r perc_var-solution}
+iris_euc <- dist(iris[, -5])
+iris_pcoa <- cmdscale(iris_euc, k = 2, eig = TRUE)
+
+barplot(iris_pcoa$eig / sum(iris_pcoa$eig) * 100)
+
+iris_pca <- prcomp(iris[, -5])
+iris_pca$sdev ^ 2
+iris_pcoa$eig / (nrow(iris) - 1)
+```
+
+You might notice that the eigenvalues of PCA (`iris_pca$sdev ^ 2`) are not the same as those from PCoA.
+In fact, the PCoA eigenvalues are larger by a factor of $n-1$ (where $n$ is the number of observations) because it does SVD on a distance matrix, as opposed to a variance-covariance matrix.
+So to get the PCA eigenvalues, just divide the PCoA eigenvalues by $n-1$ (149 for the `iris` dataset).
+This difference in eigenvalues does not affect the calculation for percent variance explained, however.
+
+For those who are curious what the eigenvectors are in PCoA, those are actually the PCoA scores themselves (i.e., `iris_pcoa$points`, or the coordinates of the points in PCoA space).
+This is different than PCA, where the eigenvectors are the loadings.
+
+
+## Correspondence analysis
+
+**Correspondence analysis** (CA) is an ordination done on chi-square distance matrices (with one extra detail, which I'll cover below).
+Thus, it is used to ordinate frequencies of categorical data (e.g., number of individuals within species across sites).
+We will learn CA by first performing PCoA on a chi-square distance matrix.
+
+### PCoA on chi-square distance matrix
+
+The dataset we will analyze for this section is the `HairEyeColor` dataset from before.
+Again, combine males and females using `haireye <- margin.table(HairEyeColor, 1:2)`.
+Calculate a chi-square distance matrix using the same code as before: `hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)`.
+I used this object name because the table rows are hair color, so that's the variable being compared in the distance matrix.
+Run the PCoA analysis with `hair_pcoa <- cmdscale(hair_chi, k = nrow(haireye) - 1, eig = TRUE)`.
+We are now extracting three principal coordinates with `k = nrow(haireye) - 1`, the maximum allowed given that there are only four rows (for $n$ rows, you can get only $n-1$ principal coordinates).
+
+Create the PCoA plot.
+In lecture, I used `text()` instead of `points()` to add the hair color names to the plot.
+Look at the help file to see if you can figure out how to do this on your own (click the "Solution" button if you get stuck).
+You can also calculate percent variance explained by each principal coordinate (which I didn't code) by analyzing the eigenvalues (like you did in the previous topic): `hair_pcoa$eig / sum(hair_pcoa$eig) * 100`.
+
+```{r ca, exercise = TRUE}
+# Click the "Solution" button if stuck
+```
+
+```{r ca-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+
+# hair color
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+hair_pcoa <- cmdscale(hair_chi, k = nrow(haireye) - 1, eig = TRUE)
+
+plot(hair_pcoa$points[, 1:2], type = "n", xlab = "Principal Coordinate 1", ylab = "Principal Coordinate 2") # adjust the axes if names are cut off
+text(hair_pcoa$points[, 1:2], rownames(hair_pcoa$points))
+abline(h = 0, lty = 3) # x-axis
+abline(v = 0, lty = 3) # y-axis
+
+hair_pcoa$eig / sum(hair_pcoa$eig) * 100
+
+mosaic(haireye, shade = TRUE, legend = TRUE)
+
+# eye color
+eye_chi <- distance(t(haireye), method = "chi.distance", dist = TRUE)
+eye_pcoa <- cmdscale(eye_chi, k = nrow(t(haireye)) - 1, eig = TRUE)
+
+plot(eye_pcoa$points[, 1:2], type = "n", xlab = "Principal Coordinate 1", ylab = "Principal Coordinate 2") # adjust the axes if names are cut off
+text(eye_pcoa$points[, 1:2], rownames(eye_pcoa$points))
+abline(h = 0, lty = 3) # x-axis
+abline(v = 0, lty = 3) # y-axis
+
+# hair and eye color
+plot(hair_pcoa$points[, 1:2], type = "n", xlim = range(hair_pcoa$points[, 1], eye_pcoa$points[, 1]), ylim = range(hair_pcoa$points[, 2], eye_pcoa$points[, 2]), xlab = "Principal Coordinate 1", ylab = "Principal Coordinate 2") # adjust the axes if names are cut off# adjust the axes if names are cut off
+
+eye_pcoa$points[, 1] <- -1 * eye_pcoa$points[, 1] # flip x-axis
+
+text(hair_pcoa$points[, 1:2], rownames(hair_pcoa$points), col = "maroon1")
+text(eye_pcoa$points[, 1:2], rownames(eye_pcoa$points), col = "chartreuse3")
+
+abline(h = 0, lty = 3) # x-axis
+abline(v = 0, lty = 3) # y-axis
+
+legend("bottomright", legend = c("Hair color", "Eye color"), fill = c("maroon1", "chartreuse3"))
+```
+
+Points that are closer are more similar in terms of proportion of individuals with certain eye colors.
+The PCoA plot is more interpretable if you can visualize those proportions.
+Do this using `mosaic(haireye, shade = TRUE, legend = TRUE)`.
+I discuss in more detail how to interpret a PCoA plot below, when we plot both hair and eye color on the same plot.
+
+We could also create a PCoA plot of eye color by computing a chi-square distance matrix on the transposed version of our `haireye` table (so eye color is now on the rows).
+Try this out above (click the "Solution" button if you get stuck).
+
+One of the nice things about doing PCoA on both hair and eye color is that we can plot both on the same PCoA plot (you could've plotted `iris` petal/sepal measurements on the PCoA plot from the previous topic).
+To do this, we first have to see if any of our axes are flipped (remember, this happens because of an arbitrary decision made during SVD).
+**Only do this if you know how your two variables are related to each other** (e.g., as discerned from a mosaic plot); CA, which I cover below, does this automatically.
+In my case, I know blond hair and blue eyes are strongly associated, so my x-axis is flipped.
+Again, I fix this with `eye_pcoa$points[, 1] <- -1 * eye_pcoa$points[, 1]`.
+Now, I can place hair and eye color on the same plot.
+See if you can do this on your own (click the "Solution" button if you get stuck).
+You should get something that looks like the plot below.
+
+```{r echo=FALSE}
+haireye <- margin.table(HairEyeColor, 1:2)
+
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+hair_pcoa <- cmdscale(hair_chi, k = 3, eig = TRUE)
+
+eye_chi <- distance(t(haireye), method = "chi.distance", dist = TRUE)
+eye_pcoa <- cmdscale(eye_chi, k = 3, eig = TRUE)
+eye_pcoa$points[, 1] <- -1 * eye_pcoa$points[, 1]
+
+plot(hair_pcoa$points[, 1:2], type = "n", xlim = range(hair_pcoa$points[, 1], eye_pcoa$points[, 1]), ylim = range(hair_pcoa$points[, 2], eye_pcoa$points[, 2]), xlab = "Principal Coordinate 1", ylab = "Principal Coordinate 2") # adjust the axes if names are cut off# adjust the axes if names are cut off
+
+text(hair_pcoa$points[, 1:2], rownames(hair_pcoa$points), col = "maroon1")
+text(eye_pcoa$points[, 1:2], rownames(eye_pcoa$points), col = "chartreuse3")
+
+abline(h = 0, lty = 3) # x-axis
+abline(v = 0, lty = 3) # y-axis
+
+legend("bottomright", legend = c("Hair color", "Eye color"), fill = c("maroon1", "chartreuse3"))
+```
+
+Now I will go over how to interpret the PCoA plot with both hair and eye color on it.
+We see that black hair and brown eyes are plotted together far from the origin (where the dashed lines intersect).
+In fact, one can imagine drawing an arrow from the origin to each of these points, and the arrows are pretty much parallel.
+The fact that the arrows are parallel and far from the origin means black hair and brown eyes are strongly positively associated with each other (as can be seen from the mosaic plot).
+You can interpret these imaginary arrows in the same way that you interpreted PC loadings from last week.
+This interpretation of black hair and brown eyes also applies to blond hair and blue eyes, which are plotted close together on the right side of the plot.
+Thus, black hair and brown eyes are on the opposite end of Principal Coordinate 1, which explains the most variation in the data, relative to blond hair and blue eyes.
+This means that if you have black hair, you're unlikely to have blue eyes, and the same is true for blond hair and brown eyes.
+Using the same logic, we can see that red hair and green eyes are positively associated with each other.
+Lastly, how strongly associated hair and eye color are is a function of how close pairs of points are from the origin.
+So while brown hair and hazel eyes are plotted together, these points are close to the origin, so there is a weak positive association between the two.
+
+### Correspondence analysis
+
+I introduced CA using PCoA because you are somewhat familiar with PCoA now and also to emphasize how all these ordination methods are related.
+That is, CA is pretty much just PCoA done on a chi-square distance matrix.
+The one additional difference in CA is that it up-weights cells in the table with larger sample sizes.
+This helps ameliorate the effect of smaller sample sizes, which have larger sampling errors and may be outliers.
+So, a CA is *identical* to a weighted PCoA.
+
+A weighted PCoA is done in R using the `wcmdscale()` function in the `vegan` package.
+Let's do this on a new dataset, `mite`, which has more data points, so you can see how a weighted PCoA is identical to CA.
+Load the `mite` dataset using `data(mite)` (it's from the `vegan` package), and look at the help file for details about this dataset.
+First, create a chi-square distance matrix of the dataset using `mite_chi <- distance(mite, method = "chi.distance", dist = TRUE)`.
+Soil cores (think of them like sites) are rows, so this is what is being compared.
+Soil cores with smaller distances will be more similar in terms of their mite species composition and abundances.
+Now run the weighted PCoA on the distance matrix with `mite_wpcoa <- wcmdscale(mite_chi, k = nrow(mite) - 1, eig = TRUE, w = rowSums(mite) / sum(mite))`, where the `w = rowSums(mite) / sum(mite)` argument tells us to weigh soil cores by the abundance of mite individuals in each core relative to the number of all mite individuals in the dataset.
+Now create the plot of soil cores with `plot(mite_wpcoa$points[, 1:2])`.
+
+```{r wcmd, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r wcmd-solution}
+data(mite)
+
+mite_chi <- distance(mite, method = "chi.distance", dist = TRUE)
+
+mite_wpcoa <- wcmdscale(mite_chi, k = nrow(mite) - 1, eig = TRUE, w = rowSums(mite) / sum(mite))
+plot(mite_wpcoa$points[, 1:2])
+
+mite_ca <- ca(mite)
+plot(mite_ca)
+
+mite_wpcoa$eig
+mite_ca$sv ^ 2
+
+plot(mite_chi, dist(mite_wpcoa$points))
+abline(0, 1, col = "red")
+```
+
+We can also just do CA directly using the `ca()` function in the `ca` package.
+Enter `mite_ca <- ca(mite)` and then `plot(mite_ca)`.
+You can see that both soil cores (blue circles) and mite species (red triangles) are automatically plotted, and percent variance explained is automatically calculated and added to the plot.
+To get out the eigenvalues yourself, enter `mite_ca$sv ^ 2`.
+
+You can also see that the array of soil core points from the weighted PCoA is identical to that from the CA (though my y-axis in weighted PCoA is flipped).
+Moreover, the eigenvalues are identical (compare `mite_wpcoa$eig` and `mite_ca$sv ^ 2`).
+Again, a CA is identical to a weighted PCoA!
+
+Lastly, let's create a Shepard diagram with `plot(mite_chi, dist(mite_wpcoa$points))`.
+As you can see, an ordination done on a chi-square distance matrix *perfectly* preserves the original distances in the matrix!
+
+My advice is that if you want to ordinate frequencies of categorical data, just do CA over a weighted PCoA.
+The former will automatically align both variables for you instead of having to do it manually (like we did for hair and eye color).
+
+If you're interested in more details about what CA is doing underneath the hood, including calculating the chi-square distance matrix "by hand" and doing SVD on it, [this website](https://www.displayr.com/math-correspondence-analysis/) does a really good job explaining all those details. 
+
+
+## Non-metric multidimensional scaling
+
+Most ordination techniques do a rigid rotation of multivariate data and create many new axes fit to the axes of greatest variation in the dataset.
+The downside to this is that you can only ever plot two or three axes at a time, so you're only getting a partial picture of the multivariate dataset (albeit an accurate one if the first two axes explain most of the variation in the dataset).
+
+**Non-metric multidimensional scaling** (NMDS), on the other hand, will take a multivariate dataset and "squish" it into two or three dimensions.
+It does this by leveraging computing power to try many different layouts of points in, for example, two-dimensional space until the Euclidean distances between points best correspond with the distances in the original distance matrix.
+Because of the computing power involved, NMDS is a relatively new ordination technique.
+Also, because NMDS uses this iteration technique, it does not perform SVD on a distance matrix, so the axes are not fit through the axes of greatest variation and there is no percent variance explained by the axes.
+How the points are related to axes in NMDS is completely arbitrary; all that matters is how close points are to each other.
+Lastly, as with PCoA, NMDS can be done on *any* distance matrix.
+
+To do an NMDS in R, we will use the `isoMDS()` function from the `MASS` package.
+We will use our `haireye` dataset from before (`haireye <- margin.table(HairEyeColor, 1:2)`).
+Enter `nmds <- isoMDS(hair_chi, k = 2)`, where `hair_chi` is our chi-square distance matrix (i.e., `hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)`) and `k = 2` means we want NMDS to squish our multivariate data into two dimensions.
+Enter `plot(nmds$points)` to plot the data.
+Use `text()` to add hair color labels to the plot.
+
+```{r nmds, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r nmds-solution}
+library(MASS)
+
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+nmds <- isoMDS(hair_chi, k = 2)
+
+plot(nmds$points, type = "n")
+text(nmds$points, rownames(haireye))
+
+nmds$stress
+
+plot(hair_chi, dist(nmds$points))
+abline(0, 1)
+```
+
+As you can see, black hair is far away from blond, as to be expected given how different their proportion of eye colors are (again, enter `mosaic(haireye, shade = TRUE, legend = TRUE)` to visualize this).
+Black and red hair are each close to brown hair because these pairs of hair colors have the most similar proportion of eye colors.
+
+`nmds$stress` gives us a measure of **stress**, which is how much the Euclidean distances between points in NMDS space *don't* correspond with the chi-square distances in the original distance matrix.
+Stress is what is minimized during the NMDS iteration process.
+`isoMDS()` returns stress as a percentage, though its typically reported as a proportion, so divide stress by 100.
+A lower stress is preferred, where any number below 0.2 is acceptable (general rule).
+The stress of our NMDS analysis is pretty much zero indicating that there's a near perfect correlation between the Euclidean distances of NMDS points and the chi-square distances.
+We can see this with a Shepard plot: `plot(hair_chi, dist(nmds$points))`.
+The reason the Shepard plot here is so good is because `isoMDS()` automatically uses a PCoA on the distance matrix to get the starting configuration for NMDS (i.e., NMDS starts with the location of points from a PCoA and then continually adjusts them until stress is minimized).
+So this NMDS looks exactly like your earlier PCoA plot because that's the optimal configuration!
+For your lecture, I chose a random starting configuration, hence why the scatter plot and Shepard diagram look different.
+
+As with PCoA, you could also plot an NMDS for eye color, but you cannot add those points to the hair color plot.
+Again, that's because the points are arbitrarily aligned with the axes, so it's difficult to get hair and eye color points aligned in the same direction.
+
+
+## Cluster analysis
+
+Recall that ordination visualizes multivariate data in a reduced dimensional space.
+Points that are closer in this space are more similar in terms of their variables.
+**Cluster analysis**, on the other hand, visualizes similarities between observations by joining similar data points into clusters.
+The most popular clustering methods are hierarchical, where more similar data points are united in smaller clusters, and the next most similar data points are then added to those smaller clusters to form larger clusters.
+This is visualized using a **dendrogram**.
+As with PCoA and NMDS, cluster analysis can be done using *any* distance matrix.
+
+There are two main kinds of clustering algorithms: **agglomerative clustering** and **divisive clustering**.
+The former starts with separate observations as individual clusters and successively joins them based on the similarities of their variables, while the latter starts with one large cluster of all observations and splits the data into smaller clusters until each observation is its own cluster.
+Agglomerative clustering is more popular than divisive clustering.
+
+![](https://static.packt-cdn.com/products/9781789952292/graphics/C12626_02_15.jpg){width="80%"}
+
+### Agglomerative clustering
+
+Let's perform agglomerative clustering on our `haireye` table from before (`haireye <- margin.table(HairEyeColor, 1:2)`).
+Create the chi-square distance matrix using `hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)`.
+To do agglomerative clustering in R, we use the `hclust()` function.
+Enter `hair_agg_clust <- hclust(hair_chi, method = "average")`.
+The `method = "average"` argument means we're using the **UPGMA (unweighted pair group method with arithmetic mean)** algorithm, which is the most common in anthropology.
+Enter `plot(hair_agg_clust)` to see the dendrogram.
+
+```{r agglom, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r agglom-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+
+hair_agg_clust <- hclust(hair_chi, method = "average")
+plot(hair_agg_clust, ylab = "Chi-square distance", hang = -1)
+
+hair_agg_clust$height[1]
+hair_chi
+```
+
+We can make our dendrogram more visually appealing.
+First, we can make the y-axis label more accurate by labeling it as "Chi-square distance" (do this using the traditional `ylab = ` argument).
+I also like setting argument `hang = -1`.
+This places the labels on the same level at y = 0.
+
+Based on the resulting dendrogram, we can see that red- and brown-haired individuals are most similar in terms of the eye color proportions in each.
+The next most similar to these two is black hair, while blond hair is the most different from the other three.
+This confirms what we saw in our earlier ordination plots.
+
+To interpret the y-axis ("Chi-square distance"), let's look at the distance associated with where "Brown" and "Red" are joined (`hair_agg_clust$height[1]`).
+Note that this is the exact same chi-square distance separating brown and red hair in our distance matrix (enter `hair_chi`).
+So the y-axis tells us the chi-square distance between individual data points and between individual data points and clusters.
+
+### Divisive clustering
+
+This is done using the `diana()` function from the `cluster` package.
+Enter `hair_div_clust <- diana(hair_chi)`.
+Then enter `plot(hair_div_clust, hang = -1, ylab = "Chi-square distance")`.
+This code returns two plots; if we only want the second plot with the dendrogram, add `which.plots = 2` to the `plot()` function.
+
+```{r div, exercise = TRUE}
+# Click "Solution" button if stuck
+```
+
+```{r div-solution}
+haireye <- margin.table(HairEyeColor, 1:2)
+hair_chi <- distance(haireye, method = "chi.distance", dist = TRUE)
+
+hair_div_clust <- diana(hair_chi)
+plot(hair_div_clust, hang = -1, ylab = "Chi-square distance")
+```
+
+This dendrogram is very similar to the one produced by agglomerative clustering.
+There are some subtle differences with the chi-square distances at which higher clusters are joined.
+This is due to differences between the agglomerative and divisive clustering algorithms in terms of how higher clusters should be joined.
+The largest difference is that blond hair is on the right side of the plot in the divisive clustering dendrogram.
+This difference is purely aesthetic, however, as dendrograms can be thought of as mobiles: you can rotate clusters around the stem, and the results are identical.
+
+![](https://i.etsystatic.com/6187336/r/il/739062/1812919096/il_1588xN.1812919096_cc44.jpg){width="30%"}
 
 
 ## Exercise 1
 
-We will analyze the `iris` dataset for these questions.
+1. We will analyze the `mtcars` dataset for this question.
+First subset out the continuous variables: `mpg`, `disp`, `hp`, `drat`, `wt`, and `qsec`.
+Create a distance matrix for these variables with car models as rows (i.e., don't transpose the dataset).
+Which distance metric should you use?
+Create a PCoA plot of your distance matrix, where points are replaced with car model labels.
+Include the percentage of variance explained in the axis labels.
+Which car model is most similar to the Duster 360?
 
-1. I wonder if overall petal morphology (i.e., length and width) is significantly different between the `setosa` and `versicolor` species.
-First plot `Petal.Width` as a function of `Petal.Length` and color code the points by `Species`.
-Then plot the centroids for each `Species`.
-Finally, run a Hotelling's *T*^2^ to test if the centroids of the two petal variables are significantly different between `setosa` and `versicolor`.
+2. For this question, we are going to analyze a new dataset: `dune` from the `vegan` package.
+Load the dataset using `data(dune)`.
+Look at the help file for details about this dataset.
+We are going to use a new distance metric for our distance matrix: Bray-Curtis.
+So, set `method = "bray"` in the `distance()` function (we are going to plot sites, which are already formatted as rows).
+Create a two-dimensional NMDS plot of the sites.
+What is the stress from the NMDS analysis?
 
-2. Run a one-way MANOVA testing if the centroids of all four `iris` measurements (`Sepal.Length`, `Sepal.Width`, `Petal.Length`, `Petal.Width`) are significantly different across all three species.
-As you can imagine, this would be *very* difficult to plot.
+3. Perform a UPGMA cluster analysis on the distance matrix from Question 1.
+Produce a dendrogram of the results.
+Did the car model you picked in Question 1 match what you see in the dendrogram?
 
 ```{r exer1, exercise = TRUE}
 # Click "Solution" button when done
@@ -292,319 +618,59 @@ As you can imagine, this would be *very* difficult to plot.
 
 ```{r exer1-solution}
 # Q1
-iris1 <- iris[iris$Species != "virginica", ] # remove virginica
-
-plot(iris1$Petal.Width ~ iris1$Petal.Length, type = "n")
-
-points(iris1$Petal.Width[iris1$Species == "setosa"] ~ iris1$Petal.Length[iris1$Species == "setosa"], col = "red")
-points(iris1$Petal.Width[iris1$Species == "versicolor"] ~ iris1$Petal.Length[iris1$Species == "versicolor"], col = "blue")
-
-points(mean(iris1$Petal.Length[iris1$Species == "setosa"]), mean(iris1$Petal.Width[iris1$Species == "setosa"]), pch = 16, col = "red", cex = 2)
-points(mean(iris1$Petal.Length[iris1$Species == "versicolor"]), mean(iris1$Petal.Width[iris1$Species == "versicolor"]), pch = 16, col = "blue", cex = 2)
-
-legend("topleft", c("setosa", "versicolor"), pch = c(16, 16), col = c("red", "blue"))
-
-anova(manova(cbind(Petal.Length, Petal.Width) ~ Species, data = iris1))
-
-# Q2
-iris_noSp <- subset(iris, select = -Species)
-anova(manova(as.matrix(iris_noSp) ~ iris$Species))
-```
-
-
-## Ordination
-
-Ordinations are most commonly used to explore and visualize a multivariate dataset.
-The number of variables in one's dataset dictates the number of plot axes (e.g., visualizing `iris$Petal.Length` and `iris$Petal.Width` requires two plot axes).
-Therefore, it is impossible to plot more than three variables in a single plot.
-Ordination allows us to get around this problem by distilling multiple variables into a smaller number of composite variables.
-It does this by collapsing correlated variables into one (e.g., because `iris$Petal.Length` and `iris$Petal.Width` are strongly correlated, they offer redundant information and can be represented by one composite variable).
-This is why ordinations are known as **data reduction methods**.
-
-![](https://miro.medium.com/max/1619/0*5Iaw94wlYCTp0GuK.png){width="90%"}
-
-Different types of ordinations are used depending on the data type of one's variables.
-I will introduce ordination using principal components analysis, by far the most common ordination method, at least in anthropology.
-
-
-## Principal components analysis
-
-Principal components analysis (PCA) is an ordination method, used when all your variables are continuous.
-Conceptually, it creates composite variables (i.e., **principal components** or PCs) by first centering the data and then fitting a line through the axis of greatest variation ([see animation here](https://i.sstatic.net/lNHqt.gif); the specific line fitting method is called **major axis regression**).
-It then rotates the plot so this line (i.e., the first principal component or PC1) is now on the x-axis.
-Subsequent PCs are fit so that they're perpendicular to (and thus independent of) previous PCs.
-These subsequent PCs can be thought of as fitting the residual variation left over from previous PCs (this is also why they always explain less variation than previous PCs).
-Each PC represents a composite of the original variables, and this is how PCA condenses one's original variables into a few variables of interest (i.e., PCs).
-Note that you can only have as many PCs as you do variables, but it is usually the case that only the first several PCs are important (importance based on amount of variance in data explained).
-
-Because PCA works by fitting PCs through axes of greatest variation, variables with more variation will strongly influence how PCs are fit to the data.
-This is fine when the variation in one's multivariate dataset is of interest itself, but this can be a problem when variables are more variable just because, for example, they're in different units.
-Therefore, it is common practice to scale each variable before running a PCA.
-
-### Doing a PCA in R
-
-This is done using the `prcomp()` function.
-We only need to enter in one argument, which is the multivariate dataset, where each variable is a column and each observation is a row.
-Note that `prcomp()` will automatically center each variable for you.
-Instead of scaling each variable yourself, `prcomp()` can do it for you if you set the argument `scale = TRUE`.
-
-Let's try fitting a PCA to the four measurements in the `iris` dataset.
-Because all measurements are all in centimeters and are of the same order of magnitude, scaling is not necessary here.
-
-```{r pca, exercise = TRUE}
-# Click "Solution" button if stuck
-```
-
-```{r pca-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-
-plot(iris.pca$x[, 1:2], type = "n")
-
-# you can use the iris dataset to get the indices for each species because each row/observation in iris corresponds to each row/observation in iris.pca$x 
-points(iris.pca$x[iris$Species == "setosa", 1:2], pch = 16)
-points(iris.pca$x[iris$Species == "versicolor", 1:2], pch = 16, col = "blue")
-points(iris.pca$x[iris$Species == "virginica", 1:2], pch = 16, col = "red")
-
-legend("topright", legend = unique(iris$Species), pch = c(16, 16, 16), col = c("black", "blue", "red"))
-```
-
-You can get out the PCA **scores** (i.e., the coordinates of each observation in PCA space) with `iris.pca$x` (assuming you called your PCA results `iris.pca`).
-Plot the scores of the first two axes in a scatter plot.
-You can even color-code the points by species if you want!
-Points that are closer in PCA space are more similar when it comes to petal and sepal morphology (as determined by the four measurements in `iris`).
-
-To understand what each PC means and represents, we have to turn to the concepts of eigenvalues and eigenvectors.
-
-
-## Eigenvalues
-
-An **eigenvalue** is the amount of variance explained by each PC.
-Therefore, you have as many eigenvalues as you do PCs.
-To get out the eigenvalues from `iris.pca`, enter `iris.pca$sdev`.
-Note that this code returns eigenvalues as standard deviations.
-To get variances, simply square `iris.pca$sdev`.
-Note that variance decreases as you progress to higher PCs; this is always the case.
-
-```{r eigenvalue, exercise = TRUE}
-# Click "Solution" button if stuck
-```
-
-```{r eigenvalue-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-
-eigenvalues <- iris.pca$sdev ^ 2
-
-barplot(eigenvalues, ylab = "Variance", names.arg = c("PC1", "PC2", "PC3", "PC4"))
-
-perc_explain <- eigenvalues / sum(eigenvalues) * 100
-
-# compare eigenvalues and variance in original dataset
-sum(eigenvalues)
-sum(apply(subset(iris, select = -Species), 2, var))
-```
-
-A common way to plot eigenvalues is to create a bar plot.
-This is known as a **scree plot**, which mimics the profile of a mountainside where rubble has fallen (i.e., a scree slope; see image below).
-
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Yamnuska_bottom_cliff.jpg/1024px-Yamnuska_bottom_cliff.jpg){width="30%"}
-
-Now we can get the percentage of variance in the multivariate dataset explained by each PC.
-This is done by simply dividing each eigenvalue by the sum of all eigenvalues and then multiplying this by 100.
-Do this in the console above.
-
-We can see that PC1 explains over 92% of the variation in the data, and PC2 explains a measly 5%.
-Therefore, if I were to subsequently analyze the PCs (e.g., for hypothesis testing), I would just analyze PC1, which does more than a good job of capturing the variation in the four `iris` variables.
-
-To interpret what eigenvalues mean in the context of the original variables, we can see that the sum of all eigenvalues equals the sum of the variances of all your original variables (check this in the console above). 
-This demonstrates that the original variance in your dataset is preserved in PCA and that all PCA is doing is rotating and reorienting your original data.
-
-### Singular value decomposition
-
-**NB**: This section goes into brief detail about what PCA is actually doing underneath the hood.
-It is not necessary to know for the exercises or HW.
-
-I explained how PCA conceptually works above, but what it's *actually* doing underneath the hood is a **singular value decomposition** (SVD) of the variance-covariance matrix of the original variables.
-SVD will return the eigenvalues and eigenvectors (covered in the next topic) from the variance-covariance matrix.
-
-All this is easy to do in R.
-First, create the variance-covariance matrix of the dataset by entering `iris.vcov <- cov(subset(iris, select = -Species))`.
-Then, use the `svd()` function to do an SVD of the variance-covariance matrix: `iris.svd <- svd(iris.vcov)`.
-`iris.svd$d` returns the eigenvalues from the SVD for each PC. 
-`iris.svd$u` returns the eigenvectors, from which one can calculate PC scores (see next section). 
-
-
-## Eigenvectors
-
-**Eigenvectors** tell us how each PC is related to the original variables.
-Each PC has one eigenvector, and the elements within each eigenvector are called **loadings** because they tell us how each of the original variables "loads" on each PC.
-Loadings range from -1 to 1, where the sign indicates the direction of the relationship between the variable and PC, and the magnitude indicates how much each variable contributes to the PC (also how tightly the two are correlated).
-For example, a PC1 loading of 0.86 for `iris$Petal.Length` tells us that as PC1 increases, `Petal.Length` increases, and vice versa (i.e., the two are positively correlated).
-0.86 is a large value, indicating that `Petal.Length` contributes a lot to and is strongly correlated with PC1.
-On the other hand, a PC1 loading of -0.08 for `Sepal.Width` indicates that as PC1 increases, `Sepal.Width` decreases—but this relationship is noisy—and `Sepal.Width` doesn't contribute much to PC1.
-
-To get out the loadings in R, enter `iris.pca$rotation`.
-If you did SVD in the last topic, you can get out the loadings with `iris.svd$u`.
-Note that some of the loading signs might be switched between `iris.pca$rotation` and `iris.svd$u`.
-The signs of the loadings are arbitrary and are a function of how each PC is fit through the data.
-What is important are the loading magnitudes and the fact that the directions of loadings for each PC are internally consistent.
-For example, `iris.pca$rotation` returns PC1 loadings that are positive for `Sepal.Length`, `Petal.Length`, and `Petal.Width` and negative for `Sepal.Width`.
-This means that the first three variables are positively correlated with each other (ignoring the strength of correlation for now) and are each negatively correlated with `Sepal.Width`.
-`iris.svd$u` returns PC1 loadings that are negative for `Sepal.Length`, `Petal.Length`, and `Petal.Width` and positive for `Sepal.Width`.
-As with `iris.pca$rotation`, these results tell us `Sepal.Length`, `Petal.Length`, and `Petal.Width` are positively correlated with each other, and each is negatively correlated with `Sepal.Width`.
-
-```{r eigenvector, exercise = TRUE}
-# Click "Solution" button if stuck
-```
-
-```{r eigenvector-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-iris.pca$rotation
-
-iris.vcov <- cov(subset(iris, select = -Species))
-iris.svd <- svd(iris.vcov)
-iris.svd$u
-
-biplot(iris.pca)
-```
-
-One way to graphically portray loadings is as arrows on a PCA scatter plot.
-This is easily done in R with the `biplot()` function, where the only argument is the PCA results object (e.g., `biplot(iris.pca)`).
-Try it out above.
-
-As you can see, for example, the arrow for `Petal.Length` is long and pointing to the right in an almost horizontal fashion.
-This means `Petal.Length` has a large (long arrow) and positive loading for PC1 (pointing to the right along the PC1 axis).
-The arrow for `Sepal.Length` is moderately long and points to the bottom right.
-This means this variable has a moderate-magnitude loading that is positive for PC1 (points to the right) and negative for PC2 (points downward).
-Compare the arrow patterns to the actual loadings to get a feel for how the arrows graphically portray each variable's loading.
-
-### Transforming original data to PCA scores
-
-Eigenvectors also tell us how to transform data from the original variable coordinate system to PCA space and back.
-Let's see how this is done with a specific example, i.e., Plant #1 from the `iris` dataset.
-First, remove `Species` from `iris` and then center each variable, using `scale(iris1, scale = FALSE)` (R will apply `scale()` to each column in the dataset).
-Next, subset out the first row of your new dataset (this is Plant #1).
-To get out the PC1 score for Plant #1, we multiply each of Plant #1's measurements by its corresponding PC1 loading (according to variable), and then sum everything.
-That is, `sum(plant1 * iris.pca$rotation[, "PC1"])`.
-Compare the result to `iris.pca$x[1, "PC1"]`; they should be the same.
-
-```{r transform, exercise = TRUE}
-# Click "Solution" button if stuck
-```
-
-```{r transform-solution}
-iris1 <- subset(iris, select = -Species)
-iris.center <- scale(iris1, scale = FALSE)
-
-plant1 <- iris.center[1, ]
-
-iris.pca <- prcomp(iris1)
-
-# compare the two
-sum(plant1 * iris.pca$rotation[, "PC1"])
-iris.pca$x[1, 1]
-
-# compare the two
-iris.center %*% iris.pca$rotation
-iris.pca$x
-```
-
-This exercise emphasizes how PC loadings are also interpreted as how much each variable contributes to a PC.
-That is, in this case, the PC1 score for Plant #1 is the sum of of its variables weighted by the PC1 loadings.
-The larger magnitude the loading, the more that variable contributes to the final PC score.
-Conversely, if a loading is near zero, it will essentially "negate" its corresponding variable (because the resulting product will be near zero), thus contributing very little to the final PC score.
-
-One can also use matrix algebra to get the PC scores for all observations and PCs.
-You do this by multiplying the matrix of centered `iris` variables by the matrix of PCA loadings: `iris.center %*% iris.pca$rotation` (see pgs. 525-526 in Gotelli & Ellison to learn how to multiply two matrices together).
-
-
-## Hypothesis testing with PCA
-
-PCA in itself is not used for hypothesis testing, but the resulting PCA scores can be used for such purposes.
-For example, a PCA of the `iris` variables shows that PC1 is strongly positively correlated with `Petal.Length`, and more moderately positively correlated with `Sepal.Length` and `Petal.Width`; `Sepal.Width` does not really contribute to PC1.
-Therefore, PC1 is a composite of mostly `Petal.Length` and some `Sepal.Length` and `Petal.Width`.
-We can use an ANOVA to test if this composite variable is significant different across `iris$Species`.
-This is done by fitting an ANOVA, where PC1 scores is the DV and `Species` is the IV.
-Try this out below.
-
-```{r hypo, exercise = TRUE}
-# Click "Solution" button if stuck
-```
-
-```{r hypo-solution}
-iris.pca <- prcomp(subset(iris, select = -Species))
-
-anova(aov(iris.pca$x[, "PC1"] ~ iris$Species))
-```
-
-As you can see, the means of this composite PC1 variable is significantly different across `Species`.
-
-If one had a separately measured IV (e.g., nitrogen levels for each plant), one could model PC1 scores as a function of that.
-One can also distill collinear IVs using PCA: fit a PCA to the collinear variables and use the PC1 scores as the new composite IV that represents the previous IVs. 
-
-
-## Exercise 2
-
-We will analyze the `mtcars` dataset for the following questions.
-
-1. First subset out the continuous variables from `mtcars` (i.e., `mpg`, `disp`, `hp`, `drat`, `wt`, and `qsec`).
-Next, fit a PCA to the subsetted variables.
-Should the variables be scaled first?
-
-2. Create a scatter plot for the car models, where the x-axis is PC1 and the y-axis is PC2.
-
-3. Create a scree plot, showing how much variance is explained by each PC.
-Then calculate the percentage of variance explained by PC1 and PC2.
-
-4. Look at the PC1 loadings.
-Which variables contribute most to PC1 and in what fashion?
-
-```{r exer2, exercise = TRUE}
-# Click "Solution" button when done
-```
-
-```{r exer2-solution}
-# Q1
 mtcars1 <- subset(mtcars, select = c(mpg, disp, hp, drat, wt, qsec))
+# Euclidean distance
+mtcars_euc <- dist(mtcars1)
+mtcars_pcoa <- cmdscale(mtcars_euc, k = nrow(mtcars) - 1, eig = TRUE)
 
-mtcars.pca <- prcomp(mtcars1, scale = TRUE) # yes, scale the variables since they're in different units
+perc_var <- mtcars_pcoa$eig / sum(mtcars_pcoa$eig) * 100
+
+plot(mtcars_pcoa$points[, 1:2], type = "n", xlab = paste0("Principal Coordinate 1 (", round(perc_var[1]), "%)"), ylab = paste0("Principal Coordinate 2 (", round(perc_var[2]), "%)"))
+text(mtcars_pcoa$points, rownames(mtcars_pcoa$points), cex = 0.75)
+
+# Camaro Z28
 
 # Q2
-plot(mtcars.pca$x[, c("PC1", "PC2")])
+library(vegan)
+data(dune)
+dune_bray <- distance(dune, method = "bray", dist = TRUE)
+dune_nmds <- isoMDS(dune_bray, k = 2)
+plot(dune_nmds$points)
+dune_nmds$stress / 100 # 0.12 which is OK
 
 # Q3
-eigenvalues <- mtcars.pca$sdev ^ 2
-
-barplot(eigenvalues, ylab = "Variance", names.arg = paste0("PC", 1:6)) # paste0() tells R to concatenate "PC" to each number within 1:6 with no spaces in between
-
-eigenvalues / sum(eigenvalues) * 100 # PC1 explains 70%, and PC2 explains 19%. Together they explain 89%, a good amount of the total variance
-
-# Q4
-mtcars.pca$rotation
-
-# no one variable dominates PC1. The most important variables are mpg (negative), disp (positive), hp (positive), and wt (positive). drat is slightly less important and negative. qsec is negative and least important, though its loading is non-negligible 
+mtcars_upgma <- hclust(mtcars_euc, method = "average")
+plot(mtcars_upgma, hang = -1, ylab = "Euclidean distance")
 ```
+
+
+## R code for other methods
+
+I *briefly* covered *K*-means clustering, discriminant analysis, and redundancy analysis in class.
+Therefore, I won't go over how to use these in R and how to interpret the outputs.
+Instead, I'll provide the functions used for these methods and leave it to you to study them more if they're relevant for your research.
+
+*K*-means clustering is done using the `kmeans()` function, discriminant analysis uses the `lda()` function in the `MASS` package, and redundancy analysis uses the `rda()` function in the `vegan` package.
 
 
 ## Conclusion
 
-This tutorial introduced you to multivariate statistics with multivariate models and ordination.
-Many research questions require the analysis of a multivariate DV (e.g., the human skull example in *Multivariate models*).
-It is better to fit one's analysis to the research question instead of the other way around (the research question always rules!).
-Sticking with our skull example, we should treat the many linear measurements as a multivariate DV instead of analyzing them separately as univariate DVs (the latter asks a different research question).
-This is why it is important to have a fundamental understanding of the many statistical methods out there, so you can pick the one most appropriate for your research question.
+This week's lecture and tutorial concluded your education on multivariate methods.
+This week, we learned about new ordination methods, such as PCoA, CA, and NMDS.
+We also learned about cluster analysis, another multivariate exploratory method used to visualize which data points are more similar based on their variables.
+I didn't really cover *K*-means clustering, discriminant analysis, or redundancy analysis in this tutorial and only provided you with the R functions for running these analyses. 
 
-Multivariate models are used to assess how a multivariate DV varies as a function of one or more IV.
-This week, we focused only on those multivariate models that have one categorical IV (i.e., Hotelling's *T*^2^ and one-way MANOVA).
-Next week, we will briefly cover those multivariate models that have a continuous IV.
-As alluded to in the previous paragraph, multivariate models ask a different research question than multiple univariate models by jointly analyzing multiple DVs together.
-This also has the advantage of incorporating more information into the analysis (i.e., the correlations between DVs), with the result that multivariate models are able to detect differences that are missed with multiple univariate models (e.g., our teaching method example).
+What I want to emphasize, and what has been the dominant theme of my class, is how similar and unified all these different methods are.
+For ordination, the unifying method is PCoA, of which PCA and CA are specialized versions.
+That is, PCA can be thought of as a PCoA done on a Euclidean distance matrix, and CA can be thought of as a PCoA done on a chi-square distance matrix.
+NMDS is the outlier ordination method, as it doesn't use SVD and instead "brute force" searches for the optimal configuration of points in a reduced number of dimensions (e.g., two or three).
 
-Ordinations are used to condense multiple variables into a few important ones.
-The main purpose of this is exploratory: ordination allows one to plot many variables in two- or three-dimensional space, while still accounting for most of the variation in one's multivariate dataset.
-We went over principal components analysis, by far the most common ordination method, at least in anthropology.
-PCA is done only on continuous variables.
-We learned what PCA is doing "underneath the hood", as well as what all the outputs are and how to interpret them (i.e., scores, eigenvalues, eigenvectors/loadings).
-PCA can be used for hypothesis testing by treating PC scores as composites of the original variables, which can then be entered as a DV or IV in other models (you can understand how the original variables contribute to each PC using the loadings).
+Ordination and cluster analysis are unified by the fact that they both analyze distance matrices, so these two methods analyze identical inputs but display the results in different fashions.
+Ordination plots multivariate data in a reduced dimensional space, with closer points reflecting observations with more similar variables.
+In this way, ordination can be thought of as displaying similarities between observations on a continuous scale.
+Cluster analysis, on the other hand, places data points in clusters, so it portrays similarities between observations in a discrete fashion.
+These two methods are just different ways of visualizing distance matrices; whichever one is more appropriate is dictated by your research question.
 
-This week's lecture and tutorial provided you with the basic skillset and know-how for conducting multivariate analyses in R.
-The hope is that you are now able to carry out multivariate statistics for your own research if your research question requires it.
+So, instead of approaching these methods individually and becoming overwhelmed, remember how they're all unified and that'll greatly simplify how much you have to learn/remember; this will in turn facilitate your comprehension of these methods.
+(Recall that I adopted the same strategy when teaching you linear models).
+By teaching you multivariate methods in this way, I have hopefully maximized your understanding of these techniques, which will enable you to use them in your own research.
