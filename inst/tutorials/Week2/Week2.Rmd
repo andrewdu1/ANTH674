@@ -886,7 +886,7 @@ FYI, this is what Aepycerotini (e.g., an impala) looks like:
 
 And this is what Hadar (where the Sidi Hakoma Member is) looks like:
 
-![](https://askananthropologist.asu.edu/sites/default/files/styles/aab-gallery-large/public/gallery-images/hadar_camp.jpg?itok=QpbV1OYI){width="70%"}
+![](https://alchetron.com/cdn/hadar-ethiopia-d57e71b3-7e8e-4379-9bc3-d9d7195bcb3-resize-750.jpg){width="70%"}
 
 Subset out the enamel isotope measurements (`d13C`) for Aepycerotini and Sidi Hakoma (`iso$data.type == "enamel"`, `iso$taxon == "Aepycerotini`, `iso$member == "SidiHakoma`).
 (I have kept the datasets loaded for you; click "Hint" if you're stuck)
