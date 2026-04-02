@@ -31,24 +31,21 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Introduction
 
 This week, we covered two different but related topics: linear mixed models and autocorrelation.
-**Linear mixed models** (LMMs) model a DV as a linear function of **fixed** and **random factors** (sometimes also called fixed and random effects, respectively).
-**Fixed factors** are categorical variables whose levels are the only ones of interest.
-Therefore, we estimate coefficients for the different levels because we are interested in how the intercept and/or slope of the DV against another IV changes with each level in our fixed factor.
-**Random factors** are categorical variables whose levels are a random, representative sample of some larger population of levels.
-Therefore, we are not interested in estimating coefficients for each level but instead want to infer something about the population of intercepts/slopes from which our levels are sampled.
-A utilitarian perspective can help with determining whether your factor is fixed or random: do you want to estimate coefficients for each level (along with P-values and confidence intervals) or do you want to estimate the SD of the population of intercepts/slopes from which your levels are sampled? 
-As always, the distinction depends on your research question!
+**Linear mixed models** (LMMs) model a DV as a linear function of **fixed** and **random effects**.
+**Fixed effects** are coefficients estimated on ALL data (e.g., intercept and slope).
+**Random effects** are categorical variables, among whose levels a linear model's coefficients might vary.
+If one specifies intercepts and slopes varying across levels (i.e., a random intercept and slope model), LMMs accomplish this by having each level's coefficients sampled from normal distributions (which are the same across levels), whose means are the estimated fixed effects and the variances are estimated as free parameters. 
 
 ![](https://hlplab.files.wordpress.com/2011/05/simpsons-paradox.png?w=1410){width="75%"}
 
 The second topic we covered was how to measure and deal with autocorrelation in your analyses.
 As a reminder, **autocorrelation** is simply non-independence in your data, where data points closer in space/time/phylogeny are more similar.
-Autocorrelation is somewhat related to LMMs because one can specify blocking factors as random factors to account for autocorrelation in LMMs.
+Autocorrelation is somewhat related to LMMs because one can specify blocking factors as random effects to account for autocorrelation in LMMs.
 What we specifically covered was how to isolate the autocorrelated noise component in one's data through detrending.
 We also covered how to measure autocorrelation in the data using correlograms.
 Lastly, we went over how to measure the association between two variables in time and space using cross-correlograms and generalized least squares.
 
-![](https://www.influxdata.com/wp-content/uploads/autocorrelation-in-time-series-data-figure-5.png){width="75%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Acf.svg/960px-Acf.svg.png){width="75%"}
 
 In this tutorial, we will cover how to do all of the above in R.
 Where necessary, we will do some simple simulations to really make clear how some of these methods and concepts work.
@@ -58,50 +55,49 @@ At the end of the tutorial, you should be able to run basic LMMs and know how to
 ## Goals for this tutorial
 
 #### 1) Continue the never-ending journey of familiarizing yourself with R.
-#### 2) Know when to specify a factor as fixed or random.
+#### 2) Know when to specify an effect as fixed or random.
 #### 3) Learn how to run a LMM in R.
 #### 4) Learn how to do variance partitioning with LMMs.
 #### 5) Learn what the three components of temporal and spatial (and phylogenetic data are) and how to isolate autocorrelated noise. 
 #### 6) Learn how to do correlograms, cross-correlograms, and generalized least squares in R.
 
 
-## Random factors
+## Random effects
 
-I briefly defined random factors in the *Introduction*, and I taught when to use them and how they're used in lecture. 
-In this tutorial, we will learn about random factors via another avenue: simulations.
+I briefly defined random effects in the *Introduction*, and I taught when to use them and how they're used in lecture. 
+In this tutorial, we will learn about random effects via another avenue: simulations.
 
 ### Random intercept model
 
-As I mentioned in the *Introduction*, one specifies a factor as random if one is interested in estimating the SD of the population of intercepts or slopes from which the levels are sampled.
-Let's see how this works by first simulating data and then estimating the population SD of the intercepts across levels using LMMs.
+Let's see how this model works by first simulating data and then estimating the SD of the intercepts across levels using LMMs.
 
-One can think of a random factor as an extra term added to the intercept:
+One can think of a random effect as an extra term added to the intercept:
 
 \begin{align}
   Y = \beta_0 + \alpha + \beta_1 X + \epsilon, 
 \end{align}
 
 where $\alpha \sim N(0, \tau)$. 
-That is, $\alpha$ is a random factor that is normally distributed with mean zero and SD equal to $\tau$.
-So each level within a random factor is associated with a number drawn from this normal distribution that tells us by how much that level's intercept deviates from the main estimated intercept ($\beta_0$, a fixed effect).
-This SD ($\tau$) is the parameter estimated in a LMM, and hopefully you can now see why levels from a random factor are associated with some population, whose SD ($\tau$) we want to estimate.
+That is, $\alpha$ is a random effect that is normally distributed with mean zero and SD equal to $\tau$.
+So each level within a random effect is associated with a number drawn from this normal distribution that tells us by how much that level's intercept deviates from the main estimated intercept ($\beta_0$, a fixed effect).
+This SD ($\tau$) is a free parameter estimated in a LMM.
 
 Below is the code to simulate the data, with comments on what each line is doing (code adapted from [here](https://m-clark.github.io/mixed-models-with-R/random_intercepts.html)).
 After you get somewhat of a handle of what's going on, copy and paste the code into the console below.
 
 ```{r eval=FALSE}
-intercept_SD <- 0.5 # setting SD of population of intercept deviations
-e_SD <- 0.25 # setting SD of population of error terms
+intercept_SD <- 0.5 # setting SD of intercept deviations
+e_SD <- 0.25 # setting SD of error terms
 
 set.seed(1234) # to make simulations replicable
-Nlevels <- 100 # number of levels within the random factor
+Nlevels <- 100 # number of levels within the random effect
 NperLevel <- 5 # number of observations per level
 N <- Nlevels * NperLevel # total number of observations
 Levels <- factor(rep(1:Nlevels, each = NperLevel)) # create factor level associated with each observation
 a <- rnorm(Nlevels * NperLevel, sd = intercept_SD) # simulate random draws from normal distribution of intercepts (specifically, deviations from main intercept)
 e <- rnorm(N, sd = e_SD) # simulate error terms
 x <- runif(N) # simulate IV
-y <- 2 + .5 * x + a[Levels] + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random factor, and add error terms
+y <- 2 + .5 * x + a[Levels] + e # simulate DV, fixed intercept (2), fixed slope (0.5), add random effect, and add error terms
 
 d <- data.frame(x, y, Levels) # combine everything into one data frame
 ```
@@ -115,22 +111,17 @@ lmm.res <- lme(y ~ x, random = ~1|Levels, data = d)
 
 summary(lmm.res)
 
-ranef(lmm.res)
-
-hist(ranef(lmm.res)[, 1])
-
-mean(ranef(lmm.res)[, 1])
-sd(ranef(lmm.res)[, 1])
+coef(lmm.res)
 ```
 
 Now fit a LMM to the data.
 This is done using `lme()` from the `nlme` package.
 The proper line of code is `lmm.res <- lme(y ~ x, random = ~1|Levels, data = d)`.
-The `random = ~1|Levels` tells R that we want to estimate the SD of intercepts (`~1`) across levels within the factor `Levels`.
+The `random = ~1|Levels` tells R that the intercept (`~1`) varies across levels within the random effect `Levels`.
 Enter the code above. 
 
 Now enter `summary(lmm.res)` to see the full suite of results.
-First you'll see that the estimated SD for the intercept is 0.5, precisely what we set the population SD to be.
+First you'll see that the estimated SD for the intercept is 0.5, precisely what we set it to be in our simulations.
 The Residual SD is 0.24, close to the 0.25 we specified.
 The intercept and slope are 1.9 and 0.53, close to the values we picked.
 And lastly, you can see that the fixed effects (intercept and slope) are significant; we can get P-values for simple LMMs like this one but not for more complicated LMMs (which can't be run using `lme()`). 
@@ -138,10 +129,10 @@ And lastly, you can see that the fixed effects (intercept and slope) are signifi
 **NB:** A P-value can be vanishingly small but can never be zero.
 Zero in this case is synonymous with a very, very, very small number.
 
-We can also get out the deviations (from the main intercept) for each observed level sampled from the population.
-This is done with `ranef(lmm.res)`, which returns the result as a data frame (this is also how you plot each level's fitted lines on a scatter plot).
-Enter `hist(ranef(lmm.res)[, 1])` to see the distribution sampled from the population.
-Because we have 100 levels, a sizable sample size, the mean and SD of `ranef(lmm.res)[, 1]` should be very close to the population mean and SD (0 and 0.5, respectively).
+Recall the (very desirable) property of **shrinkage** in LMMs. 
+For a random intercept model, each random effect level's intercept is shrunk towards the intercept fixed effect (which is informed by all data).
+To get out the slope and shrunken intercepts for all levels, enter `coef(lmm.res)`. 
+Because we specified random intercepts only, the slope fixed effect is the same for all levels. 
 
 ### Random intercept and slope model
 
@@ -153,19 +144,19 @@ This equation is now:
 \end{align}
 
 where $\alpha_0 \sim N(0, \tau_0)$ and $\alpha_1 \sim N(0, \tau_1)$. 
-$\alpha_0$ and $\tau_0$ are $\alpha$ and $\tau$ from above, respectively, and $\alpha_1$ is a random factor that is normally distributed with mean zero and SD equal to $\tau_1$.
-$\alpha_1$ is the population of each level's deviation from the fixed slope effect, $\beta_1$.
+$\alpha_0$ and $\tau_0$ are $\alpha$ and $\tau$ from above, respectively, and $\alpha_1$ is a random effect that is normally distributed with mean zero and SD equal to $\tau_1$.
+$\alpha_1$ is a normal distribution, from which is sampled each level's deviation from the fixed slope effect, $\beta_1$.
 
 Below is the proper code with comments.
 Review it and then copy and paste it into the console below.
 
 ```{r eval=FALSE}
-intercept_SD <- 0.75 # setting SD of population of intercept deviations
-slope_SD <- 0.25 # setting SD of population of slope deviations
-e_SD <- 0.25 # setting SD of population of error terms
+intercept_SD <- 0.75 # setting SD of intercept deviations
+slope_SD <- 0.25 # setting SD of slope deviations
+e_SD <- 0.25 # setting SD of error terms
 
 set.seed(1234) # to make simulations replicable
-Nlevels <- 100 # number of levels within the random factor
+Nlevels <- 100 # number of levels within the random effect
 NperLevel <- 5 # number of observations per level
 N <- Nlevels * NperLevel # total number of observations
 Levels <- factor(rep(1:Nlevels, each = NperLevel)) # create factor level associated with each observation
@@ -185,15 +176,17 @@ d <- data.frame(x, y, Levels) # combine everything into one data frame
 ```{r slope-solution}
 lmm.res1 <- lme(y ~ x, random = ~x | Levels, data = d)
 
-ranef(lmm.res1)
+summary(lmm.res1)
+
+coef(lmm.res1)
 ```
 
 Fit the LMM with `lmm.res1 <- lme(y ~ x, random = ~x | Levels, data = d)`.
-The `random = ~x | Levels` tells R that we want to estimate the SD of deviations for the slope across the factor `Levels` (the intercept is implied, just like it is when you use `lm()`).
+The `random = ~x | Levels` tells R that this is a random intercept and slope (`x`) model, where the random effect is `Levels` (the intercept is implied, just like it is when you use `lm()`).
 
-Compare the estimated parameters with those you specified (i.e., main intercept, main slope, intercept SD, slope SD, and residual SD). 
+Compare the estimated parameters with those you specified (i.e., intercept fixed effect, main slope fixed effect, random intercept SD, random slope SD, and residual SD). 
 
-As before, you can get out each level's deviations for the intercept and slope using `ranef()`.
+As before, you can get out each level's shrunken intercept and slope using `coef()`.
 
 **NB:** I don't go over how to do this, but you can fit *generalized linear mixed models* using `glmer()` in the `lme4` package.
 There is just one extra argument, `family = `, which you use to specify the error distribution (e.g., `family = "binomial"` would fit a logistic regression mixed model). 
@@ -201,7 +194,7 @@ There is just one extra argument, `family = `, which you use to specify the erro
 
 ## Comparing ANCOVA and LMM
 
-Comparing the goals and results of ANCOVA to LMM will also make clearer when one would make a factor random rather than fixed.
+Comparing the goals and results of ANCOVA to LMM will also make clearer when one would make an effect random rather than fixed.
 
 For this section, we will use the `sleepstudy` dataset in the `lme4` package.
 Enter `?sleepstudy` to get an idea of what the dataset and variables therein are.
@@ -222,10 +215,9 @@ lmm.res <- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)
 ```
 
 As you can see, a total of 36 coefficients were estimated, two for each subject (intercept and slope)!
-This would be fine if the subjects were of interest for whatever reason, and we wanted to know what their estimated intercepts and slopes were.
 But, we have 180 data points only, which means we have 5 data points per estimated coefficient (we are definitely overfitting the data!).
 
-A LMM, on the other hand, would estimate only two fixed effects (intercept and slope) and two other parameters (one SD each for the populations of intercept and slope deviations).
+A LMM, on the other hand, would estimate only two fixed effect coefficients (intercept and slope) and two other parameters (one SD each for the random intercepts and random slopes).
 Go ahead and fit the LMM.
 
 ### Shrinkage/regularization
@@ -233,8 +225,7 @@ Go ahead and fit the LMM.
 At this point, feel free to compare the estimated slope and intercept for each level for an ANCOVA vs. a LMM (you can do this for a few subjects; I present code for doing this for all subjects in "Solution").
 Remember that each level's intercept in an ANCOVA is obtained by adding the baseline intercept to that level's main effect (e.g., to get the intercept for `Subject309`, add the main intercept, `244.193`, with the coefficient `Subject309`,  `-39.138`).
 To get the level's slope, add the baseline slope to that subject's interaction term (e.g., to get the slope for `Subject309`, add `21.765` with `-19.503`).
-To get a level's intercept and slope from a LMM, you just add the deviation to its respective fixed effect (`Subject309`'s intercept is the fixed intercept effect, `251.405`, plus the intercept deviation, `-40.398`).
-Recall that you extract the deviations using `ranef(lmm.res)` (though I present another way of extracting deviations in "Solution").
+To get a level's intercept and slope from a LMM, you just use `coef()` as before.
 
 ```{r shrink, exercise = TRUE}
 # Click "Solution" button if stuck
@@ -256,18 +247,17 @@ c(ancova.coef["Days"], ancova.coef["Days"] + ancova.coef[grep("Days", names(anco
 lmm.res <- lme(Reaction ~ Days, random = ~Days | Subject, data = sleepstudy)
 
 # intercepts
-lmm.res$coefficients$fixed["(Intercept)"] + lmm.res$coefficients$random$Subject[, "(Intercept)"]
+coef(lmm.res)["(Intercept)"]
 
 # slopes
-lmm.res$coefficients$fixed["Days"] + lmm.res$coefficients$random$Subject[, "Days"]
+coef(lmm.res)["Days"]
 ```
 
-As you'll see, the LMM's intercept and slope will be closer to their fixed counterparts (i.e., their averages) than those from ANCOVA; recall that the LMM's fixed effects are the same as the intercept and slope for a linear model fit without `Subject` as a random factor.
+As you'll see, the LMM's intercepts and slopes will be closer to their fixed effect counterparts than those from ANCOVA; recall that the LMM's fixed effects are the same as the intercept and slope for a linear model fit without `Subject` as a random effect
 This phenomenon is know as **shrinkage**, **regularization**, or **partial pooling**.
-Because each level's intercept deviation, for example, is sampled from a population with mean 0, levels' intercepts are expected to be close to zero on average.
-Therefore, each level's deviation will be pulled towards zero (i.e., each level's intercept will be pulled towards the fixed intercept effect).
-If a level has few observations, its deviations will be pulled more towards zero (i.e., with little data, the best guess we can make is the average).
-Because of this shrinkage property, some researchers argue that one should *always* use a LMM as opposed to an ANCOVA, but this debate is beyond my pay grade. 
+Because each level's random intercept, for example, is sampled from a normal distribution with a mean equal to the intercept fixed effect, levels' random intercepts are expected to be closer to the fixed effect estimate compared to ANCOVA intercepts. 
+That is, each level's random intercept will be pulled towards the intercept fixed effect.
+If a level has few observations, its random effect will be pulled more towards the fixed effect (i.e., with little data, the best guess we can make is the average of all data).
 
 !["No pooling" is the ANCOVA estimates, "Partial pooling" is the LMM estimates, and "Partial pooling (average)" is the fixed effect estimates. Model fit on `sleepstudy` dataset.](https://www.tjmahr.com/figs//2017-06-22-plotting-partial-pooling-in-mixed-effects-models/shrinkage-plot-1.png){width="75%"}
 
@@ -275,20 +265,20 @@ Because of this shrinkage property, some researchers argue that one should *alwa
 
 Multiple measurements were taken on each subject over time.
 This is known as a **repeated measures design**.
-Because of this, each subject's measurements are not independent.
-By including `Subject` as a random factor, however, we have effectively used this variable as a blocking factor.
-This accounts for the non-independent data for each subject.
+Because of this, measurements in the dataset are not independent, i.e., measurements for the same subject will likely be more similar than measurements from different subjects.
+By including `Subject` as a random effect, however, we have effectively used this variable as a blocking factor.
+This accounts for the non-independent data structure by `Subject`.
 Fitting an ANCOVA does the same thing, but that's inappropriate here because we don't have a large enough sample size to match the large number of estimated coefficients.
 
 
 ## Variance partitioning
 
-When one has multiple random factors within a LMM, one can do **variance partitioning** and see how much DV variation (not accounted for by the fixed effects) is attributable to each random factor.
-Perhaps more commonly, one can fit an intercept-only LMM and see how the DV variation is partitioned among the random factors.
+When one has multiple random effects within a LMM, one can do **variance partitioning** and see how much DV variation (not accounted for by the fixed effects) is attributable to each random effect.
+Perhaps more commonly, one can fit an intercept-only LMM and see how the DV variation is partitioned among the random effects.
 
-### Crossed random factors
+### Crossed random effects
 
-Random factors are **crossed** if each level within a factor is combined with each level from the other factor.
+Random effects are **crossed** if each level within a factor is combined with each level from the other factor.
 We will analyze the crossed factors (`plate` and `sample`) from the `Penicillin` dataset from the package `lme4` for this section.
 
 Enter `?Penicillin` to get an idea of what the dataset and variables are.
@@ -325,15 +315,15 @@ lmm.var / sum(lmm.var)
 ```
 
 One can see that `diameter` varies a decent amount across plates (`plate`), but most of the variation is across penicillin samples (`sample`). 
-Let's fit an intercept-only LMM to quantify how much `diameter` variation is attributed to each random factor (i.e., `plate` and `sample`).
+Let's fit an intercept-only LMM to quantify how much `diameter` variation is attributed to each random effect (i.e., `plate` and `sample`).
 
-Fitting a LMM with crossed random factors is difficult to do with `lme()`.
+Fitting a LMM with crossed random effects is difficult to do with `lme()`.
 This is where LMMs start to become complicated, and we have to switch to the `lmer()` function in the `lme4` package.
-To fit a LMM with crossed random factors using `lmer()`, enter `lmer(diameter ~ 1 + (1 | plate) + (1 | sample), data = Penicillin)`.
+To fit a LMM with crossed random effects using `lmer()`, enter `lmer(diameter ~ 1 + (1 | plate) + (1 | sample), data = Penicillin)`.
 The `(1 | plate) + (1 | sample)` is telling R that we want our intercept to vary across `plate` levels and `sample` levels.
 
 The main difference using `lmer()` is that no P-values are returned.
-This is not an accident, as P-values cannot be estimated accurately with complex LMMs (i.e., it is not clear how many degrees of freedom there are).
+This is not an accident, as P-values cannot be estimated accurately with complex LMMs (e.g., if random intercepts vary across levels but are constrained by an underlying normal distribution, then they're not entirely free parameters; it is necessary to count the number of free parameters in a model when calculating P-values).
 
 We now need to get out the variances.
 This is done using `VarCorr()`, but the output is a bit annoying to work with.
@@ -342,9 +332,9 @@ The column we want is `vcov`.
 You can now interpret those variances as is, but I find it's more useful to transform them into proportion variance explained by dividing each element in the column by the column's sum.
 As we can see, the majority of the `diameter` variance is explained by `sample`, matching our intuition from the dot plot.
 
-### Nested random factors
+### Nested random effects
 
-**Nested random factors** are those whose factors are nested within each other (like Russian nesting dolls).
+**Nested random effects** are those whose factors are nested within each other (like Russian nesting dolls).
 Examples include species nested within genera, hospitals nested within cities nested within states, etc.
 
 ![](https://www.vermontcountrystore.com/ccstore/v1/images/?source=/file/v1572392947014410569/products/70072.main.png&height=700&width=450&outputFormat=JPEG&quality=0.8){width="40%"}
@@ -361,9 +351,9 @@ Here is a summary plot of the data (which I pulled from a paper, so no code):
 As you can see from the dataset and the figure, levels from `sample` are a combination of `batch` and `cask`.
 This is necessary so that we know, for example, that samples of `A:a` are associated with cask `a` from batch `A`, as opposed to batch `B`.
 
-A nested random factors LMM is fit using the same exact code as with crossed factors: `lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)`.
-This emphasizes how random factors' variances are calculated in the same exact way, regardless of whether the factors are crossed or nested.
-You can also do nested random factors using `lme()`: `lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)`.
+A nested random effects LMM is fit using the same exact code as with crossed effects: `lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)`.
+This emphasizes how random effects' variances are calculated in the same exact way, regardless of whether the effects are crossed or nested.
+You can also do nested random effects using `lme()`: `lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)`.
 The `/` indicates that `sample` is nested within `batch` (this symbol also works for `lmer()`, e.g., `lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)`).
 
 
@@ -394,8 +384,8 @@ As you can see, most of the variance in `strength` is among casks (`sample`), ra
 ## Exercise 1
 
 1. We're going to use the `gpa` dataset, which I've pre-loaded for you.
-I want to know the SD of the intercept and slope of GPA (`gpa`) as a function of semester (`occasion`) across levels within `student`.
-Fit the appropriate LMM. 
+I want to know the SD of the random intercepts and slopes of GPA (`gpa`) as a function of semester (`occasion`) across levels within `student`.
+Fit the appropriate LMM, and print out the shrunken intercept and slope for each level. 
 
 2. We're going to analyze the `nurses` dataset, which I've pre-loaded for you.
 I want to know how the variance in nurses' stress (`stress`) is partitioned among `wardid`, which is nested within `hospital`.
@@ -418,6 +408,10 @@ nurses <- read.csv(text = nurses_url)
 gpa_lmm <-  lmer(gpa ~ occasion + (occasion | student), data = gpa)
 # or
 gpa_lmm1 <-  lme(gpa ~ occasion, random = ~occasion | student, data = gpa)
+
+coef(gpa_lmm)
+# or
+coef(gpa_lmm1)
 
 # Q2
 nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)
