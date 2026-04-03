@@ -273,8 +273,8 @@ Fitting an ANCOVA does the same thing, but that's inappropriate here because we 
 
 ## Variance partitioning
 
-When one has multiple random effects within a LMM, one can do **variance partitioning** and see how much DV variation (not accounted for by the fixed effects) is attributable to each random effect.
-Perhaps more commonly, one can fit an intercept-only LMM and see how the DV variation is partitioned among the random effects.
+With LMMs, one can do **variance partitioning** and see how much DV variation is attributable to the fixed effects, random effects, and residual variation.
+Perhaps more commonly, one can fit an intercept-only LMM and see how the DV variation is partitioned among multiple random effects.
 
 ### Crossed random effects
 
@@ -351,10 +351,10 @@ Here is a summary plot of the data (which I pulled from a paper, so no code):
 As you can see from the dataset and the figure, levels from `sample` are a combination of `batch` and `cask`.
 This is necessary so that we know, for example, that samples of `A:a` are associated with cask `a` from batch `A`, as opposed to batch `B`.
 
-A nested random effects LMM is fit using the same exact code as with crossed effects: `lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)`.
-This emphasizes how random effects' variances are calculated in the same exact way, regardless of whether the effects are crossed or nested.
-You can also do nested random effects using `lme()`: `lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)`.
-The `/` indicates that `sample` is nested within `batch` (this symbol also works for `lmer()`, e.g., `lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)`).
+A nested random effects LMM can be fit with `lmer()` using `lmer(strength ~ 1 + (1 | batch) + (1 | batch:cask), data = Pastes)`.
+You can see that the larger, encompassing factor is specified first with `(1 | batch)`, which is followed by `(1 | batch:cask)`, wherein the nested structure of `cask` within `batch` is denoted by the ordering of the factors in `batch:cask` (i.e., larger factor first, smaller nested one second). 
+You can also specify the nesting structure with `batch / cask`, so this also works: `lmer(strength ~ 1 + (1 | batch / cask), data = Pastes)`.
+Lastly, you can also do nested random effects using `lme()`: `lme(strength ~ 1, random = ~1 | batch / cask, data = Pastes)`.
 
 
 ```{r nest, exercise = TRUE}
@@ -362,14 +362,14 @@ The `/` indicates that `sample` is nested within `batch` (this symbol also works
 ```
 
 ```{r nest-solution}
-lmm.res <- lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)
+lmm.res <- lmer(strength ~ 1 + (1 | batch) + (1 | batch:cask), data = Pastes)
 # or
-lmm.res <- lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)
+lmm.res <- lmer(strength ~ 1 + (1 | batch / cask), data = Pastes)
 
 as.data.frame(VarCorr(lmm.res))$vcov
 
 
-lmm.res1 <- lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)
+lmm.res1 <- lme(strength ~ 1, random = ~1 | batch / cask, data = Pastes)
 
 varcomp(lmm.res1, scale = TRUE)
 ```
@@ -378,7 +378,7 @@ The variance components are pulled out in the same exact way as before when usin
 Variance components can be extracted from an `lme()` result using `varcomp` in the package `ape` (so many different packages in this tutorial!).
 Enter `varcomp(lme.res)` to try it out.
 You can also set argument `scale = TRUE` to get out proportion variance explained.
-As you can see, most of the variance in `strength` is among casks (`sample`), rather than among `batch` or within `sample`.
+As you can see, most of the variance in `strength` is among casks (`cask`), rather than among `batch` or within `cask` (i.e., between `sample`).
 
 
 ## Exercise 1
@@ -414,7 +414,7 @@ coef(gpa_lmm)
 coef(gpa_lmm1)
 
 # Q2
-nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)
+nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | hospital:wardid), data = nurses)
 
 var.comp <- as.data.frame(VarCorr(nurses_nest))$vcov
 var.comp / sum(var.comp)

@@ -461,11 +461,11 @@ match the large number of estimated coefficients.</p>
 </div>
 <div id="section-variance-partitioning" class="section level2">
 <h2>Variance partitioning</h2>
-<p>When one has multiple random effects within a LMM, one can do
-<strong>variance partitioning</strong> and see how much DV variation
-(not accounted for by the fixed effects) is attributable to each random
-effect. Perhaps more commonly, one can fit an intercept-only LMM and see
-how the DV variation is partitioned among the random effects.</p>
+<p>With LMMs, one can do <strong>variance partitioning</strong> and see
+how much DV variation is attributable to the fixed effects, random
+effects, and residual variation. Perhaps more commonly, one can fit an
+intercept-only LMM and see how the DV variation is partitioned among
+multiple random effects.</p>
 <div id="section-crossed-random-effects" class="section level3">
 <h3>Crossed random effects</h3>
 <p>Random effects are <strong>crossed</strong> if each level within a
@@ -565,17 +565,18 @@ style="width:75.0%" /></p>
 <code>cask</code>. This is necessary so that we know, for example, that
 samples of <code>A:a</code> are associated with cask <code>a</code> from
 batch <code>A</code>, as opposed to batch <code>B</code>.</p>
-<p>A nested random effects LMM is fit using the same exact code as with
-crossed effects:
-<code>lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)</code>.
-This emphasizes how random effects’ variances are calculated in the same
-exact way, regardless of whether the effects are crossed or nested. You
-can also do nested random effects using <code>lme()</code>:
-<code>lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)</code>.
-The <code>/</code> indicates that <code>sample</code> is nested within
-<code>batch</code> (this symbol also works for <code>lmer()</code>,
-e.g.,
-<code>lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)</code>).</p>
+<p>A nested random effects LMM can be fit with <code>lmer()</code> using
+<code>lmer(strength ~ 1 + (1 | batch) + (1 | batch:cask), data = Pastes)</code>.
+You can see that the larger, encompassing factor is specified first with
+<code>(1 | batch)</code>, which is followed by
+<code>(1 | batch:cask)</code>, wherein the nested structure of
+<code>cask</code> within <code>batch</code> is denoted by the ordering
+of the factors in <code>batch:cask</code> (i.e., larger factor first,
+smaller nested one second). You can also specify the nesting structure
+with <code>batch / cask</code>, so this also works:
+<code>lmer(strength ~ 1 + (1 | batch / cask), data = Pastes)</code>.
+Lastly, you can also do nested random effects using <code>lme()</code>:
+<code>lme(strength ~ 1, random = ~1 | batch / cask, data = Pastes)</code>.</p>
 <div class="tutorial-exercise" data-label="nest" data-completion="1"
 data-diagnostics="1" data-startover="1" data-lines="0"
 data-pipe="|&gt;">
@@ -585,14 +586,14 @@ data-pipe="|&gt;">
 <div class="tutorial-exercise-support" data-label="nest-solution"
 data-completion="1" data-diagnostics="1" data-startover="1"
 data-lines="0" data-pipe="|&gt;">
-<pre class="text"><code>lmm.res &lt;- lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)
+<pre class="text"><code>lmm.res &lt;- lmer(strength ~ 1 + (1 | batch) + (1 | batch:cask), data = Pastes)
 # or
-lmm.res &lt;- lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)
+lmm.res &lt;- lmer(strength ~ 1 + (1 | batch / cask), data = Pastes)
 
 as.data.frame(VarCorr(lmm.res))$vcov
 
 
-lmm.res1 &lt;- lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)
+lmm.res1 &lt;- lme(strength ~ 1, random = ~1 | batch / cask, data = Pastes)
 
 varcomp(lmm.res1, scale = TRUE)</code></pre>
 </div>
@@ -603,8 +604,9 @@ in the package <code>ape</code> (so many different packages in this
 tutorial!). Enter <code>varcomp(lme.res)</code> to try it out. You can
 also set argument <code>scale = TRUE</code> to get out proportion
 variance explained. As you can see, most of the variance in
-<code>strength</code> is among casks (<code>sample</code>), rather than
-among <code>batch</code> or within <code>sample</code>.</p>
+<code>strength</code> is among casks (<code>cask</code>), rather than
+among <code>batch</code> or within <code>cask</code> (i.e., between
+<code>sample</code>).</p>
 </div>
 </div>
 <div id="section-exercise-1" class="section level2">
@@ -642,7 +644,7 @@ coef(gpa_lmm)
 coef(gpa_lmm1)
 
 # Q2
-nurses_nest &lt;- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)
+nurses_nest &lt;- lmer(stress ~ 1 + (1 | hospital) + (1 | hospital:wardid), data = nurses)
 
 var.comp &lt;- as.data.frame(VarCorr(nurses_nest))$vcov
 var.comp / sum(var.comp)
@@ -1406,9 +1408,9 @@ learnr:::store_exercise_cache(structure(list(label = "nest", global_setup = stru
     label = "setup", include = FALSE)), setup = NULL, chunks = list(
     list(label = "nest", code = "# Click \"Solution\" button if stuck", 
         opts = list(label = "\"nest\"", exercise = "TRUE"), engine = "r")), 
-    code_check = NULL, error_check = NULL, check = NULL, solution = structure(c("lmm.res <- lmer(strength ~ 1 + (1 | sample) + (1 | batch), data = Pastes)", 
-    "# or", "lmm.res <- lmer(strength ~ 1 + (1 | batch / sample), data = Pastes)", 
-    "", "as.data.frame(VarCorr(lmm.res))$vcov", "", "", "lmm.res1 <- lme(strength ~ 1, random = ~1 | batch / sample, data = Pastes)", 
+    code_check = NULL, error_check = NULL, check = NULL, solution = structure(c("lmm.res <- lmer(strength ~ 1 + (1 | batch) + (1 | batch:cask), data = Pastes)", 
+    "# or", "lmm.res <- lmer(strength ~ 1 + (1 | batch / cask), data = Pastes)", 
+    "", "as.data.frame(VarCorr(lmm.res))$vcov", "", "", "lmm.res1 <- lme(strength ~ 1, random = ~1 | batch / cask, data = Pastes)", 
     "", "varcomp(lmm.res1, scale = TRUE)"), chunk_opts = list(
         label = "nest-solution")), tests = NULL, options = list(
         eval = FALSE, echo = TRUE, results = "markup", tidy = FALSE, 
@@ -1456,7 +1458,7 @@ learnr:::store_exercise_cache(structure(list(label = "exer1", global_setup = str
     "gpa_lmm <-  lmer(gpa ~ occasion + (occasion | student), data = gpa)", 
     "# or", "gpa_lmm1 <-  lme(gpa ~ occasion, random = ~occasion | student, data = gpa)", 
     "", "coef(gpa_lmm)", "# or", "coef(gpa_lmm1)", "", "# Q2", 
-    "nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | wardid), data = nurses)", 
+    "nurses_nest <- lmer(stress ~ 1 + (1 | hospital) + (1 | hospital:wardid), data = nurses)", 
     "", "var.comp <- as.data.frame(VarCorr(nurses_nest))$vcov", 
     "var.comp / sum(var.comp)", "# or", "nurses_nest1 <- lmer(stress ~ 1 + (1 | hospital / wardid), data = nurses)", 
     "# use same VarCorr code as above", "# or ", "nurses_nest2 <- lme(stress ~ 1, random = ~ 1 | hospital / wardid, data = nurses)", 
