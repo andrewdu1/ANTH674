@@ -39,7 +39,7 @@ One advantage (or disadvantage depending on whom you ask) of Bayesian methods is
 This interpretation is known as **subjective probability**, and it quantifies one's *uncertainty* or *degree of belief* in some event.
 This interpretation is different than the frequentist one, which interprets probabilities as the long-run relative frequency of some event happening.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Dice_Distribution_%28bar%29.svg/2560px-Dice_Distribution_%28bar%29.svg.png){width=50%}
+![](https://i.sstatic.net/DNhaf.png){width=50%}
 
 I view these three topics as hierarchical, where likelihood depends on probability theory and Bayesian methods depend on likelihood. 
 More specifically, probability distributions lie at the heart of likelihood methods, and Bayesian methods involve weighting a likelihood function with prior information.
@@ -928,7 +928,7 @@ Furthermore, I'm not very confident in my 0.3 guesstimate, so I will make the di
 The standard distribution for modeling a probability is the **beta distribution**, which is continuous from zero to one and can take on a number of different shapes, as determined by its two parameters: $\alpha$ and $\beta$ (see figure below).
 [Click this link](http://varianceexplained.org/statistics/beta_distribution_and_baseball/) for a nice intuitive explanation of how the beta distribution works.
 
-![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Beta_distribution_pdf.svg/1200px-Beta_distribution_pdf.svg.png){width="70%"}
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Beta_distribution_pdf.svg/1920px-Beta_distribution_pdf.svg.png){width="70%"}
 
 For my prior distribution, I will use a beta distribution, where $\alpha=2$ and $\beta=3$ (see figure below).
 This distribution quantifies all the prior information I have regarding $p$.
